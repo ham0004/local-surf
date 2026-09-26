@@ -140,6 +140,9 @@ class FixtureAnswerer:
     """
 
     name = "fixture"
+    # Nominal per-frame visual-token charge; the pipeline divides the
+    # visual-token budget by this to derive the frame cap.
+    visual_tokens_per_frame = 64
 
     def answer(self, req: AnswerRequest) -> tuple[Answer, AnswerUsage]:
         visible = []
@@ -150,7 +153,7 @@ class FixtureAnswerer:
             if slide.indicator:
                 colours.append(slide.indicator)
         evidence = " ".join([s.text for s in req.excerpt] + visible).lower()
-        usage = AnswerUsage(visual_tokens=64 * len(req.frames),
+        usage = AnswerUsage(visual_tokens=self.visual_tokens_per_frame * len(req.frames),
                             text_tokens=len(build_prompt_text(req).split()))
         cites = [f.decoded_pts_s for f in req.frames]
 
