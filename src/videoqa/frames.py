@@ -2,8 +2,9 @@
 
 Key rules (tested in tests/test_frames.py):
 
-* Requests are served in ascending time order in ONE pass per call, so a batch
-  of candidates costs one sequential decode, not N random seeks.
+* Requests are served in ascending time order.  Nearby requests share one
+  forward decode; far-apart requests trigger a keyframe seek instead of
+  decoding everything in between (``seek_gap_s``).
 * For each requested time we return the first decoded frame whose PTS is
   >= the request (or the last frame for requests past the end), and we report
   that frame's true ``decoded_pts_s``.  Citations use the true PTS, which
@@ -73,12 +74,17 @@ class DecodeResult:
 
 
 def decode_at(path: str | Path, times_s: list[float], max_side: int | None = None,
-              id_prefix: str = "f", video_id: str = "") -> DecodeResult:
-    """Decode one frame per requested time in a single sequential pass.
+              id_prefix: str = "f", video_id: str = "", seek_gap_s: float = 4.0) -> DecodeResult:
+    """Decode one frame per requested time, in ascending time order.
+
+    Strategy: decode forward from the nearest keyframe before a request; when
+    the NEXT request is more than ``seek_gap_s`` ahead of the current frame,
+    seek again instead of decoding everything in between.  Sparse candidates
+    therefore cost roughly one GOP each rather than the whole span.
+    ``seek_gap_s=float('inf')`` gives the old single-pass behaviour.
 
     ``max_side`` downsizes frames (keeping aspect ratio) right after decoding so
-    large videos do not blow up memory; crop coordinates would be relative to
-    this resized image, and the scale is recoverable from width/height.
+    large videos do not blow up memory.
 
     Returned frames are in the SAME order as ``times_s`` (not sorted), so the
     caller can zip them with its candidate list.
@@ -89,31 +95,42 @@ def decode_at(path: str | Path, times_s: list[float], max_side: int | None = Non
     results: dict[int, Frame] = {}
     visited = 0
 
+    def serve(idx: int, frame, pts: float) -> None:
+        results[idx] = _to_frame(frame, pts, times_s[idx], max_side, f"{id_prefix}{idx:03d}")
+
     with av.open(str(path)) as container:
         stream = container.streams.video[0]
         stream.thread_type = "AUTO"
-        # Seek once to the nearest keyframe before the earliest request.
-        first_t = max(0.0, times_s[order[0]])
-        if first_t > 1.0 and stream.time_base is not None:
-            container.seek(int(first_t / stream.time_base), stream=stream, backward=True, any_frame=False)
-
-        pending = list(order)
-        last_frame = None
-        for frame in container.decode(stream):
-            visited += 1
-            pts = float(frame.pts * stream.time_base) if frame.pts is not None else float(frame.time or 0.0)
-            last_frame = (frame, pts)
-            # Serve every pending request whose time has been reached.
-            while pending and pts + 1e-6 >= times_s[pending[0]]:
-                idx = pending.pop(0)
-                results[idx] = _to_frame(frame, pts, times_s[idx], max_side, f"{id_prefix}{idx:03d}")
-            if not pending:
-                break
+        k = 0                      # index into ``order`` of the next request to serve
+        last = None                # (frame, pts) of the most recent decoded frame
+        while k < len(order):
+            target = max(0.0, times_s[order[k]])
+            # Seek (backward) to the keyframe at or before the next request.
+            if stream.time_base is not None:
+                container.seek(int(target / stream.time_base), stream=stream, backward=True, any_frame=False)
+            jumped = False
+            served_here = False        # has this seek segment served a request yet?
+            for frame in container.decode(stream):
+                visited += 1
+                pts = float(frame.pts * stream.time_base) if frame.pts is not None else float(frame.time or 0.0)
+                last = (frame, pts)
+                while k < len(order) and pts + 1e-6 >= times_s[order[k]]:
+                    serve(order[k], frame, pts)
+                    k += 1
+                    served_here = True
+                if k >= len(order):
+                    break
+                # Jump ahead only after this segment made progress; otherwise a
+                # keyframe far before the target would re-seek to itself forever.
+                if served_here and times_s[order[k]] - pts > seek_gap_s:
+                    jumped = True          # next request is far ahead: seek instead
+                    break
+            if not jumped:
+                break                      # served everything, or reached end of stream
         # Requests beyond the last frame get the last frame (clamped to video end).
-        for idx in pending:
-            if last_frame is not None:
-                frame, pts = last_frame
-                results[idx] = _to_frame(frame, pts, times_s[idx], max_side, f"{id_prefix}{idx:03d}")
+        while k < len(order) and last is not None:
+            serve(order[k], *last)
+            k += 1
 
     frames = [results[i] for i in range(len(times_s)) if i in results]
     for f in frames:
