@@ -8,6 +8,7 @@ import pytest
 from videoqa.damage import (
     MASK_TOKEN,
     asr_style_noise,
+    auto_min_distance_s,
     derive_relevant_segments,
     make_triple,
     select_matched_control,
@@ -111,3 +112,38 @@ def test_no_triple_when_nothing_is_answer_relevant():
 def test_asr_noise_keeps_times_valid():
     noisy = asr_style_noise(_lecture(), word_error_rate=0.3, seed=0)
     assert all(0 <= s.start_s <= s.end_s for s in noisy.segments)
+
+
+def test_auto_min_distance_caps_at_10s_for_a_lecture_length_span():
+    # The full-lecture fixture spans 160s, well past where 15% of the span
+    # would exceed the cap -> identical to the old hardcoded default, so
+    # every existing lecture-based test keeps its original behaviour.
+    assert auto_min_distance_s(_lecture()) == 10.0
+
+
+def test_auto_min_distance_scales_down_for_a_short_clip():
+    # Regression driver: a 9s clip with a 7s covered span (measured directly
+    # from a real LongVideoBench video) must NOT get the 10s lecture default,
+    # or almost no segment could ever qualify as a control.
+    segs = [TranscriptSegment("s0", 0.0, 1.0, "a"), TranscriptSegment("s1", 6.0, 7.0, "b")]
+    t = Transcript("clip", segs)
+    d = auto_min_distance_s(t)
+    assert 1.0 <= d < 10.0
+    assert d == pytest.approx(7.0 * 0.15)
+
+
+def test_auto_min_distance_has_a_floor_for_a_near_instantaneous_span():
+    t = Transcript("v", [TranscriptSegment("s0", 0.0, 0.1, "a"), TranscriptSegment("s1", 0.2, 0.3, "b")])
+    assert auto_min_distance_s(t) == 1.0
+
+
+def test_make_triple_recovers_a_short_clip_that_a_fixed_10s_distance_would_reject():
+    # 9s clip, 3 short segments - representative of the real failure mode.
+    segs = [TranscriptSegment("s0", 0.0, 1.0, "welcome to the shop"),
+           TranscriptSegment("s1", 2.0, 3.0, "eggs are on the bottom shelf"),
+           TranscriptSegment("s2", 6.0, 7.0, "thanks for watching")]
+    t = Transcript("clip", segs)
+    qa = QAItem(qa_id="q", video_id="clip", question="what is on the shelf",
+               gold_answer="eggs", evidence_segment_ids=["s1"])
+    assert make_triple(qa, t) is not None                          # auto distance recovers it
+    assert make_triple(qa, t, min_distance_s=10.0) is None          # the old fixed default still fails it

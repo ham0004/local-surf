@@ -273,9 +273,34 @@ class TranscriptTriple:
         }
 
 
+def auto_min_distance_s(transcript: Transcript, fraction: float = 0.15, floor_s: float = 1.0,
+                        cap_s: float = 10.0) -> float:
+    """Scale the matched-control separation to how much speech there actually is.
+
+    The original default (a flat 10 s) assumes a lecture-length video; it was
+    measured to reject 22 of 40 real LongVideoBench clips (9-70 s, often only
+    1-5 transcript segments spanning barely 10 s) because almost no segment
+    could ever be 10 s from another. Scaling by the transcript's own covered
+    span keeps a full-lecture fixture at the original 10 s (span large enough
+    to hit ``cap_s``) while giving short clips a proportionally smaller,
+    still-meaningful separation instead of silently discarding almost every
+    question.
+    """
+    if not transcript.segments:
+        return floor_s
+    span = max(s.end_s for s in transcript.segments) - min(s.start_s for s in transcript.segments)
+    return max(floor_s, min(cap_s, span * fraction))
+
+
 def make_triple(qa: QAItem, transcript: Transcript, dtype: DamageType = DamageType.DELETE,
-                seed: int = 0, max_targets: int = 3) -> TranscriptTriple | None:
+                seed: int = 0, max_targets: int = 3,
+                min_distance_s: float | None = None) -> TranscriptTriple | None:
     """Build CLEAN / TARGETED / CONTROL transcripts for one question.
+
+    ``min_distance_s`` is the minimum separation required between a targeted
+    and a control segment; ``None`` (the default) auto-scales it to the
+    transcript's own span via :func:`auto_min_distance_s` rather than assuming
+    a fixed video length.
 
     Returns None if the question has no answer-relevant speech (nothing to
     target) or if no matched control can be found.  Dropping such items is
@@ -290,7 +315,8 @@ def make_triple(qa: QAItem, transcript: Transcript, dtype: DamageType = DamageTy
     targets = [t for t in targets if _eligible_for_type(by_id[t], dtype)]
     if not targets:
         return None
-    control_ids = select_matched_control(transcript, targets, dtype, qa.gold_answer, seed)
+    distance = auto_min_distance_s(transcript) if min_distance_s is None else min_distance_s
+    control_ids = select_matched_control(transcript, targets, dtype, qa.gold_answer, seed, min_distance_s=distance)
     if control_ids is None:
         return None
 
