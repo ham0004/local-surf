@@ -156,6 +156,39 @@ def cluster_bootstrap_diff(records: list[EvalRecord], policy_a: str, policy_b: s
             "n_questions": len(shared)}
 
 
+def selectivity_bootstrap(records: list[EvalRecord], policy_a: str, policy_b: str | None = None,
+                          n_boot: int = 2000, seed: int = 0) -> dict[str, float] | None:
+    """Per-question selectivity = frames(targeted) - frames(control) (the clean
+    condition cancels), averaged, with a 95% interval from resampling whole
+    videos. With ``policy_b`` it is the paired difference sel(a) - sel(b):
+    the exact quantity the hypothesis is about ("looks more when relevant
+    speech is lost than when equal unrelated speech is lost")."""
+    def per_question(policy: str) -> dict[str, tuple[str, float]]:
+        t = {r.qa_id: r for r in records if r.policy == policy and r.condition == "targeted_damage"}
+        c = {r.qa_id: r for r in records if r.policy == policy and r.condition == "control_damage"}
+        return {q: (t[q].video_id, t[q].frames - c[q].frames) for q in t if q in c}
+
+    a = per_question(policy_a)
+    b = per_question(policy_b) if policy_b else None
+    by_video: dict[str, list[float]] = defaultdict(list)
+    for q, (vid, sel) in a.items():
+        if b is None:
+            by_video[vid].append(sel)
+        elif q in b:
+            by_video[vid].append(sel - b[q][1])
+    if not by_video:
+        return None
+    videos = list(by_video)
+    rng = np.random.default_rng(seed)
+    point = float(np.mean([d for v in videos for d in by_video[v]]))
+    boots = [np.mean([d for i in rng.choice(len(videos), len(videos)) for d in by_video[videos[i]]])
+             for _ in range(n_boot)]
+    lo, hi = np.percentile(boots, [2.5, 97.5])
+    return {"selectivity" if b is None else "selectivity_diff": point, "ci95_low": float(lo),
+            "ci95_high": float(hi), "n_videos": len(videos),
+            "n_questions": sum(len(v) for v in by_video.values())}
+
+
 def to_markdown(summary: dict) -> str:
     """Compact table: one row per (policy, condition)."""
     lines = ["| policy | condition | n | quality | frames | visual tok | decoded | mean ms | p95 ms |",

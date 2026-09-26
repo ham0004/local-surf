@@ -26,7 +26,7 @@ from .controller import make_policy
 from .costs import CostMeter
 from .damage import ANNOTATION_RELEVANCE, make_triple
 from .datasets import load_local_dataset
-from .evaluate import cluster_bootstrap_diff, evaluate, summarise, to_markdown, write_report
+from .evaluate import cluster_bootstrap_diff, evaluate, selectivity_bootstrap, summarise, to_markdown, write_report
 from .heads import TrainConfig
 from .labels import label_items, write_labels
 from .pipeline import prepare, run_policy, save_run
@@ -143,7 +143,12 @@ def cmd_evaluate(a) -> None:
                 for metric in ("quality", "frames"):
                     comparisons[f"{pa} - {pb} | {cond} | {metric}"] = cluster_bootstrap_diff(
                         records, pa, pb, cond, metric=metric)
-    write_report(a.out, records, summary, {"comparisons": comparisons, "skipped_no_fair_triple": skipped, "relevance": a.relevance,
+    selectivity = {pa: selectivity_bootstrap(records, pa) for pa in names}
+    selectivity_diffs = {f"{pa} - {pb}": selectivity_bootstrap(records, pa, pb)
+                         for i, pa in enumerate(names) for pb in names[i + 1:]}
+    write_report(a.out, records, summary, {"comparisons": comparisons, "selectivity": selectivity,
+                                           "selectivity_diffs": selectivity_diffs,
+                                           "skipped_no_fair_triple": skipped, "relevance": a.relevance,
                                            "missing_video": len(report.missing_video), "config": a.config,
                                            "split": a.split, "data": str(a.data)})
     print(to_markdown(summary))

@@ -42,3 +42,21 @@ def test_cluster_bootstrap_resamples_videos():
             recs += [_rec(f"v{v}q{k}", f"v{v}", "a", 1.0), _rec(f"v{v}q{k}", f"v{v}", "b", 0.0)]
     out = cluster_bootstrap_diff(recs, "a", "b", "clean", n_boot=200)
     assert out["diff"] == 1.0 and out["ci95_low"] == 1.0 and out["n_videos"] == 10
+
+
+def test_selectivity_bootstrap_per_question_and_paired_difference():
+    from videoqa.evaluate import selectivity_bootstrap
+
+    def rec(q, v, pol, cond, frames):
+        return EvalRecord(q, v, pol, cond, 1.0, frames, 0, 0, 0.0, [])
+    recs = []
+    for v in range(6):
+        q = f"v{v}q"
+        # policy "sel" looks 2 more frames under targeted than control; "flat" never differs
+        recs += [rec(q, f"v{v}", "sel", "targeted_damage", 3), rec(q, f"v{v}", "sel", "control_damage", 1),
+                 rec(q, f"v{v}", "flat", "targeted_damage", 2), rec(q, f"v{v}", "flat", "control_damage", 2)]
+    one = selectivity_bootstrap(recs, "sel", n_boot=200)
+    assert one["selectivity"] == 2.0 and one["ci95_low"] == 2.0 and one["n_videos"] == 6
+    diff = selectivity_bootstrap(recs, "sel", "flat", n_boot=200)
+    assert diff["selectivity_diff"] == 2.0
+    assert selectivity_bootstrap(recs, "missing") is None
