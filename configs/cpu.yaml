@@ -1,0 +1,9 @@
+# CPU-only profile: must run the complete tiny example; not promised to be fast.
+inherit: base.yaml
+device: cpu
+budget:
+  max_frames: 3
+  max_visual_tokens: 1024
+answerer:
+  backend: fixture
+  frame_max_side: 336

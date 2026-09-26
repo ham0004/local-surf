@@ -1,0 +1,46 @@
+# Base configuration shared by every hardware profile.
+# All numbers are STARTING hyperparameters, not tuned or measured optima.
+
+paths:
+  data_dir: data          # raw datasets and videos (git-ignored)
+  cache_dir: cache        # decoded frames, embeddings, answerer outputs (git-ignored)
+  runs_dir: runs          # per-run outputs: answers, cost traces, contact sheets
+
+transcript:
+  unit_seconds: 20        # merge ASR segments into ~15-30 s retrieval units
+  min_unit_seconds: 5
+
+retrieval:
+  bm25_top_k: 64          # anchors kept after lexical retrieval
+  max_windows: 4          # transcript windows passed on to candidate generation
+  neighbour_expansion: 1  # add one predecessor/successor unit around each anchor
+
+candidates:
+  per_window: 3           # start / middle / end of each retrieved window
+  uniform: 8              # evenly spaced "coverage" candidates across the video
+  rescue: 4               # global-rescue candidates outside retrieved windows
+
+budget:
+  max_frames: 6
+  max_rounds: 6
+  max_visual_tokens: 4096
+  max_seconds: 120
+  max_expansions: 2
+  rescue_fraction: 0.25
+
+scout:
+  backend: pixel_stats    # pixel_stats (no model, CPU) | open_clip
+  image_size: 224
+
+controller:
+  backend: heuristic      # heuristic | learned
+  utility_threshold: 0.05 # STOP when no action is predicted to gain more than this
+
+answerer:
+  backend: fixture        # fixture (deterministic test double) | hf_vlm
+  max_new_tokens: 64
+  frame_max_side: 448     # frames are resized so the longer side is at most this
+
+damage:
+  default_type: delete
+  seed: 0

@@ -1,0 +1,14 @@
+# 6-8 GB discrete GPU. Load models sequentially; never keep scout + answerer
+# resident together unless profiling shows it fits.
+inherit: base.yaml
+device: cuda
+budget:
+  max_frames: 4
+  max_visual_tokens: 2048
+scout:
+  backend: open_clip
+answerer:
+  backend: hf_vlm
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  dtype: bfloat16
+  frame_max_side: 448

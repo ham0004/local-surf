@@ -1,0 +1,13 @@
+# 12 GB+ discrete GPU (the development machine has a 16 GB RTX 5060 Ti).
+inherit: base.yaml
+device: cuda
+budget:
+  max_frames: 8
+  max_visual_tokens: 4096
+scout:
+  backend: open_clip
+answerer:
+  backend: hf_vlm
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  dtype: bfloat16
+  frame_max_side: 640
