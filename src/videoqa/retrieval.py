@@ -17,9 +17,9 @@ be fused in later via reciprocal rank fusion (``rrf_fuse``).
 from __future__ import annotations
 
 import dataclasses
+import math
 import re
-
-from rank_bm25 import BM25Okapi
+from collections import Counter
 
 from .schemas import Candidate, CandidateSource
 from .transcript import TranscriptUnit
@@ -48,6 +48,31 @@ class Window:
     provenance: str = "bm25"
 
 
+def bm25_scores(query_tokens: list[str], corpus: list[list[str]], k1: float = 1.5, b: float = 0.75) -> list[float]:
+    """Okapi BM25 with the non-negative IDF  log(1 + (N - n + 0.5) / (n + 0.5)).
+
+    Why not ``rank_bm25.BM25Okapi``?  Its classic IDF, log((N - n + 0.5)/(n + 0.5)),
+    is NEGATIVE for any term present in more than half the documents.  Measured
+    on real LongVideoBench clips: 29/40 videos form a single retrieval unit, so
+    every term is in "all" documents and even a unit containing every query term
+    scored -0.55; retrieval then found no window for 35/40 videos and the
+    answerer silently received NO transcript.  With this IDF a unit scores > 0
+    exactly when it shares at least one query term, for any corpus size.
+    """
+    n_docs = len(corpus)
+    if n_docs == 0:
+        return []
+    avg_len = sum(len(d) for d in corpus) / n_docs or 1.0
+    doc_freq = Counter(t for d in corpus for t in set(d))
+    idf = {t: math.log(1.0 + (n_docs - df + 0.5) / (df + 0.5)) for t, df in doc_freq.items()}
+    scores = []
+    for doc in corpus:
+        tf = Counter(doc)
+        norm = k1 * (1.0 - b + b * len(doc) / avg_len)
+        scores.append(sum(idf[t] * tf[t] * (k1 + 1.0) / (tf[t] + norm) for t in query_tokens if t in tf))
+    return scores
+
+
 def bm25_rank(question: str, units: list[TranscriptUnit], top_k: int = 64) -> list[tuple[TranscriptUnit, float]]:
     """Rank transcript units by BM25 score against the question.
 
@@ -56,9 +81,8 @@ def bm25_rank(question: str, units: list[TranscriptUnit], top_k: int = 64) -> li
     """
     if not units:
         return []
-    corpus = [tokenize(u.text) or ["<empty>"] for u in units]
-    bm25 = BM25Okapi(corpus)
-    scores = bm25.get_scores(tokenize(question))
+    corpus = [tokenize(u.text) for u in units]
+    scores = bm25_scores(tokenize(question), corpus)
     ranked = sorted(zip(units, scores, strict=True), key=lambda x: -x[1])
     return [(u, float(s)) for u, s in ranked[:top_k] if s > 0]
 

@@ -50,3 +50,23 @@ def test_candidates_are_in_bounds_separated_and_rescue_is_outside_windows():
 def test_rrf_rewards_agreement():
     fused = rrf_fuse([["a", "b"], ["a", "c"]])
     assert fused["a"] > fused["b"] and fused["a"] > fused["c"]
+
+
+def test_single_unit_corpus_still_retrieves_the_matching_unit():
+    # Regression: rank_bm25's classic IDF made a unit containing EVERY query
+    # term score -0.55 when it was the only unit (29/40 real LongVideoBench
+    # clips), so retrieval found nothing and the answerer got no transcript.
+    unit = TranscriptUnit(id="u0", segment_ids=["s0"], start_s=0, end_s=9, text="eggs on the shelf in the shop")
+    ranked = bm25_rank("what is on the shelf", [unit])
+    assert [u.id for u, _ in ranked] == ["u0"] and ranked[0][1] > 0
+
+
+def test_term_in_every_unit_still_scores_positive():
+    units = _units()[:2]
+    units[0].text, units[1].text = "shop eggs", "shop thanks"
+    ranked = dict((u.id, s) for u, s in bm25_rank("shop eggs", units))
+    assert ranked["u0"] > ranked["u1"] > 0
+
+
+def test_units_without_any_query_term_are_still_dropped():
+    assert bm25_rank("zebra", _units()) == []
