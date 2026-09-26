@@ -1,0 +1,18 @@
+# CPU-only with a REAL frozen VLM (no GPU).  Runs the complete pipeline on any
+# machine with enough RAM, but slowly; frames and resolution are kept small.
+# Measured on the dev machine: see reports/profile_cpu_vlm_fixture.json.
+inherit: base.yaml
+device: cpu
+budget:
+  max_frames: 2
+  max_visual_tokens: 1024
+scout:
+  backend: pixel_stats
+answerer:
+  backend: hf_vlm
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  # Pinned Hub revision (verified 2026-09-26, Apache-2.0).
+  revision: 89644892e4d85e24eaac8bacfd4f463576704203
+  dtype: float32
+  frame_max_side: 448
+  max_new_tokens: 32
