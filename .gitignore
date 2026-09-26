@@ -1,0 +1,24 @@
+# --- Python build / cache ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# --- Virtual environment created by `uv sync` ---
+.venv/
+
+# --- Data, model weights and run outputs never go into git ---
+# (paths are configurable; see configs/*.yaml -> paths.*)
+data/
+cache/
+runs/
+checkpoints/
+*.safetensors
+*.pt
+
+# --- Editor noise ---
+.vscode/
+.idea/

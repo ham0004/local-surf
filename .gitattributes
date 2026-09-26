@@ -1,0 +1,5 @@
+# Keep text files LF in the repo so diffs are identical on Windows and Linux.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.mp4 binary
