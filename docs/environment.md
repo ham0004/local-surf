@@ -27,7 +27,7 @@
 ```bash
 uv sync --extra dev                  # CPU core: tests, fixtures, fixture-double pipeline
 uv sync --extra dev --extra models   # + torch cu128, transformers, open_clip, peft
-uv run pytest -q                     # 102 tests at the time of writing
+uv run pytest -q                     # 148 tests at the time of writing
 ```
 
 Model weights are cached under `cache/hf` and `cache/open_clip` (git-ignored). On Windows,

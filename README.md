@@ -17,10 +17,10 @@ work, and [docs/architecture.md](docs/architecture.md) for a plain-language tour
 | Milestone | State |
 |---|---|
 | M0 prior-art + runtime audit | done — [literature](docs/literature.md), [novelty](docs/novelty_matrix.md), [environment](docs/environment.md), [models](docs/models.md), [data](docs/DATA_FEASIBILITY.md) |
-| M1 frozen baseline end to end | done on a synthetic lecture (GPU + CPU profiles in `reports/`) — **no real dataset video run yet** |
+| M1 frozen baseline end to end | done — synthetic lecture (GPU + CPU profiles in `reports/`) and real LongVideoBench videos |
 | M2 measurable acquisition | done: windows, candidates, scout, typed actions, hard caps, rescue, packing, evidence ledger, contact sheet |
-| M3 labels + training | pipeline done; pilot on synthetic data only |
-| M4 evaluation on real benchmarks | **not started** — blocked on dataset access (see DATA_FEASIBILITY) |
+| M3 labels + training | done — real frozen-VLM labels on LongVideoBench (330 fair question triples) |
+| M4 evaluation on real benchmarks | LongVideoBench: all 252 eligible videos / 440 questions; see `reports/lvb_full/` once the run completes. EduVidQA / Video-MME not started |
 | M5 reproducibility | this README, pinned `uv.lock`, configs; results tables only from logs |
 
 Details, open problems and measured numbers: [docs/progress.md](docs/progress.md).
@@ -30,7 +30,7 @@ Details, open problems and measured numbers: [docs/progress.md](docs/progress.md
 ```bash
 uv sync --extra dev                    # core + tests (CPU)
 uv sync --extra dev --extra models     # + torch (CUDA 12.8), transformers, open_clip
-uv run pytest -q
+uv run pytest -q            # 148 tests
 ```
 
 ## Commands (all tested)
@@ -60,6 +60,10 @@ uv run videoqa evaluate --data data/synthetic --split test --config configs/gpu_
 # 6. Cold vs warm cost on this device
 uv run videoqa profile --video ... --transcript ... --question ... --config configs/gpu_12gb.yaml
 
+# Real data: LongVideoBench (needs `hf auth login` + accepted dataset terms), then the full run
+HF_TOKEN=... uv run python scripts/download_longvideobench_subset.py --out data/longvideobench_full
+bash scripts/run_lvb_full.sh
+
 # Dataset feasibility audit (live API calls, no downloads)
 uv run python scripts/audit_datasets.py --out reports/data_audit.json
 ```
@@ -72,7 +76,7 @@ Configs: `cpu.yaml` (test double, CI only), `cpu_vlm.yaml` (real VLM on CPU, slo
 ```
 src/videoqa/   one module per stage (see docs/architecture.md)
 configs/       hardware profiles (YAML with inheritance)
-tests/         103 tests incl. real-mp4 integration tests
+tests/         148 tests incl. real-mp4 and local-HTTP-server integration tests
 scripts/       dataset audit
 docs/          research audit, data feasibility, environment, models, architecture, progress
 reports/       measured artefacts committed to git (audits, device profiles)
