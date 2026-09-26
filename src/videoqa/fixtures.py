@@ -117,7 +117,18 @@ def generate_spec(seed: int) -> LectureSpec:
 
 
 def get_spec(video_id: str) -> LectureSpec:
-    return _REGISTRY.get(video_id, DEFAULT)
+    """Return the spec for a fixture video id.
+
+    Synthetic ids encode their seed ("synth_0042"), so specs are rebuilt
+    deterministically in any process.  Unknown ids raise instead of falling
+    back to DEFAULT: a silent fallback once made the test double "read" the
+    wrong lecture's slides in a fresh CLI process.
+    """
+    if video_id in _REGISTRY:
+        return _REGISTRY[video_id]
+    if video_id.startswith("synth_") and video_id[6:].isdigit():
+        return generate_spec(int(video_id[6:]))
+    raise KeyError(f"no fixture spec for video id {video_id!r}")
 
 
 def slide_at(t: float, spec: LectureSpec = DEFAULT) -> Slide:
