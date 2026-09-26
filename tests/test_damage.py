@@ -6,6 +6,7 @@ If any of these fail, targeted-vs-control comparisons are not interpretable.
 import pytest
 
 from videoqa.damage import (
+    ANNOTATION_RELEVANCE,
     MASK_TOKEN,
     asr_style_noise,
     auto_min_distance_s,
@@ -147,3 +148,11 @@ def test_make_triple_recovers_a_short_clip_that_a_fixed_10s_distance_would_rejec
                gold_answer="eggs", evidence_segment_ids=["s1"])
     assert make_triple(qa, t) is not None                          # auto distance recovers it
     assert make_triple(qa, t, min_distance_s=10.0) is None          # the old fixed default still fails it
+
+
+def test_annotation_only_relevance_rejects_the_answer_overlap_fallback():
+    # _qa() has no annotations, so relevance falls back to answer-word overlap.
+    assert make_triple(_qa(), _lecture()) is not None
+    assert make_triple(_qa(), _lecture(), relevance_methods=ANNOTATION_RELEVANCE) is None
+    annotated = _qa(evidence_intervals_s=[(31.0, 33.0)])
+    assert make_triple(annotated, _lecture(), relevance_methods=ANNOTATION_RELEVANCE) is not None

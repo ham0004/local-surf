@@ -292,9 +292,15 @@ def auto_min_distance_s(transcript: Transcript, fraction: float = 0.15, floor_s:
     return max(floor_s, min(cap_s, span * fraction))
 
 
+# Relevance sources that come from dataset annotations (as opposed to the
+# gold-answer word-overlap fallback).
+ANNOTATION_RELEVANCE = frozenset({"annotation_ids", "annotation_intervals"})
+
+
 def make_triple(qa: QAItem, transcript: Transcript, dtype: DamageType = DamageType.DELETE,
                 seed: int = 0, max_targets: int = 3,
-                min_distance_s: float | None = None) -> TranscriptTriple | None:
+                min_distance_s: float | None = None,
+                relevance_methods: frozenset[str] | None = None) -> TranscriptTriple | None:
     """Build CLEAN / TARGETED / CONTROL transcripts for one question.
 
     ``min_distance_s`` is the minimum separation required between a targeted
@@ -302,11 +308,20 @@ def make_triple(qa: QAItem, transcript: Transcript, dtype: DamageType = DamageTy
     transcript's own span via :func:`auto_min_distance_s` rather than assuming
     a fixed video length.
 
+    ``relevance_methods`` restricts which relevance sources may define the
+    targeted segments (None = any). Use :data:`ANNOTATION_RELEVANCE` when the
+    gold answer is visual (e.g. LongVideoBench: "eggs", "Wearing a helmet"):
+    there the word-overlap fallback just targets whichever line happens to
+    mention the answer word, which need not be the moment the question is
+    about, and would add a noisy relevance source to the paired signal.
+
     Returns None if the question has no answer-relevant speech (nothing to
     target) or if no matched control can be found.  Dropping such items is
     safer than silently producing an unfair pair.
     """
     rel = derive_relevant_segments(qa, transcript)
+    if relevance_methods is not None and rel.method not in relevance_methods:
+        return None
     targets = rel.segment_ids[:max_targets]
     if not targets:
         return None
