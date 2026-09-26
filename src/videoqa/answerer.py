@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import dataclasses
 import re
+from pathlib import Path
 from typing import Protocol
 
 from . import fixtures
@@ -133,9 +134,9 @@ class FixtureAnswerer:
     Behaviour (simple, so tests can reason about it):
       * Evidence text = excerpt text + the slide text visible in each frame.
       * If exactly one option appears in the evidence, choose it.
-      * "turn to" questions about the indicator need BOTH a red frame and a
-        later green frame (an ordered before/after pair); one frame is not
-        enough to establish a transition.
+      * "turn to" questions about the indicator need at least two frames with
+        different indicator colours (an ordered before/after pair); one frame
+        is not enough to establish a transition.  The answer is the last colour.
       * Otherwise guess option 0 (a fixed, wrong-by-default guess).
     """
 
@@ -148,7 +149,7 @@ class FixtureAnswerer:
         visible = []
         colours = []
         for f in sorted(req.frames, key=lambda f: f.decoded_pts_s):
-            slide = fixtures.slide_at(f.decoded_pts_s)
+            slide = fixtures.slide_at(f.decoded_pts_s, fixtures.get_spec(f.video_id))
             visible.append(slide.body)
             if slide.indicator:
                 colours.append(slide.indicator)
@@ -159,9 +160,10 @@ class FixtureAnswerer:
 
         options = req.options or []
         if "turn" in req.question.lower() and "indicator" in req.question.lower():
-            if "red" in colours and "green" in colours and colours.index("red") < colours.index("green"):
-                idx = options.index("green") if "green" in options else None
-                return Answer(text="green", option_index=idx, citations_s=cites), usage
+            # A transition is only established by >= 2 frames showing a colour change;
+            # the answer is the colour seen last.
+            if len(set(colours)) >= 2 and colours[-1] in options:
+                return Answer(text=colours[-1], option_index=options.index(colours[-1]), citations_s=cites), usage
         else:
             hits = [i for i, o in enumerate(options) if o.lower() in evidence]
             if len(hits) == 1:
@@ -178,7 +180,8 @@ def make_answerer(cfg: dict) -> Answerer:
         from .answerer_hf import HFVLMAnswerer  # noqa: PLC0415 - keeps torch optional
 
         a = cfg["answerer"]
+        cache_dir = str(Path(cfg.get("paths", {}).get("cache_dir", "cache")) / "hf" / "hub")
         return HFVLMAnswerer(model_id=a["model_id"], device=cfg.get("device", "cuda"),
                              dtype=a.get("dtype", "bfloat16"), max_new_tokens=a.get("max_new_tokens", 64),
-                             revision=a.get("revision"))
+                             revision=a.get("revision"), cache_dir=cache_dir)
     raise ValueError(f"unknown answerer backend {backend!r}")

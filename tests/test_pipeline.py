@@ -29,7 +29,7 @@ def _run(video, transcript, qa, policy, budget=None):
 
 
 def _qa(name):
-    return {q.qa_id: q for q in fixtures.qa_items()}[name]
+    return {q.qa_id.split("/")[-1]: q for q in fixtures.qa_items()}[name]
 
 
 def test_all_times_in_bounds_and_every_decoded_frame_charged(lecture_video):

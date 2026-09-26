@@ -14,7 +14,7 @@ from videoqa.schemas import Answer, QAItem
 
 
 def _qa(name):
-    return {q.qa_id: q for q in fixtures.qa_items()}[name]
+    return {q.qa_id.split("/")[-1]: q for q in fixtures.qa_items()}[name]
 
 
 def test_quality_multiple_choice_is_exact_option_match():
