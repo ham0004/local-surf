@@ -7,6 +7,7 @@ Commands (each maps to one pipeline stage; see README for full examples):
     build-labels      automatic action-usefulness labels for a split (train/dev)
     train-controller  train paired and unpaired utility heads, tune STOP on dev
     evaluate          compare policies across transcript conditions on a split
+    profile           cold vs warm per-stage cost of one question on this device
 """
 
 from __future__ import annotations
@@ -36,7 +37,11 @@ from .transcript import load_transcript
 
 
 def _scout(cfg):
-    return make_scout(cfg["scout"]["backend"], device=cfg.get("device", "cpu"))
+    backend = cfg["scout"]["backend"]
+    if backend == "open_clip":
+        cache = str(Path(cfg.get("paths", {}).get("cache_dir", "cache")) / "open_clip")
+        return make_scout(backend, device=cfg.get("device", "cpu"), cache_dir=cache)
+    return make_scout(backend, device=cfg.get("device", "cpu"))
 
 
 def cmd_make_synthetic(a) -> None:
@@ -128,6 +133,56 @@ def cmd_evaluate(a) -> None:
     print(to_markdown(summary))
 
 
+def cmd_profile(a) -> None:
+    """Cold vs warm cost on one device: run the same question ``repeats`` times
+    in ONE process.  Run 1 includes model loading (cold); later runs reuse the
+    loaded models (warm).  Reports per-stage ms and peak memory."""
+    import platform
+    import statistics
+
+    import psutil
+
+    cfg = load_config(a.config)
+    transcript = load_transcript(a.transcript, Path(a.video).stem)
+    options = a.options.split("|") if a.options else None
+    scout, answerer, policy = _scout(cfg), make_answerer(cfg), make_policy(a.policy, a.checkpoint)
+    runs = []
+    for _ in range(a.repeats):
+        meter = CostMeter()
+        prep = prepare(a.video, transcript, a.question, options, cfg, scout, meter)
+        res = run_policy(prep, policy, answerer, budget_from_config(cfg), meter)
+        runs.append({k: to_jsonable(v) for k, v in meter.by_stage().items()} | {"_answer": res.answer.text})
+    stages = sorted({k for r in runs for k in r if not k.startswith("_")})
+    warm = runs[1:] or runs
+
+    def med(stage, field):
+        return statistics.median(r.get(stage, {}).get(field, 0) for r in warm)
+
+    report = {
+        "config": a.config, "policy": a.policy, "repeats": a.repeats,
+        "device": {"platform": platform.platform(), "cpu": platform.processor(),
+                   "ram_gb": round(psutil.virtual_memory().total / 1e9, 1)},
+        "cold_ms": {s: round(runs[0].get(s, {}).get("elapsed_ms", 0), 1) for s in stages},
+        "warm_median_ms": {s: round(med(s, "elapsed_ms"), 1) for s in stages},
+        "cold_total_ms": round(sum(runs[0].get(s, {}).get("elapsed_ms", 0) for s in stages), 1),
+        "warm_total_ms": round(sum(med(s, "elapsed_ms") for s in stages), 1),
+        "peak_vram_gb": round(max(r.get(s, {}).get("peak_vram_bytes", 0) for r in runs for s in stages) / 1e9, 2),
+        "peak_ram_gb": round(max(r.get(s, {}).get("peak_ram_bytes", 0) for r in runs for s in stages) / 1e9, 2),
+        "answers": [r["_answer"] for r in runs],
+        "runs": runs,
+    }
+    try:
+        import torch  # noqa: PLC0415
+        if torch.cuda.is_available():
+            report["device"]["gpu"] = torch.cuda.get_device_name(0)
+            report["device"]["torch"] = torch.__version__
+    except ImportError:
+        pass
+    Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+    Path(a.out).write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps({k: v for k, v in report.items() if k != "runs"}, indent=2))
+
+
 def main(argv: list[str] | None = None) -> None:
     p = argparse.ArgumentParser(prog="videoqa", description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -182,6 +237,18 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--seed", type=int, default=0)
     s.add_argument("--out", required=True)
     s.set_defaults(fn=cmd_evaluate)
+
+    s = sub.add_parser("profile")
+    s.add_argument("--video", required=True)
+    s.add_argument("--transcript", required=True)
+    s.add_argument("--question", required=True)
+    s.add_argument("--options")
+    s.add_argument("--config", default="configs/cpu.yaml")
+    s.add_argument("--policy", default="heuristic")
+    s.add_argument("--checkpoint")
+    s.add_argument("--repeats", type=int, default=5)
+    s.add_argument("--out", default="reports/profile.json")
+    s.set_defaults(fn=cmd_profile)
 
     args = p.parse_args(argv)
     args.fn(args)
