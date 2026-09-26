@@ -52,6 +52,13 @@ def pack_excerpt(question: str, segments: list[TranscriptSegment], windows: list
         for uid in w.unit_ids:
             pool_ids.extend(unit_to_segments.get(uid, []))
     pool = [by_id[i] for i in dict.fromkeys(pool_ids) if i in by_id]
+    # If retrieval proposed nothing (no lexical overlap with the question), the
+    # answerer must still see the speech: fall back to the whole transcript,
+    # ranked by the same priority. Without this, a retrieval miss silently
+    # became "no transcript at all" (measured: 35/40 real clips, before the
+    # BM25 IDF fix), which also made every transcript-damage condition a no-op.
+    if not pool:
+        pool = list(ordered)
 
     q_tokens = set(tokenize(question))
     pool.sort(key=lambda s: -_priority(s, q_tokens))

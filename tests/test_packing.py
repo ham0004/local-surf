@@ -25,3 +25,11 @@ def test_excerpt_is_verbatim_ordered_and_keeps_numbers_and_negation():
 def test_format_includes_ids_and_times():
     line = format_excerpt(_segs()[:1])
     assert line == "[s0 0.0-5.0s] we now define the rate"
+
+
+def test_excerpt_falls_back_to_whole_transcript_when_retrieval_finds_nothing():
+    # Regression: with no retrieval window the excerpt used to be EMPTY, so the
+    # answerer silently saw no speech and transcript damage had no effect.
+    segs = _segs()
+    out = pack_excerpt("completely unrelated question", segs, windows=[], unit_to_segments={}, max_words=100)
+    assert out and [s.id for s in out] == [s.id for s in sorted(segs, key=lambda s: s.start_s)]
