@@ -31,8 +31,11 @@ def test_transcript_only_always_stops():
     assert TranscriptOnlyPolicy().decide(_obs(), 1, 2).kind == ActionKind.STOP
 
 
-def test_uniform_takes_earliest_uniform_candidate():
-    assert UniformPolicy().decide(_obs(), 1, 2).candidate_id == "c002"
+def test_uniform_spreads_budget_over_the_video():
+    # cap 3 over 90 s -> targets 15, 45, 75 s; nearest non-rescue candidates:
+    # 15 -> c000 (20 s); then 45 -> c001 (35 s)
+    assert UniformPolicy().decide(_obs(), 1, 2).candidate_id == "c000"
+    assert UniformPolicy().decide(_obs(frames_remaining=2, looked=["c000"]), 1, 2).candidate_id == "c001"
 
 
 def test_retrieval_and_similarity_policies():

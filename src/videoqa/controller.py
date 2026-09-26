@@ -60,14 +60,30 @@ class TranscriptOnlyPolicy:
 
 
 class UniformPolicy:
+    """Spread the frame budget evenly over the whole video.
+
+    With a cap of N frames, target times are (k + 0.5) * duration / N.  For each
+    target (in order) we take the NEAREST non-rescue candidate, whatever source
+    proposed it; a target whose nearest candidate was already acquired counts
+    as covered.  Source-agnostic on purpose: candidate generation merges near-
+    duplicate times across sources, so filtering by source would silently
+    remove coverage points.
+    """
+
     name = "uniform"
 
     def decide(self, obs, rescue_frames_left, max_expansions):
-        acts = _look_actions(obs, rescue_frames_left, max_expansions, {CandidateSource.UNIFORM})
-        if not acts:
-            return Action(ActionKind.STOP, reason="NO_UNIFORM_LEFT")
-        kind, cand = min(acts, key=lambda a: a[1].time_s)
-        return Action(kind, cand.id, reason="UNIFORM_NEXT")
+        pool = [c for c in obs.candidates if c.source != CandidateSource.GLOBAL_RESCUE]
+        legal = {c.id: kind for kind, c in _look_actions(obs, rescue_frames_left, max_expansions)}
+        if not pool or not legal:
+            return Action(ActionKind.STOP, reason="NO_CANDIDATES_LEFT")
+        n_total = len(obs.looked_at) + obs.frames_remaining          # the frame cap
+        for k in range(n_total):
+            target = (k + 0.5) * obs.video_duration_s / n_total
+            nearest = min(pool, key=lambda c: abs(c.time_s - target))
+            if nearest.id in legal:
+                return Action(legal[nearest.id], nearest.id, reason="UNIFORM_COVERAGE")
+        return Action(ActionKind.STOP, reason="UNIFORM_TARGETS_DONE")
 
 
 class RetrievalPolicy:
