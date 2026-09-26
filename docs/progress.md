@@ -1,5 +1,68 @@
 # Progress log
 
+## 2026-09-27 — session 2: first real dataset
+
+### Built
+
+- Hugging Face access confirmed for LongVideoBench (gated, CC-BY-NC-SA-4.0).
+- `videoqa.sources.tar_range`: HTTP Range-based selective extraction from LongVideoBench's
+  161.6 GB, 31-part video archive, avoiding a full download for a small subset. Retries transient
+  network failures with backoff; persists a resumable, crash-safe directory catalog
+  (`build_catalog`/`load_catalog`/`save_catalog`) so a full archive scan is never repeated.
+- `videoqa.sources.longvideobench`: converts `lvb_val.json` + subtitle files into our `QAItem`/
+  `Transcript` types. Extracts the exact subtitle span a T*-category question quotes
+  (`extract_quoted_span` + fuzzy `find_evidence_interval`) to locate answer-relevant time
+  intervals — the dataset-native analogue of our synthetic "spoken fact" questions.
+- `scripts/download_longvideobench_subset.py`: end-to-end fetch + convert, resumable, with a
+  dry-run mode.
+- 21 new tests (tar_range, the adapter, including a real local-HTTP-server test that forces a
+  mid-scan failure and checks correct resume).
+
+### Real data obtained
+
+40 real LongVideoBench videos (≤ 70 s each, 98 MB total), 40 real questions, real auto-generated
+subtitles. See `docs/DATA_FEASIBILITY.md` for the full table. 23/40 questions have a
+correctly-located, answer-relevant transcript span after the fix below.
+
+### Bugs found against real data (each fixed with a regression test, each its own commit)
+
+1. **A single network timeout killed a 40-video download after 1 file.** No retry logic existed.
+   Fixed: exponential-backoff retries on transient failures in `RemoteMultipartTar.read()`.
+2. **Selecting videos whose id happened to be absent from the archive silently turned into a full
+   ~3,992-entry, ~2-hour scan** (searching for something that will never be found forces scanning
+   to the true end). Fixed: excluded that id pattern (confirmed absent by the completed scan) and
+   added a persisted, resumable catalog so this cost is paid at most once, ever.
+3. **A second subtitle JSON shape** (`{"timestamp": [start, end], "text": ...}` for TikTok-sourced
+   clips, vs. `{"start", "end", "line"}` for YouTube-sourced ones) raised `KeyError`. Fixed.
+4. **Null end-timestamps** in that second shape (`{"timestamp": [23.0, None], ...}`) raised
+   `TypeError`. Fixed: treated as a zero-duration point event; a null *start* is dropped (cannot
+   be placed in time at all).
+5. **Critical, found by manually inspecting one converted item's evidence interval (419.9s on a
+   9.0s video):** LongVideoBench ships each short clip's subtitle file for the clip's *entire
+   original source video*, not just the clip. Every one of the 40 downloaded videos had a nonzero
+   `starting_timestamp_for_subtitles` (range 30–2871s). Uncorrected, every transcript-only
+   baseline, retrieval window, damage assignment and answerer prompt would have silently included
+   speech from parts of the source video never present in the file we have — a research-invalidating
+   bug that would not have been visible from summary statistics alone. Fixed in
+   `subtitles_to_transcript` (rebase by `offset_s`, drop/clamp by `clip_duration_s`); verified
+   afterward that zero segments or evidence intervals exceed any video's real decoded duration
+   across all 40 videos.
+
+### What this means for trust in the pipeline
+
+Bug 5 specifically was **not** caught by any test, type check, or automated pipeline stage — it
+surfaced only because a human (well, an agent instructed to be suspicious) looked at one real
+example's output and asked "does 419.9 seconds make sense for a 9-second video?" This is a
+concrete argument for manually auditing a sample of any newly-integrated real dataset before
+trusting pipeline output from it, exactly as `docs/DATA_FEASIBILITY.md` and the original research
+plan both required.
+
+### Next
+
+Run `build-labels` → `train-controller` → `evaluate` on this real 40-video subset (same commands
+already exercised on synthetic data), then decide whether to scale up the subset before or after
+seeing results.
+
 ## 2026-09-26 — session 1
 
 ### Built (see `git log` for one commit per unit)

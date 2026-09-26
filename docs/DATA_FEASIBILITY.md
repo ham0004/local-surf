@@ -71,11 +71,45 @@ used for training, we need: a written rubric, an automatic grader, and a manual 
 representative sample (≥ 50 items, two annotators). Until then, EduVidQA is evaluation-only
 and reported separately.
 
+## LongVideoBench: real subset downloaded (2026-09-27)
+
+Access granted (Hugging Face login + accepted dataset terms). 40 real videos, 40 real
+multiple-choice questions, real (often noisy, auto-generated) subtitles downloaded via
+`scripts/download_longvideobench_subset.py` — see [docs/progress.md](progress.md) for the full
+account of what broke and was fixed along the way. Summary of the final, corrected dataset:
+
+| | Value |
+|---|---|
+| Videos | 40, all duration ≤ 70 s, all with a T*-category (subtitle-quoting) question |
+| Total video size | 98 MB |
+| Questions | 40 (one per video in this pass) |
+| Questions with a correctly-located answer-relevant transcript span | 23 / 40 (mean fuzzy-match ratio 0.80) |
+| Splits (video-level hash) | train 25, dev 4, calibration 1, test 10 |
+| License | CC-BY-NC-SA-4.0 (non-commercial), recorded per item |
+
+**Critical bug found and fixed before any experiment touched this data:** LongVideoBench trims
+short clips out of longer source videos but ships each clip's *full original* subtitle track
+under the same id — a 9.0s clip arrived with subtitle text timestamped up to 553s. Every one of
+the 40 videos had this offset (30–2871s). Uncorrected, transcripts would have contained speech
+never actually present in the clip, invalidating every downstream measurement. Fixed in
+`videoqa.sources.longvideobench.subtitles_to_transcript` (rebases + clips timestamps using the
+record's `starting_timestamp_for_subtitles` and `duration` fields); verified afterward that zero
+transcript segments or evidence intervals exceed any video's real decoded duration.
+
+Two other real format quirks were found and fixed along the way: a second subtitle JSON shape for
+TikTok-sourced clips, and null end-timestamps in that shape. The dataset's TikTok-sourced videos
+("@username-..." ids) are excluded from selection — a full scan of the video archive confirmed
+they are not present in it (only YouTube-sourced videos are).
+
+The download is resumable and caches the archive's directory listing locally, so scaling from 40
+to more videos does not repeat the (slow, ~1–2 hour) full-archive scan.
+
 ## Next concrete steps
 
-1. Authenticate to Hugging Face, accept LongVideoBench terms, download `lvb_val.json` +
-   `subtitles.tar` + a **small** video subset; write `scripts/convert_longvideobench.py` into the
-   local layout (`qa.jsonl`, `videos/`, `transcripts/`).
-2. For EduVidQA, decide with the project owner whether downloading the YouTube videos is
+1. ~~Authenticate to Hugging Face, accept LongVideoBench terms, download a small video subset.~~ **Done.**
+2. Run the controller pipeline (`build-labels` → `train-controller` → `evaluate`) on this real
+   40-video subset as a pilot, same as was done on synthetic data.
+3. Decide whether to scale the subset up (more videos, and/or raise `--max-duration` past 70s)
+   before or after seeing pilot results.
+4. For EduVidQA, decide with the project owner whether downloading the YouTube videos is
    permissible for this research; if yes, fetch transcripts and record per-video availability.
-3. Only then scale label generation; start with a few hundred questions and audit labels.
