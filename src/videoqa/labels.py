@@ -85,7 +85,9 @@ class _AnswerCache:
         self.answerer, self.stats, self._memo = answerer, stats, {}
 
     def quality(self, prep: Prepared, state: EvidenceState, qa: QAItem, key_prefix: str) -> tuple[float, CostRecord]:
-        key = (key_prefix, tuple(sorted(state.looked_at)), state.expansions_used)
+        # The key MUST include the question: evidence states of different
+        # questions (or videos) are never interchangeable.
+        key = (qa.qa_id, qa.video_id, key_prefix, tuple(sorted(state.looked_at)), state.expansions_used)
         if key in self._memo:
             self.stats.cache_hits += 1
             return self._memo[key]

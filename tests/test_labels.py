@@ -80,3 +80,16 @@ def test_write_and_read_roundtrip(labelled, tmp_path):
     write_labels(tmp_path, rows, examples, {"answerer": "fixture"})
     rows2, pairs2 = read_rows(tmp_path)
     assert len(rows2) == len(rows) and pairs2 == pair_rows(rows)
+
+
+def test_answer_cache_never_shares_answers_across_questions(lecture_video):
+    # Regression: the cache key once omitted the question id, so a second
+    # question silently reused the first question's answers.
+    items = []
+    for name in ("q_lr", "q_acc"):
+        qa = _qa(name)
+        triple = make_triple(qa, fixtures.transcript(), dtype=DamageType.DELETE, seed=0)
+        items.append((qa, str(lecture_video), triple))
+    _, _, both = label_items(items, CFG, BUDGET, PixelStatsScout(), FixtureAnswerer())
+    _, _, one = label_items(items[:1], CFG, BUDGET, PixelStatsScout(), FixtureAnswerer())
+    assert both.answer_calls > one.answer_calls
