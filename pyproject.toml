@@ -18,6 +18,7 @@ dependencies = [
 # Heavy model stack: only needed for real scouts, controllers and answer VLMs.
 models = [
     "torch>=2.7",
+    "torchvision>=0.22",
     "transformers>=4.57",
     "accelerate>=1.0",
     "peft>=0.17",
@@ -38,3 +39,15 @@ packages = ["src/videoqa"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+# Windows wheels of torch on PyPI are CPU-only.  The dev GPU (RTX 5060 Ti,
+# Blackwell sm_120) needs CUDA 12.8+ builds, so torch/torchvision come from the
+# official PyTorch cu128 index.  'explicit' keeps every other package on PyPI.
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
