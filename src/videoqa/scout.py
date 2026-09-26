@@ -136,25 +136,32 @@ class OpenClipScout:
     name = "open_clip"
 
     def __init__(self, model_name: str = "MobileCLIP-S2", pretrained: str = "datacompdr",
-                 device: str = "cpu") -> None:
+                 device: str = "cpu", cache_dir: str | None = None) -> None:
         self.model_name, self.pretrained, self.device = model_name, pretrained, device
+        self.cache_dir = cache_dir
         self._model = self._preprocess = self._tokenizer = None
 
     def _load(self) -> None:
         import open_clip  # noqa: PLC0415 - heavy optional dependency
         import torch  # noqa: PLC0415
 
-        model, _, preprocess = open_clip.create_model_and_transforms(self.model_name, pretrained=self.pretrained)
+        model, _, preprocess = open_clip.create_model_and_transforms(self.model_name, pretrained=self.pretrained,
+                                                                     cache_dir=self.cache_dir)
         self._model = model.eval().to(self.device)
         self._preprocess = preprocess
         self._tokenizer = open_clip.get_tokenizer(self.model_name)
         self._torch = torch
 
+    def ensure_loaded(self) -> None:
+        """Load weights now, so the pipeline can meter loading separately
+        (cold cost) from per-question scoring (warm cost)."""
+        if self._model is None:
+            self._load()
+
     def score(self, question: str, frames: list[Frame]) -> dict[str, ScoutSignals]:
         if not frames:
             return {}
-        if self._model is None:
-            self._load()
+        self.ensure_loaded()
         torch = self._torch
         with torch.no_grad():
             images = torch.stack([self._preprocess(f.image) for f in frames]).to(self.device)
