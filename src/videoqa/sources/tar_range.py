@@ -117,15 +117,23 @@ class RemoteMultipartTar:
             f"bytes {local_off}-{local_off+length-1}: {last_error!r}"
         ) from last_error
 
-    def iter_entries(self, stop_after: set[str] | None = None):
+    def iter_entries(self, stop_after: set[str] | None = None, start_offset: int = 0):
         """Yield :class:`RemoteTarEntry` in archive order.
 
         If ``stop_after`` is given, stop as soon as every name in it has been
         yielded (saves scanning the rest of a large archive once all wanted
-        files are found). GNU long-name (typeflag 'L') headers are followed
-        transparently so long filenames are reported correctly.
+        files are found — but if even one name in ``stop_after`` is never
+        present, this degrades to a full scan of the archive; measured on
+        LongVideoBench, that was ~3,992 entries). GNU long-name (typeflag 'L')
+        headers are followed transparently so long filenames are reported
+        correctly.
+
+        ``start_offset`` resumes a scan from a byte offset previously reported
+        as safe (see :func:`build_catalog`) instead of always starting at 0 —
+        it MUST be a value that was actually yielded as an entry boundary,
+        never an arbitrary byte position.
         """
-        offset = 0
+        offset = start_offset
         found: set[str] = set()
         pending_long_name: str | None = None
         while offset + 512 <= self.total_size:
@@ -184,10 +192,67 @@ def hf_dataset_tar_parts(dataset_id: str, part_names: list[str], token: str | No
     return base, [TarPart(n, sizes[n]) for n in part_names]
 
 
-def save_manifest(entries: list[RemoteTarEntry], path: str | Path) -> None:
-    """Persist a full directory scan so it never needs to be re-fetched."""
-    Path(path).write_text(json.dumps([dataclasses.asdict(e) for e in entries]), encoding="utf-8")
+@dataclasses.dataclass
+class Catalog:
+    """A directory listing of a remote archive, persisted so it is scanned at
+    most once. ``next_offset`` is where an interrupted scan should resume;
+    ``complete`` is only True once the archive has been read to its end."""
+
+    entries: dict[str, RemoteTarEntry]
+    next_offset: int = 0
+    complete: bool = False
 
 
-def load_manifest(path: str | Path) -> list[RemoteTarEntry]:
-    return [RemoteTarEntry(**d) for d in json.loads(Path(path).read_text(encoding="utf-8"))]
+def load_catalog(path: str | Path) -> Catalog:
+    """An empty, incomplete catalog if ``path`` does not exist yet."""
+    p = Path(path)
+    if not p.exists():
+        return Catalog({}, 0, False)
+    raw = json.loads(p.read_text(encoding="utf-8"))
+    entries = {name: RemoteTarEntry(**d) for name, d in raw["entries"].items()}
+    return Catalog(entries, raw["next_offset"], raw["complete"])
+
+
+def save_catalog(catalog: Catalog, path: str | Path) -> None:
+    """Write atomically (temp file + rename) so a crash mid-write can never
+    leave a truncated, unreadable catalog behind — this file is the whole
+    point of not having to redo a slow scan."""
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"entries": {name: dataclasses.asdict(e) for name, e in catalog.entries.items()},
+              "next_offset": catalog.next_offset, "complete": catalog.complete}
+    tmp = p.with_suffix(p.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload), encoding="utf-8")
+    tmp.replace(p)
+
+
+def build_catalog(tar: RemoteMultipartTar, path: str | Path, save_every: int = 50) -> Catalog:
+    """Scan ``tar`` into a name -> :class:`RemoteTarEntry` catalog at ``path``,
+    resuming from wherever a previous call left off.
+
+    Measured need for this: scanning LongVideoBench's video archive for a
+    wanted-name set that turned out to include some names absent from the
+    archive silently degraded to a full ~3,992-entry scan taking over two
+    hours; without a persisted catalog, every subsequent run (e.g. widening
+    the selection, or recovering from a transient failure) would have had to
+    redo that whole scan from byte 0. Progress is saved every ``save_every``
+    entries and whenever the scan stops, successfully or not, so the worst
+    case redone work after a crash is ``save_every`` entries.
+    """
+    catalog = load_catalog(path)
+    if catalog.complete:
+        return catalog
+    since_save = 0
+    try:
+        for entry in tar.iter_entries(start_offset=catalog.next_offset):
+            catalog.entries[entry.name] = entry
+            data_blocks = (entry.size + 511) // 512
+            catalog.next_offset = entry.global_offset + 512 + data_blocks * 512
+            since_save += 1
+            if since_save >= save_every:
+                save_catalog(catalog, path)
+                since_save = 0
+        catalog.complete = True
+    finally:
+        save_catalog(catalog, path)
+    return catalog

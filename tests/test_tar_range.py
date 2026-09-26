@@ -17,7 +17,7 @@ import threading
 
 import pytest
 
-from videoqa.sources.tar_range import RemoteMultipartTar, TarPart
+from videoqa.sources.tar_range import RemoteMultipartTar, TarPart, build_catalog, load_catalog
 
 
 def _build_tar() -> bytes:
@@ -35,12 +35,19 @@ class _RangeHandler(http.server.BaseHTTPRequestHandler):
     parts: dict[str, bytes] = {}
     requests: list[tuple[str, str]] = []  # (path, range header) for assertions
     fail_first_n: int = 0                 # simulate this many transient 503s before succeeding
+    fail_from_request_n: int | None = None  # simulate a permanent outage starting at request N
     _fail_count = 0
+    _request_count = 0
 
     def do_GET(self) -> None:  # noqa: N802 - stdlib method name
         name = self.path.lstrip("/")
         rng = self.headers.get("Range", "")
         type(self).requests.append((name, rng))
+        type(self)._request_count += 1
+        if type(self).fail_from_request_n is not None and type(self)._request_count >= type(self).fail_from_request_n:
+            self.send_response(503)
+            self.end_headers()
+            return
         if type(self)._fail_count < type(self).fail_first_n:
             type(self)._fail_count += 1
             self.send_response(503)
@@ -73,6 +80,8 @@ def server():
     _RangeHandler.requests = []
     _RangeHandler.fail_first_n = 0
     _RangeHandler._fail_count = 0
+    _RangeHandler.fail_from_request_n = None
+    _RangeHandler._request_count = 0
     httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _RangeHandler)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
@@ -163,3 +172,55 @@ def test_not_found_fails_immediately_without_retrying(server):
     with pytest.raises(RuntimeError, match="HTTP 404"):
         tar.read(0, 512)
     assert len(_RangeHandler.requests) == 1   # no retries for a non-transient error
+
+
+def test_iter_entries_resumes_from_a_start_offset(server):
+    # Regression driver for build_catalog: a resumed scan from the offset
+    # right after entry 0 must yield exactly the remaining entries.
+    base, parts = server
+    tar = RemoteMultipartTar(base, parts)
+    all_entries = list(tar.iter_entries())
+    first = all_entries[0]
+    resume_at = first.global_offset + 512 + ((first.size + 511) // 512) * 512
+    rest = list(tar.iter_entries(start_offset=resume_at))
+    assert [e.name for e in rest] == [e.name for e in all_entries[1:]]
+
+
+def test_build_catalog_completes_and_matches_a_direct_scan(server, tmp_path):
+    base, parts = server
+    tar = RemoteMultipartTar(base, parts)
+    catalog = build_catalog(tar, tmp_path / "catalog.json", save_every=1)
+    assert catalog.complete
+    reference = {e.name for e in RemoteMultipartTar(base, parts).iter_entries()}
+    assert set(catalog.entries) == reference
+    # a completed catalog loads back identically and build_catalog is a no-op on it
+    reloaded = load_catalog(tmp_path / "catalog.json")
+    assert reloaded.complete and set(reloaded.entries) == reference
+
+
+def test_build_catalog_resumes_after_a_permanent_outage_partway_through(server, tmp_path):
+    # This is exactly what happened for real: a multi-thousand-entry scan died
+    # partway through. build_catalog must save what it found and pick up from
+    # there next time, never re-reading bytes it already has.
+    base, parts = server
+    catalog_path = tmp_path / "catalog.json"
+    _RangeHandler.fail_from_request_n = 2   # the 1st request (entry "a.txt") succeeds, then outage
+    tar = RemoteMultipartTar(base, parts, max_retries=1, retry_backoff_s=0.01)
+    with pytest.raises(RuntimeError):
+        build_catalog(tar, catalog_path, save_every=1)
+
+    partial = load_catalog(catalog_path)
+    assert not partial.complete
+    assert set(partial.entries) == {"a.txt"}   # got exactly as far as the outage allowed
+
+    # "network recovers": lift the outage and resume with a fresh tar handle.
+    _RangeHandler.fail_from_request_n = None
+    _RangeHandler.requests.clear()
+    tar2 = RemoteMultipartTar(base, parts, max_retries=1, retry_backoff_s=0.01)
+    full = build_catalog(tar2, catalog_path, save_every=1)
+
+    assert full.complete
+    reference = {e.name for e in RemoteMultipartTar(base, parts).iter_entries()}
+    assert set(full.entries) == reference
+    # resuming must not re-request the header for the entry it already had
+    assert all(name != "a.txt" for name, _ in _RangeHandler.requests[:1])
