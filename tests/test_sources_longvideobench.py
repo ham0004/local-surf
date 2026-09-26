@@ -114,3 +114,17 @@ def test_convert_item_without_a_quote_has_no_evidence_interval():
               "candidates": ["dancing", "singing"], "correct_choice": 1}
     out = convert_item(record, t, "license")
     assert out.qa.evidence_intervals_s == [] and out.evidence_match_ratio is None
+
+
+def test_extract_quoted_span_ignores_apostrophes():
+    # Regression, from real LongVideoBench questions: apostrophes in "there's"
+    # were taken as opening quotes (29/440 T* questions affected).
+    q = "On the screen, there's a frame with a blue wall. After this man says 'by the way', what appears?"
+    assert extract_quoted_span(q) == "by the way"
+    q2 = "In a yellow tank's turret, when the caption ‘standards our climate’ appears, what is shown?"
+    assert extract_quoted_span(q2) == "standards our climate"
+
+
+def test_extract_quoted_span_keeps_apostrophes_inside_the_quote():
+    q = "When the subtitle mentions 'I'd be happy to improve my channel!', what is he holding?"
+    assert extract_quoted_span(q) == "I'd be happy to improve my channel!"

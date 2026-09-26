@@ -40,8 +40,13 @@ import re
 from ..schemas import QAItem, Transcript, TranscriptSegment
 
 # Straight and "smart" quotes seen in the questions (U+2018/2019 measured directly
-# in the data; straight ' and " cover the rest).
-_QUOTE_RE = re.compile(r"['‘’\"]([^'‘’\"]{2,200})['‘’\"]")
+# in the data; straight ' and " cover the rest).  The same characters are also
+# APOSTROPHES ("there's", "tank's", "I'd"), so an opening quote must not be glued
+# to a preceding word character and a closing quote must not be followed by one.
+# Measured: without these guards 29/440 T* questions yielded a span starting at an
+# apostrophe (e.g. "s a frame with a blue background wall..."), and quotes that
+# contain an apostrophe ('I'd be happy ...') were cut short.
+_QUOTE_RE = re.compile(r"(?<!\w)['‘\"](.{2,200}?)['’\"](?!\w)")
 
 T_STAR_CATEGORIES = frozenset({"T2A", "T2O", "T2E", "T3O", "T3E", "TOS"})
 
