@@ -19,7 +19,7 @@
 | transformers | 5.17.0 | provides `Qwen3VLForConditionalGeneration`, `Qwen3_5ForConditionalGeneration`, `AutoModelForImageTextToText` |
 | open_clip_torch | 3.3.0 | lists MobileCLIP / MobileCLIP2 checkpoints |
 | av (PyAV) | 18.1.0 | decoding with true PTS; H.264 encoding for fixtures |
-| rank-bm25 | 0.2.2 | lexical retrieval |
+| (BM25) | in-repo | `retrieval.bm25_scores`, non-negative IDF (rank-bm25 removed: its IDF goes negative on tiny corpora) |
 | numpy, pillow, pyyaml, psutil, pytest | see `uv.lock` | |
 
 ## Setup
