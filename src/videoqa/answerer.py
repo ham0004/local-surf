@@ -165,7 +165,9 @@ class FixtureAnswerer:
             if len(set(colours)) >= 2 and colours[-1] in options:
                 return Answer(text=colours[-1], option_index=options.index(colours[-1]), citations_s=cites), usage
         else:
-            hits = [i for i, o in enumerate(options) if o.lower() in evidence]
+            # Whole-word match: plain substring matching let "red" hit "covered".
+            hits = [i for i, o in enumerate(options)
+                    if re.search(rf"(?<![\w.]){re.escape(o.lower())}(?![\w%]|\.\d)", evidence)]
             if len(hits) == 1:
                 return Answer(text=options[hits[0]], option_index=hits[0], citations_s=cites), usage
         return Answer(text=options[0] if options else "", option_index=0 if options else None,
