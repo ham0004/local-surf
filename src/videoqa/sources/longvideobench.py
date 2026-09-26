@@ -52,18 +52,26 @@ def parse_timestamp(ts: str) -> float:
     return int(h) * 3600 + int(m) * 60 + float(s)
 
 
-def _entry_fields(e: dict) -> tuple[float, float, str]:
+def _entry_fields(e: dict) -> tuple[float, float, str] | None:
     """LongVideoBench ships TWO subtitle shapes (both measured directly from
     the archive, not documented in the README):
 
       YouTube-sourced videos : {"start": "HH:MM:SS.mmm", "end": "...", "line": "..."}
       TikTok-sourced videos  : {"timestamp": [start_s, end_s], "text": "..."}
 
-    This reads whichever shape a given entry uses.
+    This reads whichever shape a given entry uses. Some TikTok-sourced entries
+    have a null end timestamp (e.g. {"timestamp": [23.0, None], "text": " The"}
+    — measured directly, an artefact of the upstream ASR/segmentation, not
+    something we introduce); such an entry is treated as a zero-duration point
+    event at ``start`` rather than dropped, consistent with how degenerate
+    YouTube-format spans are handled below. A null START cannot be placed in
+    time at all, so that entry is skipped (returns None) rather than guessed.
     """
     if "timestamp" in e:
         start, end = e["timestamp"]
-        return float(start), float(end), e["text"]
+        if start is None:
+            return None
+        return float(start), float(start if end is None else end), e["text"]
     return parse_timestamp(e["start"]), parse_timestamp(e["end"]), e["line"]
 
 
@@ -76,7 +84,7 @@ def subtitles_to_transcript(video_id: str, subtitle_entries: list[dict]) -> Tran
     not dropped: dropping would silently remove real, if brief, speech).
     """
     segs = []
-    parsed = sorted((_entry_fields(e) for e in subtitle_entries), key=lambda t: t[0])
+    parsed = sorted((f for e in subtitle_entries if (f := _entry_fields(e)) is not None), key=lambda t: t[0])
     for i, (start, end, text) in enumerate(parsed):
         text = text.strip()
         if not text:

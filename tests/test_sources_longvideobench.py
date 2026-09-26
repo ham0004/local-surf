@@ -34,6 +34,16 @@ def test_subtitles_to_transcript_handles_the_tiktok_shaped_entries_too():
     assert t.segments[0].start_s == 0.0 and t.segments[1].end_s == 9.74
 
 
+def test_subtitles_to_transcript_handles_null_end_and_null_start():
+    # Measured directly from the archive: {"timestamp": [23.0, None], ...}.
+    raw = [{"timestamp": [23.0, None], "text": " The"},
+          {"timestamp": [None, 5.0], "text": " unplaceable, dropped"},
+          {"timestamp": [0.0, 1.0], "text": "first"}]
+    t = subtitles_to_transcript("vid", raw)
+    assert [s.text for s in t.segments] == ["first", "The"]   # null-start entry dropped
+    assert t.segments[1].start_s == t.segments[1].end_s == 23.0   # null end -> zero-duration point
+
+
 def test_extract_quoted_span_handles_straight_and_smart_quotes():
     assert extract_quoted_span("the subtitle says 'hello world'") == "hello world"
     assert extract_quoted_span("caption ‘like this’ appears") == "like this"
