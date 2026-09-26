@@ -1,0 +1,21 @@
+{
+  "checkpoint": "checkpoints\\vlm\\head_paired.npz",
+  "train_config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "epochs": 300,
+    "lambda_pair": 1.0,
+    "huber_delta": 0.5,
+    "weight_decay": 0.0001,
+    "seed": 0
+  },
+  "n_train_rows": 1273,
+  "n_train_pairs": 185,
+  "n_dev_rows": 836,
+  "n_dev_pairs": 125,
+  "final_train_loss": 0.0957591220620168,
+  "train_pair_diff_mae": 0.21397285178478276,
+  "dev_pair_diff_mae": 0.33912060260491933,
+  "stop_threshold": 0.5,
+  "dev_realised_net_gain": 0.27932203389830507
+}
