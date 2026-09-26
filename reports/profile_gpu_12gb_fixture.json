@@ -1,0 +1,500 @@
+{
+  "config": "configs/gpu_12gb.yaml",
+  "policy": "heuristic",
+  "repeats": 5,
+  "device": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "cpu": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+    "ram_gb": 16.3,
+    "gpu": "NVIDIA GeForce RTX 5060 Ti",
+    "torch": "2.11.0+cu128"
+  },
+  "cold_ms": {
+    "answer": 1487.1,
+    "answer_load": 7098.1,
+    "controller": 1.3,
+    "decode": 52.1,
+    "probe": 3.0,
+    "retrieval": 0.2,
+    "scout": 348.5,
+    "scout_load": 5829.7
+  },
+  "warm_median_ms": {
+    "answer": 1014.8,
+    "answer_load": 0.0,
+    "controller": 1.1,
+    "decode": 66.0,
+    "probe": 1.6,
+    "retrieval": 0.2,
+    "scout": 99.2,
+    "scout_load": 0.0
+  },
+  "cold_total_ms": 14820.0,
+  "warm_total_ms": 1182.9,
+  "peak_vram_gb": 5.45,
+  "peak_ram_gb": 2.61,
+  "answers": [
+    "C. 87% at 39.00s.",
+    "C. 87% at 39.00s.",
+    "C. 87% at 39.00s.",
+    "C. 87% at 39.00s.",
+    "C. 87% at 39.00s."
+  ],
+  "runs": [
+    {
+      "probe": {
+        "stage": "probe",
+        "elapsed_ms": 3.010699998412747,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 51036160,
+        "peak_vram_bytes": 0
+      },
+      "retrieval": {
+        "stage": "retrieval",
+        "elapsed_ms": 0.24229999689850956,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 51073024,
+        "peak_vram_bytes": 0
+      },
+      "decode": {
+        "stage": "decode",
+        "elapsed_ms": 52.075999999942724,
+        "decoded_frames": 423,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 64385024,
+        "peak_vram_bytes": 0
+      },
+      "scout_load": {
+        "stage": "scout_load",
+        "elapsed_ms": 5829.674400003569,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 1039646720,
+        "peak_vram_bytes": 0
+      },
+      "scout": {
+        "stage": "scout",
+        "elapsed_ms": 348.46570000081556,
+        "decoded_frames": 0,
+        "scored_frames": 12,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 1621389312,
+        "peak_vram_bytes": 661761536
+      },
+      "controller": {
+        "stage": "controller",
+        "elapsed_ms": 1.2975999925401993,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 1621524480,
+        "peak_vram_bytes": 410234368
+      },
+      "answer_load": {
+        "stage": "answer_load",
+        "elapsed_ms": 7098.088800004916,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 1694765056,
+        "peak_vram_bytes": 4667018752
+      },
+      "answer": {
+        "stage": "answer",
+        "elapsed_ms": 1487.1358000018517,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 6,
+        "visual_tokens": 1320,
+        "text_tokens": 386,
+        "peak_ram_bytes": 2542505984,
+        "peak_vram_bytes": 5453421056
+      },
+      "_answer": "C. 87% at 39.00s."
+    },
+    {
+      "probe": {
+        "stage": "probe",
+        "elapsed_ms": 1.5667000043322332,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2542542848,
+        "peak_vram_bytes": 4667019264
+      },
+      "retrieval": {
+        "stage": "retrieval",
+        "elapsed_ms": 0.2460000032442622,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2542542848,
+        "peak_vram_bytes": 4667019264
+      },
+      "decode": {
+        "stage": "decode",
+        "elapsed_ms": 67.68719999672612,
+        "decoded_frames": 423,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2570567680,
+        "peak_vram_bytes": 4667019264
+      },
+      "scout_load": {
+        "stage": "scout_load",
+        "elapsed_ms": 0.0012999953469261527,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2570567680,
+        "peak_vram_bytes": 4667019264
+      },
+      "scout": {
+        "stage": "scout",
+        "elapsed_ms": 99.38729999703355,
+        "decoded_frames": 0,
+        "scored_frames": 12,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2589712384,
+        "peak_vram_bytes": 4928114688
+      },
+      "controller": {
+        "stage": "controller",
+        "elapsed_ms": 1.0562000024947338,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2589712384,
+        "peak_vram_bytes": 4667019264
+      },
+      "answer_load": {
+        "stage": "answer_load",
+        "elapsed_ms": 0.0007999988156370819,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2589712384,
+        "peak_vram_bytes": 4667019264
+      },
+      "answer": {
+        "stage": "answer",
+        "elapsed_ms": 1015.6927999996697,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 6,
+        "visual_tokens": 1320,
+        "text_tokens": 386,
+        "peak_ram_bytes": 2603905024,
+        "peak_vram_bytes": 5454245376
+      },
+      "_answer": "C. 87% at 39.00s."
+    },
+    {
+      "probe": {
+        "stage": "probe",
+        "elapsed_ms": 1.5867999973124824,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2603589632,
+        "peak_vram_bytes": 4667019264
+      },
+      "retrieval": {
+        "stage": "retrieval",
+        "elapsed_ms": 0.23549999605165794,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2603589632,
+        "peak_vram_bytes": 4667019264
+      },
+      "decode": {
+        "stage": "decode",
+        "elapsed_ms": 66.32759999774862,
+        "decoded_frames": 423,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2604068864,
+        "peak_vram_bytes": 4667019264
+      },
+      "scout_load": {
+        "stage": "scout_load",
+        "elapsed_ms": 0.0010000003385357559,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2604068864,
+        "peak_vram_bytes": 4667019264
+      },
+      "scout": {
+        "stage": "scout",
+        "elapsed_ms": 99.06649999902584,
+        "decoded_frames": 0,
+        "scored_frames": 12,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2604318720,
+        "peak_vram_bytes": 4928114688
+      },
+      "controller": {
+        "stage": "controller",
+        "elapsed_ms": 1.0289999991073273,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2604318720,
+        "peak_vram_bytes": 4667019264
+      },
+      "answer_load": {
+        "stage": "answer_load",
+        "elapsed_ms": 0.0006999980541877449,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2604318720,
+        "peak_vram_bytes": 4667019264
+      },
+      "answer": {
+        "stage": "answer",
+        "elapsed_ms": 1013.8375000024098,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 6,
+        "visual_tokens": 1320,
+        "text_tokens": 386,
+        "peak_ram_bytes": 2605047808,
+        "peak_vram_bytes": 5453806080
+      },
+      "_answer": "C. 87% at 39.00s."
+    },
+    {
+      "probe": {
+        "stage": "probe",
+        "elapsed_ms": 1.59420000272803,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2605219840,
+        "peak_vram_bytes": 4667019264
+      },
+      "retrieval": {
+        "stage": "retrieval",
+        "elapsed_ms": 0.23550000332761556,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2605219840,
+        "peak_vram_bytes": 4667019264
+      },
+      "decode": {
+        "stage": "decode",
+        "elapsed_ms": 65.6851000021561,
+        "decoded_frames": 423,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2605654016,
+        "peak_vram_bytes": 4667019264
+      },
+      "scout_load": {
+        "stage": "scout_load",
+        "elapsed_ms": 0.0011000010999850929,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2605654016,
+        "peak_vram_bytes": 4667019264
+      },
+      "scout": {
+        "stage": "scout",
+        "elapsed_ms": 104.21810000116238,
+        "decoded_frames": 0,
+        "scored_frames": 12,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2604933120,
+        "peak_vram_bytes": 4928114688
+      },
+      "controller": {
+        "stage": "controller",
+        "elapsed_ms": 1.0676999954739586,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2604933120,
+        "peak_vram_bytes": 4667019264
+      },
+      "answer_load": {
+        "stage": "answer_load",
+        "elapsed_ms": 0.0005999972927384079,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2604933120,
+        "peak_vram_bytes": 4667019264
+      },
+      "answer": {
+        "stage": "answer",
+        "elapsed_ms": 1008.0248999947798,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 6,
+        "visual_tokens": 1320,
+        "text_tokens": 386,
+        "peak_ram_bytes": 2605654016,
+        "peak_vram_bytes": 5453806080
+      },
+      "_answer": "C. 87% at 39.00s."
+    },
+    {
+      "probe": {
+        "stage": "probe",
+        "elapsed_ms": 1.5455000029760413,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2605297664,
+        "peak_vram_bytes": 4667019264
+      },
+      "retrieval": {
+        "stage": "retrieval",
+        "elapsed_ms": 0.23640000290470198,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2605297664,
+        "peak_vram_bytes": 4667019264
+      },
+      "decode": {
+        "stage": "decode",
+        "elapsed_ms": 63.122799998382106,
+        "decoded_frames": 423,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2605318144,
+        "peak_vram_bytes": 4667019264
+      },
+      "scout_load": {
+        "stage": "scout_load",
+        "elapsed_ms": 0.0012999953469261527,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2605318144,
+        "peak_vram_bytes": 4667019264
+      },
+      "scout": {
+        "stage": "scout",
+        "elapsed_ms": 98.10440000001108,
+        "decoded_frames": 0,
+        "scored_frames": 12,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2604597248,
+        "peak_vram_bytes": 4928114688
+      },
+      "controller": {
+        "stage": "controller",
+        "elapsed_ms": 1.4467000073636882,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2604597248,
+        "peak_vram_bytes": 4667019264
+      },
+      "answer_load": {
+        "stage": "answer_load",
+        "elapsed_ms": 0.0007999988156370819,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 2604597248,
+        "peak_vram_bytes": 4667019264
+      },
+      "answer": {
+        "stage": "answer",
+        "elapsed_ms": 1018.1641000017407,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 6,
+        "visual_tokens": 1320,
+        "text_tokens": 386,
+        "peak_ram_bytes": 2605322240,
+        "peak_vram_bytes": 5453806080
+      },
+      "_answer": "C. 87% at 39.00s."
+    }
+  ]
+}

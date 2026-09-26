@@ -1,0 +1,200 @@
+{
+  "config": "configs/cpu_vlm.yaml",
+  "policy": "heuristic",
+  "repeats": 2,
+  "device": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "cpu": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+    "ram_gb": 16.3,
+    "gpu": "NVIDIA GeForce RTX 5060 Ti",
+    "torch": "2.11.0+cu128"
+  },
+  "cold_ms": {
+    "answer": 16313.7,
+    "answer_load": 15716.9,
+    "controller": 0.5,
+    "decode": 65.2,
+    "probe": 3.2,
+    "retrieval": 0.3,
+    "scout": 24.7
+  },
+  "warm_median_ms": {
+    "answer": 10305.6,
+    "answer_load": 0.0,
+    "controller": 1.5,
+    "decode": 137.4,
+    "probe": 27.5,
+    "retrieval": 4.4,
+    "scout": 24.6
+  },
+  "cold_total_ms": 32124.4,
+  "warm_total_ms": 10501.0,
+  "peak_vram_gb": 0.0,
+  "peak_ram_gb": 8.82,
+  "answers": [
+    "D. 97% at 62.00s.",
+    "D. 97% at 62.00s."
+  ],
+  "runs": [
+    {
+      "probe": {
+        "stage": "probe",
+        "elapsed_ms": 3.1790000066393986,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 50311168,
+        "peak_vram_bytes": 0
+      },
+      "retrieval": {
+        "stage": "retrieval",
+        "elapsed_ms": 0.28819999715778977,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 50348032,
+        "peak_vram_bytes": 0
+      },
+      "decode": {
+        "stage": "decode",
+        "elapsed_ms": 65.23469999956433,
+        "decoded_frames": 423,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 58007552,
+        "peak_vram_bytes": 0
+      },
+      "scout": {
+        "stage": "scout",
+        "elapsed_ms": 24.675699998624623,
+        "decoded_frames": 0,
+        "scored_frames": 12,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 59969536,
+        "peak_vram_bytes": 0
+      },
+      "controller": {
+        "stage": "controller",
+        "elapsed_ms": 0.4766000056406483,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 60026880,
+        "peak_vram_bytes": 0
+      },
+      "answer_load": {
+        "stage": "answer_load",
+        "elapsed_ms": 15716.863500005275,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 1214455808,
+        "peak_vram_bytes": 0
+      },
+      "answer": {
+        "stage": "answer",
+        "elapsed_ms": 16313.650700001745,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 2,
+        "visual_tokens": 224,
+        "text_tokens": 438,
+        "peak_ram_bytes": 7117815808,
+        "peak_vram_bytes": 0
+      },
+      "_answer": "D. 97% at 62.00s."
+    },
+    {
+      "probe": {
+        "stage": "probe",
+        "elapsed_ms": 27.462999998533633,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 7123185664,
+        "peak_vram_bytes": 0
+      },
+      "retrieval": {
+        "stage": "retrieval",
+        "elapsed_ms": 4.360599996289238,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 7124320256,
+        "peak_vram_bytes": 0
+      },
+      "decode": {
+        "stage": "decode",
+        "elapsed_ms": 137.38390000071377,
+        "decoded_frames": 423,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 7150321664,
+        "peak_vram_bytes": 0
+      },
+      "scout": {
+        "stage": "scout",
+        "elapsed_ms": 24.582700003520586,
+        "decoded_frames": 0,
+        "scored_frames": 12,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 7152254976,
+        "peak_vram_bytes": 0
+      },
+      "controller": {
+        "stage": "controller",
+        "elapsed_ms": 1.52160000288859,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 7152881664,
+        "peak_vram_bytes": 0
+      },
+      "answer_load": {
+        "stage": "answer_load",
+        "elapsed_ms": 0.0013999961083754897,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 7152902144,
+        "peak_vram_bytes": 0
+      },
+      "answer": {
+        "stage": "answer",
+        "elapsed_ms": 10305.649099995208,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 2,
+        "visual_tokens": 224,
+        "text_tokens": 438,
+        "peak_ram_bytes": 8821129216,
+        "peak_vram_bytes": 0
+      },
+      "_answer": "D. 97% at 62.00s."
+    }
+  ]
+}

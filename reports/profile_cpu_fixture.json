@@ -1,0 +1,246 @@
+{
+  "config": "configs/cpu.yaml",
+  "policy": "heuristic",
+  "repeats": 3,
+  "device": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "cpu": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+    "ram_gb": 16.3,
+    "gpu": "NVIDIA GeForce RTX 5060 Ti",
+    "torch": "2.11.0+cu128"
+  },
+  "cold_ms": {
+    "answer": 0.3,
+    "controller": 0.8,
+    "decode": 62.1,
+    "probe": 3.1,
+    "retrieval": 0.2,
+    "scout": 21.1
+  },
+  "warm_median_ms": {
+    "answer": 0.1,
+    "controller": 0.8,
+    "decode": 60.2,
+    "probe": 1.3,
+    "retrieval": 0.2,
+    "scout": 13.4
+  },
+  "cold_total_ms": 87.7,
+  "warm_total_ms": 76.1,
+  "peak_vram_gb": 0.0,
+  "peak_ram_gb": 0.06,
+  "answers": [
+    "87%",
+    "87%",
+    "87%"
+  ],
+  "runs": [
+    {
+      "probe": {
+        "stage": "probe",
+        "elapsed_ms": 3.118599997833371,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 50233344,
+        "peak_vram_bytes": 0
+      },
+      "retrieval": {
+        "stage": "retrieval",
+        "elapsed_ms": 0.24429999757558107,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 50266112,
+        "peak_vram_bytes": 0
+      },
+      "decode": {
+        "stage": "decode",
+        "elapsed_ms": 62.14180000097258,
+        "decoded_frames": 423,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 55402496,
+        "peak_vram_bytes": 0
+      },
+      "scout": {
+        "stage": "scout",
+        "elapsed_ms": 21.069200003694277,
+        "decoded_frames": 0,
+        "scored_frames": 12,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 56889344,
+        "peak_vram_bytes": 0
+      },
+      "controller": {
+        "stage": "controller",
+        "elapsed_ms": 0.8019999950192869,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 56942592,
+        "peak_vram_bytes": 0
+      },
+      "answer": {
+        "stage": "answer",
+        "elapsed_ms": 0.280100000964012,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 3,
+        "visual_tokens": 192,
+        "text_tokens": 129,
+        "peak_ram_bytes": 56946688,
+        "peak_vram_bytes": 0
+      },
+      "_answer": "87%"
+    },
+    {
+      "probe": {
+        "stage": "probe",
+        "elapsed_ms": 1.4194000032148324,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 57004032,
+        "peak_vram_bytes": 0
+      },
+      "retrieval": {
+        "stage": "retrieval",
+        "elapsed_ms": 0.2023999986704439,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 57008128,
+        "peak_vram_bytes": 0
+      },
+      "decode": {
+        "stage": "decode",
+        "elapsed_ms": 60.77069999446394,
+        "decoded_frames": 423,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 59658240,
+        "peak_vram_bytes": 0
+      },
+      "scout": {
+        "stage": "scout",
+        "elapsed_ms": 13.341599995328579,
+        "decoded_frames": 0,
+        "scored_frames": 12,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 60198912,
+        "peak_vram_bytes": 0
+      },
+      "controller": {
+        "stage": "controller",
+        "elapsed_ms": 0.8265000069513917,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 57606144,
+        "peak_vram_bytes": 0
+      },
+      "answer": {
+        "stage": "answer",
+        "elapsed_ms": 0.07500000356230885,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 3,
+        "visual_tokens": 192,
+        "text_tokens": 129,
+        "peak_ram_bytes": 57614336,
+        "peak_vram_bytes": 0
+      },
+      "_answer": "87%"
+    },
+    {
+      "probe": {
+        "stage": "probe",
+        "elapsed_ms": 1.2624999944819137,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 56659968,
+        "peak_vram_bytes": 0
+      },
+      "retrieval": {
+        "stage": "retrieval",
+        "elapsed_ms": 0.19880000036209822,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 56659968,
+        "peak_vram_bytes": 0
+      },
+      "decode": {
+        "stage": "decode",
+        "elapsed_ms": 59.629000003042165,
+        "decoded_frames": 423,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 60153856,
+        "peak_vram_bytes": 0
+      },
+      "scout": {
+        "stage": "scout",
+        "elapsed_ms": 13.545099995099008,
+        "decoded_frames": 0,
+        "scored_frames": 12,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 60809216,
+        "peak_vram_bytes": 0
+      },
+      "controller": {
+        "stage": "controller",
+        "elapsed_ms": 0.7752000019536354,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 0,
+        "visual_tokens": 0,
+        "text_tokens": 0,
+        "peak_ram_bytes": 58040320,
+        "peak_vram_bytes": 0
+      },
+      "answer": {
+        "stage": "answer",
+        "elapsed_ms": 0.06800000119255856,
+        "decoded_frames": 0,
+        "scored_frames": 0,
+        "selected_frames": 3,
+        "visual_tokens": 192,
+        "text_tokens": 129,
+        "peak_ram_bytes": 58040320,
+        "peak_vram_bytes": 0
+      },
+      "_answer": "87%"
+    }
+  ]
+}
