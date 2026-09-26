@@ -72,23 +72,38 @@ class RemoteMultipartTar:
         raise ValueError(f"offset {global_offset} before start of archive")
 
     def read(self, global_offset: int, length: int) -> bytes:
-        """Read ``length`` bytes starting at ``global_offset``. Must not straddle
-        a part boundary (guaranteed by 512-aligned headers/data + part sizes).
+        """Read ``length`` bytes starting at ``global_offset``, splitting the
+        range into one request per part when it crosses a part boundary.
 
-        A full scan of LongVideoBench's archive is ~750 requests; over a real
-        network some of those WILL time out or reset transiently (measured: a
-        connection timeout killed a 40-video download after only 1 file).
-        Transient failures (timeouts, connection errors, HTTP 429/5xx) are
-        retried with exponential backoff; a non-transient HTTP error (401,
-        404, ...) is raised immediately since retrying cannot fix it.
+        512-aligned parts only guarantee that a 512-byte HEADER never straddles
+        two parts; a file's payload can (and, for large videos, does).
+        Measured: 8 MB payload chunks crossed part boundaries for 2 of the
+        first 26 LongVideoBench videos, which an earlier "must not straddle"
+        assertion turned into download failures.
         """
         if length <= 0:
             return b""
-        part_idx, local_off = self._locate(global_offset)
+        if global_offset < 0 or global_offset + length > self.total_size:
+            raise ValueError(f"read of {length}B at {global_offset} is outside the archive "
+                             f"(size {self.total_size})")
+        out = bytearray()
+        while len(out) < length:
+            part_idx, local_off = self._locate(global_offset + len(out))
+            n = min(length - len(out), self.parts[part_idx].size - local_off)
+            out += self._read_within_part(part_idx, local_off, n)
+        return bytes(out)
+
+    def _read_within_part(self, part_idx: int, local_off: int, length: int) -> bytes:
+        """One Range request inside a single part, with retries.
+
+        A full scan of LongVideoBench's archive is thousands of requests; over
+        a real network some WILL time out or reset transiently (measured: a
+        connection timeout killed a 40-video download after only 1 file).
+        Transient failures (timeouts, connection errors, HTTP 429/5xx, short
+        bodies) are retried with exponential backoff; a non-transient HTTP
+        error (401, 404, ...) is raised immediately since retrying cannot fix it.
+        """
         part = self.parts[part_idx]
-        if local_off + length > part.size:
-            raise ValueError(f"read of {length}B at {global_offset} would straddle part {part.name}; "
-                             "this should not happen with 512-aligned tar part sizes")
         url = self.base_url + part.name
         headers = {"Range": f"bytes={local_off}-{local_off + length - 1}"}
         if self.token:

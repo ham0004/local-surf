@@ -130,12 +130,22 @@ def test_skipping_an_entry_never_downloads_its_payload(server):
         assert int(m.group(2)) - int(m.group(1)) + 1 <= 512
 
 
-def test_read_across_part_boundary_raises(server):
+def test_read_across_part_boundary_is_split_into_both_parts(server):
+    # Regression: a large file's payload chunk can cross a part boundary (only
+    # 512-byte headers are guaranteed not to). This used to raise, failing real
+    # LongVideoBench downloads; it must return the bytes from both parts.
     base, parts = server
     tar = RemoteMultipartTar(base, parts)
     boundary = parts[0].size
+    raw = _RangeHandler.parts["t.part.aa"] + _RangeHandler.parts["t.part.ab"]
+    assert tar.read(boundary - 10, 20) == raw[boundary - 10 : boundary + 10]
+
+
+def test_read_outside_the_archive_raises(server):
+    base, parts = server
+    tar = RemoteMultipartTar(base, parts)
     with pytest.raises(ValueError):
-        tar.read(boundary - 10, 20)   # would straddle part.aa / part.ab
+        tar.read(tar.total_size - 10, 20)
 
 
 def test_rejects_non_512_aligned_part_sizes():
@@ -257,3 +267,19 @@ def test_extract_is_atomic_no_partial_file_left_at_dest(server, tmp_path):
     with pytest.raises(RuntimeError):
         flaky.extract_to(entry, tmp_path / "b.txt")
     assert not (tmp_path / "b.txt").exists()          # never a truncated final file
+
+
+def test_extract_payload_that_spans_a_part_boundary(server, tmp_path):
+    # Re-split the SAME archive so dir/b.txt's payload (700 B, 2 blocks) is cut
+    # in half by the part boundary, then extract it in small chunks.
+    base, _ = server
+    raw = _RangeHandler.parts["t.part.aa"] + _RangeHandler.parts["t.part.ab"]
+    whole = RemoteMultipartTar(base, [TarPart("t.part.aa", len(_RangeHandler.parts["t.part.aa"])),
+                                      TarPart("t.part.ab", len(_RangeHandler.parts["t.part.ab"]))])
+    entry = {e.name: e for e in whole.iter_entries()}["dir/b.txt"]
+    split = entry.global_offset + 512 + 512                 # inside b.txt's payload, 512-aligned
+    _RangeHandler.parts = {"t.part.aa": raw[:split], "t.part.ab": raw[split:]}
+    tar = RemoteMultipartTar(base, [TarPart("t.part.aa", split), TarPart("t.part.ab", len(raw) - split)])
+    out = tmp_path / "b.txt"
+    tar.extract_to(entry, out, chunk_size=300)
+    assert out.read_bytes() == b"hello b" * 100
