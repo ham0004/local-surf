@@ -1,0 +1,982 @@
+{
+  "github": {
+    "EduVidQA": {
+      "license": "MIT",
+      "pushed_at": "2025-09-18T16:42:25Z",
+      "archived": false,
+      "default_branch": "main",
+      "top_level": [
+        "file:LICENSE",
+        "file:README.md",
+        "dir:assets",
+        "dir:data",
+        "dir:evaluation"
+      ],
+      "readme_mentions": [
+        "youtube",
+        "huggingface",
+        "download",
+        "license",
+        "transcript",
+        "request"
+      ]
+    },
+    "LongVideoBench": {
+      "license": null,
+      "pushed_at": "2024-07-27T17:12:52Z",
+      "archived": false,
+      "default_branch": "main",
+      "top_level": [
+        "file:README.md",
+        "file:leaderboard_paper.png",
+        "file:logo.png",
+        "dir:longvideobench",
+        "file:lvb_teaser.png",
+        "file:pyproject.toml"
+      ],
+      "readme_mentions": [
+        "huggingface",
+        "download",
+        "license",
+        "subtitle"
+      ]
+    },
+    "QVHighlights": {
+      "license": "MIT",
+      "pushed_at": "2026-03-09T02:52:41Z",
+      "archived": false,
+      "default_branch": "main",
+      "top_level": [
+        "file:.gitignore",
+        "file:LICENSE",
+        "file:README.md",
+        "dir:data",
+        "dir:moment_detr",
+        "dir:res",
+        "dir:run_on_video",
+        "dir:standalone_eval",
+        "dir:utils"
+      ],
+      "readme_mentions": [
+        "download",
+        "license"
+      ]
+    },
+    "NExT-GQA": {
+      "license": "MIT",
+      "pushed_at": "2024-07-01T12:47:10Z",
+      "archived": false,
+      "default_branch": "main",
+      "top_level": [
+        "file:LICENSE",
+        "file:README.md",
+        "dir:code",
+        "dir:datasets",
+        "dir:misc",
+        "file:requirements.txt"
+      ],
+      "readme_mentions": [
+        "download"
+      ]
+    },
+    "Video-MME": {
+      "license": null,
+      "pushed_at": "2025-12-08T06:31:55Z",
+      "archived": false,
+      "default_branch": "main",
+      "top_level": [
+        "file:README.md",
+        "dir:asset",
+        "dir:evaluation"
+      ],
+      "readme_mentions": [
+        "huggingface",
+        "license",
+        "subtitle"
+      ]
+    }
+  },
+  "huggingface": {
+    "LongVideoBench": {
+      "gated": "auto",
+      "license": "cc-by-nc-sa-4.0",
+      "sha": "60d1c89c1919a198b73be39c2babb213b29d6a5c",
+      "last_modified": "2024-10-14T05:43:04.000Z",
+      "n_files": 38,
+      "total_gb": 161.69,
+      "file_types": {
+        "gitattributes": 1,
+        "md": 1,
+        "json": 2,
+        "tar": 1,
+        "parquet": 2,
+        "aa": 1,
+        "ab": 1,
+        "ac": 1,
+        "ad": 1,
+        "ae": 1,
+        "af": 1,
+        "ag": 1,
+        "ah": 1,
+        "ai": 1,
+        "aj": 1,
+        "ak": 1,
+        "al": 1,
+        "am": 1,
+        "an": 1,
+        "ao": 1,
+        "ap": 1,
+        "aq": 1,
+        "ar": 1,
+        "as": 1,
+        "at": 1,
+        "au": 1,
+        "av": 1,
+        "aw": 1,
+        "ax": 1,
+        "ay": 1,
+        "az": 1,
+        "ba": 1,
+        "bb": 1,
+        "bc": 1,
+        "bd": 1,
+        "be": 1
+      },
+      "sample_files": [
+        ".gitattributes",
+        "README.md",
+        "lvb_test_wo_gt.json",
+        "lvb_val.json",
+        "subtitles.tar",
+        "test-00000-of-00001.parquet",
+        "validation-00000-of-00001.parquet",
+        "videos.tar.part.aa",
+        "videos.tar.part.ab",
+        "videos.tar.part.ac",
+        "videos.tar.part.ad",
+        "videos.tar.part.ae",
+        "videos.tar.part.af",
+        "videos.tar.part.ag",
+        "videos.tar.part.ah"
+      ]
+    },
+    "Video-MME": {
+      "gated": false,
+      "license": null,
+      "sha": "ead1408f75b618502df9a1d8e0950166bf0a2a0b",
+      "last_modified": "2024-07-04T08:14:20.000Z",
+      "n_files": 24,
+      "total_gb": 101.0,
+      "file_types": {
+        "gitattributes": 1,
+        "md": 1,
+        "zip": 21,
+        "parquet": 1
+      },
+      "sample_files": [
+        ".gitattributes",
+        "README.md",
+        "subtitle.zip",
+        "videomme/test-00000-of-00001.parquet",
+        "videos_chunked_01.zip",
+        "videos_chunked_02.zip",
+        "videos_chunked_03.zip",
+        "videos_chunked_04.zip",
+        "videos_chunked_05.zip",
+        "videos_chunked_06.zip",
+        "videos_chunked_07.zip",
+        "videos_chunked_08.zip",
+        "videos_chunked_09.zip",
+        "videos_chunked_10.zip",
+        "videos_chunked_11.zip"
+      ]
+    }
+  },
+  "samples": {
+    "QVHighlights": [
+      {
+        "qid": 2579,
+        "query": "A girl and her mother cooked while talking with each other on facetime.",
+        "duration": 150,
+        "vid": "NUsG9BgSes0_210.0_360.0",
+        "relevant_clip_ids": [
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74
+        ],
+        "saliency_scores": [
+          [
+            1,
+            1,
+            2
+          ],
+          [
+            1,
+            1,
+            3
+          ],
+          [
+            1,
+            1,
+            3
+          ],
+          [
+            1,
+            1,
+            3
+          ],
+          [
+            1,
+            1,
+            3
+          ],
+          [
+            1,
+            1,
+            2
+          ],
+          [
+            1,
+            1,
+            3
+          ],
+          [
+            2,
+            1,
+            4
+          ],
+          [
+            2,
+            1,
+            4
+          ],
+          [
+            2,
+            1,
+            4
+          ],
+          [
+            2,
+            2,
+            4
+          ],
+          [
+            2,
+            2,
+            3
+          ],
+          [
+            3,
+            2,
+            2
+          ],
+          [
+            4,
+            2,
+            2
+          ],
+          [
+            4,
+            2,
+            2
+          ],
+          [
+            4,
+            2,
+            2
+          ],
+          [
+            3,
+            2,
+            2
+          ],
+          [
+            3,
+            2,
+            3
+          ],
+          [
+            3,
+            2,
+            3
+          ],
+          [
+            4,
+            2,
+            3
+          ],
+          [
+            3,
+            2,
+            3
+          ],
+          [
+            3,
+            2,
+            3
+          ],
+          [
+            3,
+            2,
+            3
+          ],
+          [
+            3,
+            2,
+            3
+          ],
+          [
+            3,
+            2,
+            2
+          ],
+          [
+            3,
+            2,
+            2
+          ],
+          [
+            3,
+            2,
+            2
+          ],
+          [
+            3,
+            2,
+            3
+          ],
+          [
+            3,
+            2,
+            4
+          ],
+          [
+            3,
+            2,
+            3
+          ],
+          [
+            3,
+            2,
+            4
+          ],
+          [
+            3,
+            2,
+            4
+          ],
+          [
+            3,
+            1,
+            3
+          ],
+          [
+            3,
+            1,
+            4
+          ]
+        ],
+        "relevant_windows": [
+          [
+            82,
+            150
+          ]
+        ]
+      },
+      {
+        "qid": 5071,
+        "query": "A woman sitting in front of a desk wearing headphones and using her laptop",
+        "duration": 150,
+        "vid": "NUsG9BgSes0_60.0_210.0",
+        "relevant_clip_ids": [
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67
+        ],
+        "saliency_scores": [
+          [
+            3,
+            3,
+            3
+          ],
+          [
+            3,
+            3,
+            3
+          ],
+          [
+            3,
+            3,
+            3
+          ],
+          [
+            3,
+            4,
+            3
+          ],
+          [
+            3,
+            4,
+            3
+          ],
+          [
+            3,
+            4,
+            3
+          ],
+          [
+            3,
+            4,
+            3
+          ],
+          [
+            3,
+            4,
+            3
+          ],
+          [
+            3,
+            1,
+            3
+          ]
+        ],
+        "relevant_windows": [
+          [
+            118,
+            136
+          ]
+        ]
+      },
+      {
+        "qid": 5342,
+        "query": "An Asian woman wearing a Boston t-shirt is in her home talking.",
+        "duration": 150,
+        "vid": "NUsG9BgSes0_360.0_510.0",
+        "relevant_clip_ids": [
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74
+        ],
+        "saliency_scores": [
+          [
+            4,
+            4,
+            3
+          ],
+          [
+            4,
+            4,
+            3
+          ],
+          [
+            4,
+            4,
+            4
+          ],
+          [
+            4,
+            4,
+            4
+          ],
+          [
+            4,
+            4,
+            4
+          ],
+          [
+            4,
+            3,
+            3
+          ],
+          [
+            4,
+            3,
+            3
+          ],
+          [
+            4,
+            3,
+            3
+          ],
+          [
+            4,
+            3,
+            3
+          ],
+          [
+            4,
+            1,
+            3
+          ],
+          [
+            4,
+            1,
+            1
+          ],
+          [
+            4,
+            2,
+            3
+          ],
+          [
+            4,
+            2,
+            3
+          ],
+          [
+            4,
+            2,
+            3
+          ],
+          [
+            4,
+            2,
+            3
+          ],
+          [
+            4,
+            2,
+            3
+          ],
+          [
+            4,
+            2,
+            3
+          ],
+          [
+            4,
+            2,
+            3
+          ],
+          [
+            4,
+            2,
+            3
+          ],
+          [
+            4,
+            3,
+            3
+          ],
+          [
+            4,
+            4,
+            3
+          ],
+          [
+            4,
+            4,
+            3
+          ],
+          [
+            4,
+            4,
+            3
+          ],
+          [
+            4,
+            4,
+            3
+          ],
+          [
+            4,
+            4,
+            3
+          ],
+          [
+            4,
+            3,
+            3
+          ],
+          [
+            4,
+            3,
+            3
+          ],
+          [
+            4,
+            2,
+            3
+          ],
+          [
+            4,
+            3,
+            3
+          ],
+          [
+            4,
+            3,
+            3
+          ],
+          [
+            4,
+            3,
+            3
+          ],
+          [
+            4,
+            4,
+            3
+          ],
+          [
+            4,
+            3,
+            3
+          ],
+          [
+            4,
+            4,
+            3
+          ],
+          [
+            4,
+            4,
+            3
+          ],
+          [
+            4,
+            4,
+            3
+          ],
+          [
+            4,
+            4,
+            3
+          ]
+        ],
+        "relevant_windows": [
+          [
+            56,
+            76
+          ],
+          [
+            96,
+            150
+          ]
+        ]
+      }
+    ],
+    "EduVidQA": {
+      "real_world_test": {
+        "rows": 269,
+        "columns": [
+          "url",
+          "id",
+          "question",
+          "answer",
+          "timestamp"
+        ],
+        "distinct_videos": 99,
+        "sample_rows": [
+          {
+            "url": "https://youtube.com/watch?v=F9-yqoS7b8w",
+            "id": "F9-yqoS7b8w",
+            "question": "Is it necessary to dereference the pointers name and number when using the %s format specifier in printf, or does %s automatically handle the dereferencing of t...",
+            "answer": "When using the %s format specifier in functions like printf, the corresponding argument is expected to be a pointer to a character array (i.e., a string). The %...",
+            "timestamp": "2:06:36"
+          },
+          {
+            "url": "https://youtube.com/watch?v=-aqUek49iL8",
+            "id": "-aqUek49iL8",
+            "question": "Is app = Flask(__name__) calling a function or creating an object from the class Flask?",
+            "answer": "In Python, classes can be callable, meaning they can behave like functions when called. When you use Flask(), you are calling the Flask class, which acts as a c...",
+            "timestamp": "12:22"
+          }
+        ],
+        "youtube_oembed": {
+          "checked": 30,
+          "status_counts": {
+            "ok": 27,
+            "HTTP 401": 3
+          }
+        }
+      },
+      "synthetic_train": {
+        "rows": 3909,
+        "columns": [
+          "vid_id",
+          "vid_url",
+          "vid_title",
+          "timestamp",
+          "final_answer",
+          "final_question"
+        ],
+        "distinct_videos": 157,
+        "sample_rows": [
+          {
+            "vid_id": "8jqKOqwOwA4",
+            "vid_url": "https://youtube.com/watch?v=8jqKOqwOwA4",
+            "vid_title": "mod07lec31",
+            "timestamp": "3:54",
+            "final_answer": "The main difference between the Fixed Universe Successor problem and typical dynamic set operations in binary search trees is the source of elements they use. I...",
+            "final_question": "At <timestamp>, can you explain how the Fixed Universe Successor problem differs from the dynamic set problems seen in binary search trees, given that both invo..."
+          },
+          {
+            "vid_id": "8jqKOqwOwA4",
+            "vid_url": "https://youtube.com/watch?v=8jqKOqwOwA4",
+            "vid_title": "mod07lec31",
+            "timestamp": "12:21",
+            "final_answer": "Van Emde Boas (VEB) trees are particularly suited to the Fixed Universe Successor problem because they take advantage of the fixed, integer universe to perform ...",
+            "final_question": "At <timestamp>, what advantages do Van Emde Boas trees offer in the context of the Fixed Universe Successor problem compared to other data structures like AVL t..."
+          }
+        ]
+      },
+      "synthetic_test": {
+        "rows": 1056,
+        "columns": [
+          "vid_id",
+          "vid_title",
+          "vid_url",
+          "question",
+          "answer",
+          "timestamp"
+        ],
+        "distinct_videos": 40,
+        "sample_rows": [
+          {
+            "vid_id": "S1Sug4UuS40",
+            "vid_title": "mod10lec46",
+            "vid_url": "https://youtube.com/watch?v=S1Sug4UuS40",
+            "question": "At <timestamp>, the slide mentions using the Bellman Ford algorithm for finding the shortest path in a directed graph. Can the Bellman Ford algorithm be used on...",
+            "answer": "Yes, the Bellman Ford algorithm can be applied to undirected graphs as well. In an undirected graph, each edge is treated as two edges in both directions with t...",
+            "timestamp": "0:27"
+          },
+          {
+            "vid_id": "S1Sug4UuS40",
+            "vid_title": "mod10lec46",
+            "vid_url": "https://youtube.com/watch?v=S1Sug4UuS40",
+            "question": "Referencing the slide at <timestamp>, since the output of the Bellman Ford algorithm is δ(s,v), how does the algorithm ensure that this output represents the sh...",
+            "answer": "The Bellman Ford algorithm is a way to find the shortest path between two nodes in a graph by relaxing the edges up to (V-1) times where V is the number of vert...",
+            "timestamp": "1:09"
+          }
+        ]
+      }
+    },
+    "NExT-GQA": {
+      "train": {
+        "rows": 34132,
+        "columns": [
+          "video_id",
+          "frame_count",
+          "width",
+          "height",
+          "question",
+          "answer",
+          "qid",
+          "type",
+          "a0",
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "distinct_videos": 3870,
+        "sample_rows": [
+          {
+            "video_id": "3238737531",
+            "frame_count": "2303",
+            "width": "640",
+            "height": "480",
+            "question": "how many children are in the video",
+            "answer": "two",
+            "qid": "2",
+            "type": "DC",
+            "a0": "one",
+            "a1": "three",
+            "a2": "seven",
+            "a3": "two",
+            "a4": "five"
+          },
+          {
+            "video_id": "8968804598",
+            "frame_count": "332",
+            "width": "640",
+            "height": "360",
+            "question": "why is the blue sweater guy looking at the shirtless men",
+            "answer": "training",
+            "qid": "0",
+            "type": "CW",
+            "a0": "sharing with his friends",
+            "a1": "found the man funny",
+            "a2": "poor vision",
+            "a3": "keep hands warm",
+            "a4": "training"
+          }
+        ]
+      },
+      "val": {
+        "rows": 3358,
+        "columns": [
+          "video_id",
+          "frame_count",
+          "width",
+          "height",
+          "question",
+          "answer",
+          "qid",
+          "type",
+          "a0",
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "distinct_videos": 567,
+        "sample_rows": [
+          {
+            "video_id": "4882821564",
+            "frame_count": "2697",
+            "width": "640",
+            "height": "480",
+            "question": "why did the boy pick up one present from the group of them and move to the sofa",
+            "answer": "unwrap it",
+            "qid": "1",
+            "type": "CW",
+            "a0": "share with the girl",
+            "a1": "approach lady sitting there",
+            "a2": "unwrap it",
+            "a3": "playing with toy train",
+            "a4": "gesture something"
+          },
+          {
+            "video_id": "2435100235",
+            "frame_count": "1906",
+            "width": "640",
+            "height": "480",
+            "question": "how does the man cycling try to sell the watch to the man in the trishaw",
+            "answer": "show him the watch",
+            "qid": "7",
+            "type": "CH",
+            "a0": "give him catalogue",
+            "a1": "show him a video",
+            "a2": "show him the watch",
+            "a3": "dismount his bicycle",
+            "a4": "give him the watch strap"
+          }
+        ]
+      },
+      "test": {
+        "rows": 5553,
+        "columns": [
+          "video_id",
+          "frame_count",
+          "width",
+          "height",
+          "question",
+          "answer",
+          "qid",
+          "type",
+          "a0",
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "distinct_videos": 990,
+        "sample_rows": [
+          {
+            "video_id": "2574374895",
+            "frame_count": "719",
+            "width": "320",
+            "height": "240",
+            "question": "what did the baby do after throwing the green cup away while on the floor near the end",
+            "answer": "lay on floor",
+            "qid": "8",
+            "type": "TN",
+            "a0": "clap proudly",
+            "a1": "the lady sitting down",
+            "a2": "lay on floor",
+            "a3": "just picked it up",
+            "a4": "crawl"
+          },
+          {
+            "video_id": "3083302557",
+            "frame_count": "1420",
+            "width": "640",
+            "height": "480",
+            "question": "what did the lady do while turning back",
+            "answer": "thumbs up",
+            "qid": "3",
+            "type": "TC",
+            "a0": "walk away",
+            "a1": "thumbs up",
+            "a2": "put down her club",
+            "a3": "applying cream on face",
+            "a4": "caressing for the dog"
+          }
+        ]
+      }
+    }
+  }
+}
