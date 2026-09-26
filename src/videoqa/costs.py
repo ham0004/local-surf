@@ -17,6 +17,7 @@ Memory numbers:
 from __future__ import annotations
 
 import contextlib
+import sys
 import dataclasses
 import time
 from collections.abc import Iterator
@@ -27,13 +28,16 @@ from .schemas import CostRecord
 
 
 def _torch_cuda():
-    """Return the torch module if CUDA is usable, else None (keeps torch optional)."""
-    try:
-        import torch  # noqa: PLC0415 - optional heavy import
+    """Return torch if it is ALREADY imported and CUDA is initialised, else None.
 
-        return torch if torch.cuda.is_available() else None
-    except ImportError:
+    We deliberately do not import torch here: importing it (and initialising
+    CUDA) would add seconds of overhead to CPU-only runs and would itself show
+    up in the cost trace.  If a GPU model is in use, torch is already loaded.
+    """
+    torch = sys.modules.get("torch")
+    if torch is None or not torch.cuda.is_available() or not torch.cuda.is_initialized():
         return None
+    return torch
 
 
 class CostMeter:
