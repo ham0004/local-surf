@@ -2,6 +2,7 @@
 
 from videoqa.schemas import Transcript, TranscriptSegment
 from videoqa.sources.longvideobench import (
+    extract_quoted_spans,
     convert_item,
     extract_quoted_span,
     find_evidence_interval,
@@ -128,3 +129,29 @@ def test_extract_quoted_span_ignores_apostrophes():
 def test_extract_quoted_span_keeps_apostrophes_inside_the_quote():
     q = "When the subtitle mentions 'I'd be happy to improve my channel!', what is he holding?"
     assert extract_quoted_span(q) == "I'd be happy to improve my channel!"
+
+
+def test_one_letter_quote_does_not_swallow_the_next_quote():
+    # Real LongVideoBench question: the on-screen letter 'e' is quoted before
+    # the subtitle quote; the 1-char quote used to be skipped, so the span ran
+    # from 'e' to the NEXT quote's opening mark.
+    q = ("... a red light spot, which stops below the letter 'e'. After the subtitles mention "
+         "'out the leftover amount you're gonna,' what object appears in her hand?")
+    assert extract_quoted_spans(q) == ["e", "out the leftover amount you're gonna,"]
+    assert extract_quoted_span(q) == "out the leftover amount you're gonna,"   # 'e' is too short to locate
+
+
+def test_exact_substring_counts_even_inside_a_long_line():
+    # Real miss: 'Winifred' inside a long line scored ratio 0.24 < 0.6.
+    seg = TranscriptSegment("s0", 0, 5, "and then we meet Winifred who has been waiting at the station all day long")
+    ids, ratio = find_evidence_interval("Winifred", Transcript("v", [seg]))
+    assert ids == ["s0"] and ratio == 1.0
+
+
+def test_convert_item_uses_every_quote_in_a_two_anchor_question():
+    segs = [TranscriptSegment("s0", 1, 2, "first we open the box"), TranscriptSegment("s1", 4, 5, "unrelated chatter"),
+           TranscriptSegment("s2", 7, 8, "then we close the lid")]
+    record = {"id": "v_0", "video_id": "v", "candidates": ["a", "b"], "correct_choice": 0,
+              "question": "What happens between 'first we open the box' and 'then we close the lid'?"}
+    out = convert_item(record, Transcript("v", segs), "license")
+    assert out.qa.evidence_intervals_s == [(1, 2), (7, 8)]

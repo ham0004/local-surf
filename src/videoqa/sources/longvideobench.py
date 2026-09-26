@@ -46,7 +46,11 @@ from ..schemas import QAItem, Transcript, TranscriptSegment
 # Measured: without these guards 29/440 T* questions yielded a span starting at an
 # apostrophe (e.g. "s a frame with a blue background wall..."), and quotes that
 # contain an apostrophe ('I'd be happy ...') were cut short.
-_QUOTE_RE = re.compile(r"(?<!\w)['‘\"](.{2,200}?)['’\"](?!\w)")
+_QUOTE_RE = re.compile(r"(?<!\w)['‘\"](.{1,200}?)['’\"](?!\w)")
+# Quotes shorter than this cannot be located in a transcript reliably ("e",
+# "so", "i" match almost anything); they are still parsed, so they cannot
+# swallow the text up to the NEXT quote, but are not used as evidence.
+MIN_LOCATABLE_QUOTE_CHARS = 3
 
 T_STAR_CATEGORIES = frozenset({"T2A", "T2O", "T2E", "T3O", "T3E", "TOS"})
 
@@ -124,10 +128,20 @@ def subtitles_to_transcript(video_id: str, subtitle_entries: list[dict], offset_
     return Transcript(video_id=video_id, segments=segs, source="longvideobench_subtitle")
 
 
+def extract_quoted_spans(question: str) -> list[str]:
+    """Every quoted substring in the question, in order.
+
+    Measured: 50 questions quote two or more spans (e.g. "between 'A' and
+    'B'"), and some quote an on-screen letter ("the letter 'e'") before the
+    subtitle quote; reading only the first quote picked the wrong one.
+    """
+    return [m.group(1).strip() for m in _QUOTE_RE.finditer(question)]
+
+
 def extract_quoted_span(question: str) -> str | None:
-    """First quoted substring in the question, or None if there isn't one."""
-    m = _QUOTE_RE.search(question)
-    return m.group(1).strip() if m else None
+    """First quoted substring long enough to locate, or None."""
+    spans = [q for q in extract_quoted_spans(question) if len(q) >= MIN_LOCATABLE_QUOTE_CHARS]
+    return spans[0] if spans else None
 
 
 def _normalise(text: str) -> str:
@@ -143,7 +157,11 @@ def find_evidence_interval(quote: str, transcript: Transcript,
 
     Matching uses :func:`difflib.SequenceMatcher` ratio on normalised text,
     which tolerates the ASR noise (missing punctuation, minor word gaps) seen
-    in this dataset without requiring an exact substring.
+    in this dataset without requiring an exact substring. An exact
+    (normalised) substring always counts as a full match (1.0): ratio() is
+    diluted by the line's length, so e.g. 'Winifred' inside a long line scored
+    only 0.24 and was missed. Ties prefer fewer segments (a single line over a
+    pair).
     """
     q = _normalise(quote)
     segs = transcript.segments
@@ -154,8 +172,9 @@ def find_evidence_interval(quote: str, transcript: Transcript,
         if i + 1 < len(segs):
             candidates.append(([seg.id, segs[i + 1].id], seg.text + " " + segs[i + 1].text))
         for ids, text in candidates:
-            ratio = difflib.SequenceMatcher(None, q, _normalise(text)).ratio()
-            if ratio > best_ratio:
+            t = _normalise(text)
+            ratio = 1.0 if q and q in t else difflib.SequenceMatcher(None, q, t).ratio()
+            if ratio > best_ratio or (ratio == best_ratio and ids and len(ids) < len(best_ids)):
                 best_ratio, best_ids = ratio, ids
     return (best_ids, best_ratio) if best_ratio >= min_ratio else ([], best_ratio)
 
@@ -172,14 +191,21 @@ def convert_item(record: dict, transcript: Transcript, license_note: str) -> Con
 
     ``record`` is a raw dict from ``lvb_val.json`` (see module docstring for
     its keys). Options/gold come straight from ``candidates``/``correct_choice``
-    — no relabelling.
+    — no relabelling. Evidence = the union of segments matched by EVERY
+    locatable quoted span (a "between 'A' and 'B'" question needs both).
     """
+    quotes = [q for q in extract_quoted_spans(record["question"]) if len(q) >= MIN_LOCATABLE_QUOTE_CHARS]
     evidence_ids: list[str] = []
-    ratio = None
-    quote = extract_quoted_span(record["question"])
-    if quote:
-        evidence_ids, ratio = find_evidence_interval(quote, transcript)
-    intervals = [(transcript.by_id()[i].start_s, transcript.by_id()[i].end_s) for i in evidence_ids]
+    ratios: list[float] = []
+    for quote in quotes:
+        ids, r = find_evidence_interval(quote, transcript)
+        ratios.append(r)
+        evidence_ids += [i for i in ids if i not in evidence_ids]
+    ratio = max(ratios) if ratios else None
+    quote = " | ".join(quotes) if quotes else None
+    by_id = transcript.by_id()
+    evidence_ids.sort(key=lambda i: by_id[i].start_s)
+    intervals = [(by_id[i].start_s, by_id[i].end_s) for i in evidence_ids]
 
     qa = QAItem(
         qa_id=record["id"],
