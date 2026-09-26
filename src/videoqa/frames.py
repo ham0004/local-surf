@@ -73,7 +73,7 @@ class DecodeResult:
 
 
 def decode_at(path: str | Path, times_s: list[float], max_side: int | None = None,
-              id_prefix: str = "f") -> DecodeResult:
+              id_prefix: str = "f", video_id: str = "") -> DecodeResult:
     """Decode one frame per requested time in a single sequential pass.
 
     ``max_side`` downsizes frames (keeping aspect ratio) right after decoding so
@@ -115,7 +115,10 @@ def decode_at(path: str | Path, times_s: list[float], max_side: int | None = Non
                 frame, pts = last_frame
                 results[idx] = _to_frame(frame, pts, times_s[idx], max_side, f"{id_prefix}{idx:03d}")
 
-    return DecodeResult([results[i] for i in range(len(times_s)) if i in results], visited)
+    frames = [results[i] for i in range(len(times_s)) if i in results]
+    for f in frames:
+        f.video_id = video_id or Path(path).stem   # default: file name without extension
+    return DecodeResult(frames, visited)
 
 
 def _to_frame(frame: av.VideoFrame, pts: float, requested: float, max_side: int | None, fid: str) -> Frame:

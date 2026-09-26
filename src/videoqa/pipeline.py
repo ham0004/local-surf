@@ -80,7 +80,8 @@ def prepare(video_path: str | Path, transcript: Transcript, question: str, optio
     # internally.  All of these frames are charged here.
     with meter.stage("decode") as rec:
         res = decode_at(video_path, [c.time_s for c in candidates],
-                        max_side=cfg["answerer"].get("frame_max_side"), id_prefix="f")
+                        max_side=cfg["answerer"].get("frame_max_side"), id_prefix="f",
+                        video_id=transcript.video_id)
         frames = {c.id: f for c, f in zip(candidates, res.frames, strict=True)}
         rec.decoded_frames = res.frames_visited
 

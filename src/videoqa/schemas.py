@@ -215,6 +215,7 @@ class Frame:
     height: int
     image: Any = dataclasses.field(default=None, repr=False, compare=False)  # PIL.Image
     phash: str = ""  # perceptual hash used for cheap dedup
+    video_id: str = ""  # provenance: which video this frame was decoded from
 
 
 # The ONLY keys a scout is allowed to emit.  Anything else (OCR text, captions,
