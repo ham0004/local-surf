@@ -24,6 +24,16 @@ def test_subtitles_to_transcript_sorts_by_start_and_fixes_degenerate_spans():
     assert t.segments[0].start_s == t.segments[0].end_s == 1.0   # kept, not dropped
 
 
+def test_subtitles_to_transcript_handles_the_tiktok_shaped_entries_too():
+    # Measured directly from the archive: TikTok-sourced videos use
+    # {"timestamp": [start, end], "text": ...} instead of start/end/line.
+    raw = [{"timestamp": [8.72, 9.74], "text": " Who you gonna call?"},
+          {"timestamp": [0.0, 7.2], "text": " Something strange in the neighborhood."}]
+    t = subtitles_to_transcript("tiktok_vid", raw)
+    assert [s.text for s in t.segments] == ["Something strange in the neighborhood.", "Who you gonna call?"]
+    assert t.segments[0].start_s == 0.0 and t.segments[1].end_s == 9.74
+
+
 def test_extract_quoted_span_handles_straight_and_smart_quotes():
     assert extract_quoted_span("the subtitle says 'hello world'") == "hello world"
     assert extract_quoted_span("caption ‘like this’ appears") == "like this"

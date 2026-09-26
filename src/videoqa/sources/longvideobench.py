@@ -52,6 +52,21 @@ def parse_timestamp(ts: str) -> float:
     return int(h) * 3600 + int(m) * 60 + float(s)
 
 
+def _entry_fields(e: dict) -> tuple[float, float, str]:
+    """LongVideoBench ships TWO subtitle shapes (both measured directly from
+    the archive, not documented in the README):
+
+      YouTube-sourced videos : {"start": "HH:MM:SS.mmm", "end": "...", "line": "..."}
+      TikTok-sourced videos  : {"timestamp": [start_s, end_s], "text": "..."}
+
+    This reads whichever shape a given entry uses.
+    """
+    if "timestamp" in e:
+        start, end = e["timestamp"]
+        return float(start), float(end), e["text"]
+    return parse_timestamp(e["start"]), parse_timestamp(e["end"]), e["line"]
+
+
 def subtitles_to_transcript(video_id: str, subtitle_entries: list[dict]) -> Transcript:
     """Convert the raw subtitle JSON list into our Transcript, in time order.
 
@@ -61,11 +76,11 @@ def subtitles_to_transcript(video_id: str, subtitle_entries: list[dict]) -> Tran
     not dropped: dropping would silently remove real, if brief, speech).
     """
     segs = []
-    for i, e in enumerate(sorted(subtitle_entries, key=lambda e: parse_timestamp(e["start"]))):
-        text = e["line"].strip()
+    parsed = sorted((_entry_fields(e) for e in subtitle_entries), key=lambda t: t[0])
+    for i, (start, end, text) in enumerate(parsed):
+        text = text.strip()
         if not text:
             continue
-        start, end = parse_timestamp(e["start"]), parse_timestamp(e["end"])
         segs.append(TranscriptSegment(id=f"s{i:05d}", start_s=start, end_s=max(start, end), text=text))
     return Transcript(video_id=video_id, segments=segs, source="longvideobench_subtitle")
 
