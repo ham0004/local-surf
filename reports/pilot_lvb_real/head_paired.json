@@ -1,0 +1,21 @@
+{
+  "checkpoint": "checkpoints\\lvb\\head_paired.npz",
+  "train_config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "epochs": 300,
+    "lambda_pair": 1.0,
+    "huber_delta": 0.5,
+    "weight_decay": 0.0001,
+    "seed": 0
+  },
+  "n_train_rows": 580,
+  "n_train_pairs": 132,
+  "n_dev_rows": 78,
+  "n_dev_pairs": 18,
+  "final_train_loss": 0.012821482452830699,
+  "train_pair_diff_mae": 0.02305565569356249,
+  "dev_pair_diff_mae": 0.01993109103846476,
+  "stop_threshold": 0.8,
+  "dev_realised_net_gain": 0.0
+}

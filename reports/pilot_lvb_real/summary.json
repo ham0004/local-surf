@@ -1,0 +1,1516 @@
+{
+  "summary": {
+    "transcript_only": {
+      "clean": {
+        "n": 7,
+        "quality": 0.2857142857142857,
+        "frames": 0.0,
+        "visual_tokens": 0.0,
+        "decoded_frames": 0.0,
+        "total_ms": 1651.137114294605,
+        "p95_ms": 6318.64258001005,
+        "cap_violations": 0
+      },
+      "targeted_damage": {
+        "n": 7,
+        "quality": 0.2857142857142857,
+        "frames": 0.0,
+        "visual_tokens": 0.0,
+        "decoded_frames": 0.0,
+        "total_ms": 567.3290428551679,
+        "p95_ms": 1034.8546899898793,
+        "cap_violations": 0
+      },
+      "control_damage": {
+        "n": 7,
+        "quality": 0.2857142857142857,
+        "frames": 0.0,
+        "visual_tokens": 0.0,
+        "decoded_frames": 0.0,
+        "total_ms": 566.7573428592212,
+        "p95_ms": 1036.3714100065408,
+        "cap_violations": 0
+      },
+      "asr_noise": {
+        "n": 7,
+        "quality": 0.2857142857142857,
+        "frames": 0.0,
+        "visual_tokens": 0.0,
+        "decoded_frames": 0.0,
+        "total_ms": 568.7180142849684,
+        "p95_ms": 1039.247210000758,
+        "cap_violations": 0
+      },
+      "hypothesis": {
+        "targeted_response": 0.0,
+        "control_overspend": 0.0,
+        "selectivity": 0.0
+      }
+    },
+    "uniform": {
+      "clean": {
+        "n": 7,
+        "quality": 0.5714285714285714,
+        "frames": 6.0,
+        "visual_tokens": 1320.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 2107.1063714313955,
+        "p95_ms": 5988.577160025302,
+        "cap_violations": 0
+      },
+      "targeted_damage": {
+        "n": 7,
+        "quality": 0.5714285714285714,
+        "frames": 6.0,
+        "visual_tokens": 1320.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 1233.78390000393,
+        "p95_ms": 1726.8496800010325,
+        "cap_violations": 0
+      },
+      "control_damage": {
+        "n": 7,
+        "quality": 0.5714285714285714,
+        "frames": 6.0,
+        "visual_tokens": 1320.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 1234.4283999950026,
+        "p95_ms": 1723.1465800156002,
+        "cap_violations": 0
+      },
+      "asr_noise": {
+        "n": 7,
+        "quality": 0.5714285714285714,
+        "frames": 6.0,
+        "visual_tokens": 1320.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 1233.5353999951622,
+        "p95_ms": 1728.1981499894755,
+        "cap_violations": 0
+      },
+      "hypothesis": {
+        "targeted_response": 0.0,
+        "control_overspend": 0.0,
+        "selectivity": 0.0
+      }
+    },
+    "retrieval": {
+      "clean": {
+        "n": 7,
+        "quality": 0.2857142857142857,
+        "frames": 0.0,
+        "visual_tokens": 0.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 1693.0622000051828,
+        "p95_ms": 5443.707620017808,
+        "cap_violations": 0
+      },
+      "targeted_damage": {
+        "n": 7,
+        "quality": 0.2857142857142857,
+        "frames": 0.0,
+        "visual_tokens": 0.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 837.6794000006547,
+        "p95_ms": 1257.061750003777,
+        "cap_violations": 0
+      },
+      "control_damage": {
+        "n": 7,
+        "quality": 0.2857142857142857,
+        "frames": 0.0,
+        "visual_tokens": 0.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 836.5549428563099,
+        "p95_ms": 1253.594280021207,
+        "cap_violations": 0
+      },
+      "asr_noise": {
+        "n": 7,
+        "quality": 0.2857142857142857,
+        "frames": 0.0,
+        "visual_tokens": 0.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 837.2625428580379,
+        "p95_ms": 1257.61548999144,
+        "cap_violations": 0
+      },
+      "hypothesis": {
+        "targeted_response": 0.0,
+        "control_overspend": 0.0,
+        "selectivity": 0.0
+      }
+    },
+    "scout_similarity": {
+      "clean": {
+        "n": 7,
+        "quality": 0.7142857142857143,
+        "frames": 6.0,
+        "visual_tokens": 1320.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 2068.7096000037855,
+        "p95_ms": 5446.738249997721,
+        "cap_violations": 0
+      },
+      "targeted_damage": {
+        "n": 7,
+        "quality": 0.7142857142857143,
+        "frames": 6.0,
+        "visual_tokens": 1320.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 1213.191942852323,
+        "p95_ms": 1643.5643600139883,
+        "cap_violations": 0
+      },
+      "control_damage": {
+        "n": 7,
+        "quality": 0.7142857142857143,
+        "frames": 6.0,
+        "visual_tokens": 1320.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 1210.6618999927637,
+        "p95_ms": 1636.9405699850176,
+        "cap_violations": 0
+      },
+      "asr_noise": {
+        "n": 7,
+        "quality": 0.7142857142857143,
+        "frames": 6.0,
+        "visual_tokens": 1320.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 1213.1740285674043,
+        "p95_ms": 1648.3033499855082,
+        "cap_violations": 0
+      },
+      "hypothesis": {
+        "targeted_response": 0.0,
+        "control_overspend": 0.0,
+        "selectivity": 0.0
+      }
+    },
+    "heuristic": {
+      "clean": {
+        "n": 7,
+        "quality": 0.8571428571428571,
+        "frames": 4.857142857142857,
+        "visual_tokens": 1068.5714285714287,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 2061.481357142579,
+        "p95_ms": 5795.958040010006,
+        "cap_violations": 0
+      },
+      "targeted_damage": {
+        "n": 7,
+        "quality": 0.8571428571428571,
+        "frames": 5.0,
+        "visual_tokens": 1100.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 1217.9312142980052,
+        "p95_ms": 1652.3144800172304,
+        "cap_violations": 0
+      },
+      "control_damage": {
+        "n": 7,
+        "quality": 0.8571428571428571,
+        "frames": 5.0,
+        "visual_tokens": 1100.0,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 1216.3857714185724,
+        "p95_ms": 1644.9250500110793,
+        "cap_violations": 0
+      },
+      "asr_noise": {
+        "n": 7,
+        "quality": 0.8571428571428571,
+        "frames": 4.857142857142857,
+        "visual_tokens": 1068.5714285714287,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 1203.4766000038612,
+        "p95_ms": 1649.1244899938465,
+        "cap_violations": 0
+      },
+      "hypothesis": {
+        "targeted_response": 0.14285714285714324,
+        "control_overspend": 0.14285714285714324,
+        "selectivity": 0.0
+      }
+    },
+    "learned[head_paired]": {
+      "clean": {
+        "n": 7,
+        "quality": 0.42857142857142855,
+        "frames": 0.42857142857142855,
+        "visual_tokens": 94.28571428571429,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 1723.3174142914193,
+        "p95_ms": 5471.298750024284,
+        "cap_violations": 0
+      },
+      "targeted_damage": {
+        "n": 7,
+        "quality": 0.42857142857142855,
+        "frames": 0.5714285714285714,
+        "visual_tokens": 125.71428571428571,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 878.2436428633185,
+        "p95_ms": 1284.2129800003022,
+        "cap_violations": 0
+      },
+      "control_damage": {
+        "n": 7,
+        "quality": 0.42857142857142855,
+        "frames": 0.42857142857142855,
+        "visual_tokens": 94.28571428571429,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 866.0463142857354,
+        "p95_ms": 1274.3922400230076,
+        "cap_violations": 0
+      },
+      "asr_noise": {
+        "n": 7,
+        "quality": 0.42857142857142855,
+        "frames": 0.42857142857142855,
+        "visual_tokens": 94.28571428571429,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 866.8433285659246,
+        "p95_ms": 1283.375979977427,
+        "cap_violations": 0
+      },
+      "hypothesis": {
+        "targeted_response": 0.14285714285714285,
+        "control_overspend": 0.0,
+        "selectivity": 0.14285714285714285
+      }
+    },
+    "learned[head_unpaired]": {
+      "clean": {
+        "n": 7,
+        "quality": 0.42857142857142855,
+        "frames": 0.42857142857142855,
+        "visual_tokens": 94.28571428571429,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 1722.9117999959271,
+        "p95_ms": 5468.76325000339,
+        "cap_violations": 0
+      },
+      "targeted_damage": {
+        "n": 7,
+        "quality": 0.42857142857142855,
+        "frames": 0.42857142857142855,
+        "visual_tokens": 94.28571428571429,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 872.775457150835,
+        "p95_ms": 1284.7859199973755,
+        "cap_violations": 0
+      },
+      "control_damage": {
+        "n": 7,
+        "quality": 0.42857142857142855,
+        "frames": 0.42857142857142855,
+        "visual_tokens": 94.28571428571429,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 866.8971571439345,
+        "p95_ms": 1276.7565900154295,
+        "cap_violations": 0
+      },
+      "asr_noise": {
+        "n": 7,
+        "quality": 0.42857142857142855,
+        "frames": 0.42857142857142855,
+        "visual_tokens": 94.28571428571429,
+        "decoded_frames": 423.42857142857144,
+        "total_ms": 867.6492142902654,
+        "p95_ms": 1285.3343900002073,
+        "cap_violations": 0
+      },
+      "hypothesis": {
+        "targeted_response": 0.0,
+        "control_overspend": 0.0,
+        "selectivity": 0.0
+      }
+    }
+  },
+  "comparisons": {
+    "transcript_only - uniform | clean | quality": {
+      "diff": -0.2857142857142857,
+      "ci95_low": -0.7142857142857143,
+      "ci95_high": 0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - uniform | clean | frames": {
+      "diff": -6.0,
+      "ci95_low": -6.0,
+      "ci95_high": -6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - uniform | targeted_damage | quality": {
+      "diff": -0.2857142857142857,
+      "ci95_low": -0.7142857142857143,
+      "ci95_high": 0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - uniform | targeted_damage | frames": {
+      "diff": -6.0,
+      "ci95_low": -6.0,
+      "ci95_high": -6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - uniform | control_damage | quality": {
+      "diff": -0.2857142857142857,
+      "ci95_low": -0.7142857142857143,
+      "ci95_high": 0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - uniform | control_damage | frames": {
+      "diff": -6.0,
+      "ci95_low": -6.0,
+      "ci95_high": -6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - uniform | asr_noise | quality": {
+      "diff": -0.2857142857142857,
+      "ci95_low": -0.7142857142857143,
+      "ci95_high": 0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - uniform | asr_noise | frames": {
+      "diff": -6.0,
+      "ci95_low": -6.0,
+      "ci95_high": -6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - retrieval | clean | quality": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - retrieval | clean | frames": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - retrieval | targeted_damage | quality": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - retrieval | targeted_damage | frames": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - retrieval | control_damage | quality": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - retrieval | control_damage | frames": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - retrieval | asr_noise | quality": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - retrieval | asr_noise | frames": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - scout_similarity | clean | quality": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - scout_similarity | clean | frames": {
+      "diff": -6.0,
+      "ci95_low": -6.0,
+      "ci95_high": -6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - scout_similarity | targeted_damage | quality": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - scout_similarity | targeted_damage | frames": {
+      "diff": -6.0,
+      "ci95_low": -6.0,
+      "ci95_high": -6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - scout_similarity | control_damage | quality": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - scout_similarity | control_damage | frames": {
+      "diff": -6.0,
+      "ci95_low": -6.0,
+      "ci95_high": -6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - scout_similarity | asr_noise | quality": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - scout_similarity | asr_noise | frames": {
+      "diff": -6.0,
+      "ci95_low": -6.0,
+      "ci95_high": -6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - heuristic | clean | quality": {
+      "diff": -0.5714285714285714,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - heuristic | clean | frames": {
+      "diff": -4.857142857142857,
+      "ci95_low": -5.714285714285714,
+      "ci95_high": -4.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - heuristic | targeted_damage | quality": {
+      "diff": -0.5714285714285714,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - heuristic | targeted_damage | frames": {
+      "diff": -5.0,
+      "ci95_low": -5.714285714285714,
+      "ci95_high": -4.285714285714286,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - heuristic | control_damage | quality": {
+      "diff": -0.5714285714285714,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - heuristic | control_damage | frames": {
+      "diff": -5.0,
+      "ci95_low": -5.714285714285714,
+      "ci95_high": -4.142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - heuristic | asr_noise | quality": {
+      "diff": -0.5714285714285714,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - heuristic | asr_noise | frames": {
+      "diff": -4.857142857142857,
+      "ci95_low": -5.714285714285714,
+      "ci95_high": -4.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_paired] | clean | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_paired] | clean | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_paired] | targeted_damage | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_paired] | targeted_damage | frames": {
+      "diff": -0.5714285714285714,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_paired] | control_damage | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_paired] | control_damage | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_paired] | asr_noise | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_paired] | asr_noise | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_unpaired] | clean | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_unpaired] | clean | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_unpaired] | targeted_damage | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_unpaired] | targeted_damage | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_unpaired] | control_damage | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_unpaired] | control_damage | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_unpaired] | asr_noise | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "transcript_only - learned[head_unpaired] | asr_noise | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - retrieval | clean | quality": {
+      "diff": 0.2857142857142857,
+      "ci95_low": -0.2857142857142857,
+      "ci95_high": 0.7142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - retrieval | clean | frames": {
+      "diff": 6.0,
+      "ci95_low": 6.0,
+      "ci95_high": 6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - retrieval | targeted_damage | quality": {
+      "diff": 0.2857142857142857,
+      "ci95_low": -0.2857142857142857,
+      "ci95_high": 0.7142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - retrieval | targeted_damage | frames": {
+      "diff": 6.0,
+      "ci95_low": 6.0,
+      "ci95_high": 6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - retrieval | control_damage | quality": {
+      "diff": 0.2857142857142857,
+      "ci95_low": -0.2857142857142857,
+      "ci95_high": 0.7142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - retrieval | control_damage | frames": {
+      "diff": 6.0,
+      "ci95_low": 6.0,
+      "ci95_high": 6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - retrieval | asr_noise | quality": {
+      "diff": 0.2857142857142857,
+      "ci95_low": -0.2857142857142857,
+      "ci95_high": 0.7142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - retrieval | asr_noise | frames": {
+      "diff": 6.0,
+      "ci95_low": 6.0,
+      "ci95_high": 6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - scout_similarity | clean | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.5714285714285714,
+      "ci95_high": 0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - scout_similarity | clean | frames": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - scout_similarity | targeted_damage | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.5714285714285714,
+      "ci95_high": 0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - scout_similarity | targeted_damage | frames": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - scout_similarity | control_damage | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.5714285714285714,
+      "ci95_high": 0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - scout_similarity | control_damage | frames": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - scout_similarity | asr_noise | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.5714285714285714,
+      "ci95_high": 0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - scout_similarity | asr_noise | frames": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - heuristic | clean | quality": {
+      "diff": -0.2857142857142857,
+      "ci95_low": -0.5714285714285714,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - heuristic | clean | frames": {
+      "diff": 1.1428571428571428,
+      "ci95_low": 0.2857142857142857,
+      "ci95_high": 2.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - heuristic | targeted_damage | quality": {
+      "diff": -0.2857142857142857,
+      "ci95_low": -0.5714285714285714,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - heuristic | targeted_damage | frames": {
+      "diff": 1.0,
+      "ci95_low": 0.2857142857142857,
+      "ci95_high": 1.7142857142857142,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - heuristic | control_damage | quality": {
+      "diff": -0.2857142857142857,
+      "ci95_low": -0.5714285714285714,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - heuristic | control_damage | frames": {
+      "diff": 1.0,
+      "ci95_low": 0.2857142857142857,
+      "ci95_high": 1.8571428571428572,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - heuristic | asr_noise | quality": {
+      "diff": -0.2857142857142857,
+      "ci95_low": -0.5714285714285714,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - heuristic | asr_noise | frames": {
+      "diff": 1.1428571428571428,
+      "ci95_low": 0.2857142857142857,
+      "ci95_high": 2.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_paired] | clean | quality": {
+      "diff": 0.14285714285714285,
+      "ci95_low": -0.2857142857142857,
+      "ci95_high": 0.5714285714285714,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_paired] | clean | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_paired] | targeted_damage | quality": {
+      "diff": 0.14285714285714285,
+      "ci95_low": -0.2857142857142857,
+      "ci95_high": 0.5714285714285714,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_paired] | targeted_damage | frames": {
+      "diff": 5.428571428571429,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_paired] | control_damage | quality": {
+      "diff": 0.14285714285714285,
+      "ci95_low": -0.2857142857142857,
+      "ci95_high": 0.5714285714285714,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_paired] | control_damage | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_paired] | asr_noise | quality": {
+      "diff": 0.14285714285714285,
+      "ci95_low": -0.2857142857142857,
+      "ci95_high": 0.5714285714285714,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_paired] | asr_noise | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_unpaired] | clean | quality": {
+      "diff": 0.14285714285714285,
+      "ci95_low": -0.2857142857142857,
+      "ci95_high": 0.5714285714285714,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_unpaired] | clean | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_unpaired] | targeted_damage | quality": {
+      "diff": 0.14285714285714285,
+      "ci95_low": -0.2857142857142857,
+      "ci95_high": 0.5714285714285714,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_unpaired] | targeted_damage | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_unpaired] | control_damage | quality": {
+      "diff": 0.14285714285714285,
+      "ci95_low": -0.2857142857142857,
+      "ci95_high": 0.5714285714285714,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_unpaired] | control_damage | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_unpaired] | asr_noise | quality": {
+      "diff": 0.14285714285714285,
+      "ci95_low": -0.2857142857142857,
+      "ci95_high": 0.5714285714285714,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "uniform - learned[head_unpaired] | asr_noise | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - scout_similarity | clean | quality": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - scout_similarity | clean | frames": {
+      "diff": -6.0,
+      "ci95_low": -6.0,
+      "ci95_high": -6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - scout_similarity | targeted_damage | quality": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - scout_similarity | targeted_damage | frames": {
+      "diff": -6.0,
+      "ci95_low": -6.0,
+      "ci95_high": -6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - scout_similarity | control_damage | quality": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - scout_similarity | control_damage | frames": {
+      "diff": -6.0,
+      "ci95_low": -6.0,
+      "ci95_high": -6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - scout_similarity | asr_noise | quality": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - scout_similarity | asr_noise | frames": {
+      "diff": -6.0,
+      "ci95_low": -6.0,
+      "ci95_high": -6.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - heuristic | clean | quality": {
+      "diff": -0.5714285714285714,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - heuristic | clean | frames": {
+      "diff": -4.857142857142857,
+      "ci95_low": -5.714285714285714,
+      "ci95_high": -4.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - heuristic | targeted_damage | quality": {
+      "diff": -0.5714285714285714,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - heuristic | targeted_damage | frames": {
+      "diff": -5.0,
+      "ci95_low": -5.714285714285714,
+      "ci95_high": -4.285714285714286,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - heuristic | control_damage | quality": {
+      "diff": -0.5714285714285714,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - heuristic | control_damage | frames": {
+      "diff": -5.0,
+      "ci95_low": -5.714285714285714,
+      "ci95_high": -4.142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - heuristic | asr_noise | quality": {
+      "diff": -0.5714285714285714,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.2857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - heuristic | asr_noise | frames": {
+      "diff": -4.857142857142857,
+      "ci95_low": -5.714285714285714,
+      "ci95_high": -4.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_paired] | clean | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_paired] | clean | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_paired] | targeted_damage | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_paired] | targeted_damage | frames": {
+      "diff": -0.5714285714285714,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_paired] | control_damage | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_paired] | control_damage | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_paired] | asr_noise | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_paired] | asr_noise | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_unpaired] | clean | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_unpaired] | clean | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_unpaired] | targeted_damage | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_unpaired] | targeted_damage | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_unpaired] | control_damage | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_unpaired] | control_damage | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_unpaired] | asr_noise | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "retrieval - learned[head_unpaired] | asr_noise | frames": {
+      "diff": -0.42857142857142855,
+      "ci95_low": -0.8571428571428571,
+      "ci95_high": -0.14285714285714285,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - heuristic | clean | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - heuristic | clean | frames": {
+      "diff": 1.1428571428571428,
+      "ci95_low": 0.2857142857142857,
+      "ci95_high": 2.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - heuristic | targeted_damage | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - heuristic | targeted_damage | frames": {
+      "diff": 1.0,
+      "ci95_low": 0.2857142857142857,
+      "ci95_high": 1.7142857142857142,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - heuristic | control_damage | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - heuristic | control_damage | frames": {
+      "diff": 1.0,
+      "ci95_low": 0.2857142857142857,
+      "ci95_high": 1.8571428571428572,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - heuristic | asr_noise | quality": {
+      "diff": -0.14285714285714285,
+      "ci95_low": -0.42857142857142855,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - heuristic | asr_noise | frames": {
+      "diff": 1.1428571428571428,
+      "ci95_low": 0.2857142857142857,
+      "ci95_high": 2.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_paired] | clean | quality": {
+      "diff": 0.2857142857142857,
+      "ci95_low": 0.0,
+      "ci95_high": 0.7142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_paired] | clean | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_paired] | targeted_damage | quality": {
+      "diff": 0.2857142857142857,
+      "ci95_low": 0.0,
+      "ci95_high": 0.7142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_paired] | targeted_damage | frames": {
+      "diff": 5.428571428571429,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_paired] | control_damage | quality": {
+      "diff": 0.2857142857142857,
+      "ci95_low": 0.0,
+      "ci95_high": 0.7142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_paired] | control_damage | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_paired] | asr_noise | quality": {
+      "diff": 0.2857142857142857,
+      "ci95_low": 0.0,
+      "ci95_high": 0.7142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_paired] | asr_noise | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_unpaired] | clean | quality": {
+      "diff": 0.2857142857142857,
+      "ci95_low": 0.0,
+      "ci95_high": 0.7142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_unpaired] | clean | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_unpaired] | targeted_damage | quality": {
+      "diff": 0.2857142857142857,
+      "ci95_low": 0.0,
+      "ci95_high": 0.7142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_unpaired] | targeted_damage | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_unpaired] | control_damage | quality": {
+      "diff": 0.2857142857142857,
+      "ci95_low": 0.0,
+      "ci95_high": 0.7142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_unpaired] | control_damage | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_unpaired] | asr_noise | quality": {
+      "diff": 0.2857142857142857,
+      "ci95_low": 0.0,
+      "ci95_high": 0.7142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "scout_similarity - learned[head_unpaired] | asr_noise | frames": {
+      "diff": 5.571428571428571,
+      "ci95_low": 5.142857142857143,
+      "ci95_high": 5.857142857142857,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_paired] | clean | quality": {
+      "diff": 0.42857142857142855,
+      "ci95_low": 0.14285714285714285,
+      "ci95_high": 0.8571428571428571,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_paired] | clean | frames": {
+      "diff": 4.428571428571429,
+      "ci95_low": 3.7142857142857144,
+      "ci95_high": 5.142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_paired] | targeted_damage | quality": {
+      "diff": 0.42857142857142855,
+      "ci95_low": 0.14285714285714285,
+      "ci95_high": 0.8571428571428571,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_paired] | targeted_damage | frames": {
+      "diff": 4.428571428571429,
+      "ci95_low": 3.7142857142857144,
+      "ci95_high": 5.142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_paired] | control_damage | quality": {
+      "diff": 0.42857142857142855,
+      "ci95_low": 0.14285714285714285,
+      "ci95_high": 0.8571428571428571,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_paired] | control_damage | frames": {
+      "diff": 4.571428571428571,
+      "ci95_low": 3.857142857142857,
+      "ci95_high": 5.142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_paired] | asr_noise | quality": {
+      "diff": 0.42857142857142855,
+      "ci95_low": 0.14285714285714285,
+      "ci95_high": 0.8571428571428571,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_paired] | asr_noise | frames": {
+      "diff": 4.428571428571429,
+      "ci95_low": 3.7142857142857144,
+      "ci95_high": 5.142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_unpaired] | clean | quality": {
+      "diff": 0.42857142857142855,
+      "ci95_low": 0.14285714285714285,
+      "ci95_high": 0.8571428571428571,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_unpaired] | clean | frames": {
+      "diff": 4.428571428571429,
+      "ci95_low": 3.7142857142857144,
+      "ci95_high": 5.142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_unpaired] | targeted_damage | quality": {
+      "diff": 0.42857142857142855,
+      "ci95_low": 0.14285714285714285,
+      "ci95_high": 0.8571428571428571,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_unpaired] | targeted_damage | frames": {
+      "diff": 4.571428571428571,
+      "ci95_low": 4.142857142857143,
+      "ci95_high": 5.142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_unpaired] | control_damage | quality": {
+      "diff": 0.42857142857142855,
+      "ci95_low": 0.14285714285714285,
+      "ci95_high": 0.8571428571428571,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_unpaired] | control_damage | frames": {
+      "diff": 4.571428571428571,
+      "ci95_low": 3.857142857142857,
+      "ci95_high": 5.142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_unpaired] | asr_noise | quality": {
+      "diff": 0.42857142857142855,
+      "ci95_low": 0.14285714285714285,
+      "ci95_high": 0.8571428571428571,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "heuristic - learned[head_unpaired] | asr_noise | frames": {
+      "diff": 4.428571428571429,
+      "ci95_low": 3.7142857142857144,
+      "ci95_high": 5.142857142857143,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "learned[head_paired] - learned[head_unpaired] | clean | quality": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "learned[head_paired] - learned[head_unpaired] | clean | frames": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "learned[head_paired] - learned[head_unpaired] | targeted_damage | quality": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "learned[head_paired] - learned[head_unpaired] | targeted_damage | frames": {
+      "diff": 0.14285714285714285,
+      "ci95_low": 0.0,
+      "ci95_high": 0.42857142857142855,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "learned[head_paired] - learned[head_unpaired] | control_damage | quality": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "learned[head_paired] - learned[head_unpaired] | control_damage | frames": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "learned[head_paired] - learned[head_unpaired] | asr_noise | quality": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    },
+    "learned[head_paired] - learned[head_unpaired] | asr_noise | frames": {
+      "diff": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "n_videos": 7,
+      "n_questions": 7
+    }
+  },
+  "skipped_no_matched_control": 3,
+  "missing_video": 0,
+  "config": "configs/gpu_12gb.yaml",
+  "split": "test",
+  "data": "data/longvideobench"
+}
