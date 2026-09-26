@@ -60,8 +60,8 @@ class EvalRecord:
 
 
 def _conditions(qa: QAItem, transcript: Transcript, dtype: DamageType, seed: int,
-                asr_wer: float) -> dict[str, Transcript] | None:
-    triple = make_triple(qa, transcript, dtype=dtype, seed=seed)
+                asr_wer: float, relevance_methods: frozenset[str] | None = None) -> dict[str, Transcript] | None:
+    triple = make_triple(qa, transcript, dtype=dtype, seed=seed, relevance_methods=relevance_methods)
     if triple is None:
         return None
     return {"clean": triple.clean, "targeted_damage": triple.targeted, "control_damage": triple.control,
@@ -70,13 +70,16 @@ def _conditions(qa: QAItem, transcript: Transcript, dtype: DamageType, seed: int
 
 def evaluate(items: list[tuple[QAItem, str, Transcript]], policies: list[Policy], cfg: dict, budget: Budget,
              scout: Scout, answerer: Answerer, dtype: DamageType = DamageType.DELETE, seed: int = 0,
-             asr_wer: float = 0.2) -> tuple[list[EvalRecord], int]:
+             asr_wer: float = 0.2,
+             relevance_methods: frozenset[str] | None = None) -> tuple[list[EvalRecord], int]:
     """Run every policy on every (question, condition).  Returns records and the
-    number of questions skipped because no fair matched control existed."""
+    number of questions skipped because no fair triple could be built (no
+    answer-relevant segment from an allowed relevance source, or no matched
+    control)."""
     records: list[EvalRecord] = []
     skipped = 0
     for qa, video_path, transcript in items:
-        conds = _conditions(qa, transcript, dtype, seed, asr_wer)
+        conds = _conditions(qa, transcript, dtype, seed, asr_wer, relevance_methods)
         if conds is None:
             skipped += 1
             continue

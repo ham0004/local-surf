@@ -24,7 +24,7 @@ from .answerer import make_answerer
 from .config import budget_from_config, load_config
 from .controller import make_policy
 from .costs import CostMeter
-from .damage import make_triple
+from .damage import ANNOTATION_RELEVANCE, make_triple
 from .datasets import load_local_dataset
 from .evaluate import cluster_bootstrap_diff, evaluate, summarise, to_markdown, write_report
 from .heads import TrainConfig
@@ -62,10 +62,13 @@ def cmd_ask(a) -> None:
                       "total_ms": round(meter.total().elapsed_ms), "result": str(out)}, indent=2))
 
 
-def _triples(items, dtype, seed):
+RELEVANCE_CHOICES = {"any": None, "annotation": ANNOTATION_RELEVANCE}
+
+
+def _triples(items, dtype, seed, relevance_methods=None):
     out, skipped = [], 0
     for it in items:
-        triple = make_triple(it.qa, it.transcript, dtype=dtype, seed=seed)
+        triple = make_triple(it.qa, it.transcript, dtype=dtype, seed=seed, relevance_methods=relevance_methods)
         if triple is None:
             skipped += 1
             continue
@@ -78,7 +81,7 @@ def cmd_build_labels(a) -> None:
     items, report = load_local_dataset(a.data, splits=(a.split,))
     items = items[: a.limit] if a.limit else items
     dtype = DamageType(a.damage)
-    triples, skipped = _triples(items, dtype, a.seed)
+    triples, skipped = _triples(items, dtype, a.seed, RELEVANCE_CHOICES[a.relevance])
     # Label generation is train-only by construction; a dev label set is built
     # the same way but only ever used for threshold tuning.
     triples = [(dataclasses.replace(qa, source_split="train" if a.split == "train" else "unassigned"), p, t)
@@ -88,8 +91,8 @@ def cmd_build_labels(a) -> None:
                                         max_steps=a.max_steps)
     manifest = {"data": str(a.data), "split": a.split, "config": a.config, "answerer": answerer.name,
                 "answerer_model": cfg["answerer"].get("model_id"), "answerer_revision": cfg["answerer"].get("revision"),
-                "damage_type": dtype.value, "seed": a.seed, "questions": len(triples),
-                "skipped_no_matched_control": skipped, "missing_video": len(report.missing_video),
+                "damage_type": dtype.value, "relevance": a.relevance, "seed": a.seed,
+                "questions": len(triples), "skipped_no_fair_triple": skipped, "missing_video": len(report.missing_video),
                 "answer_calls": stats.answer_calls, "cache_hits": stats.cache_hits,
                 "labelling_seconds": round(stats.seconds, 2),
                 "created": time.strftime("%Y-%m-%d %H:%M:%S")}
@@ -117,7 +120,8 @@ def cmd_evaluate(a) -> None:
         policies.append(pol)
     records, skipped = evaluate([(it.qa, it.video_path, it.transcript) for it in items], policies, cfg,
                                 budget_from_config(cfg), _scout(cfg), make_answerer(cfg),
-                                dtype=DamageType(a.damage), seed=a.seed)
+                                dtype=DamageType(a.damage), seed=a.seed,
+                                relevance_methods=RELEVANCE_CHOICES[a.relevance])
     summary = summarise(records)
     names = [p.name for p in policies]
     comparisons = {}
@@ -127,7 +131,7 @@ def cmd_evaluate(a) -> None:
                 for metric in ("quality", "frames"):
                     comparisons[f"{pa} - {pb} | {cond} | {metric}"] = cluster_bootstrap_diff(
                         records, pa, pb, cond, metric=metric)
-    write_report(a.out, records, summary, {"comparisons": comparisons, "skipped_no_matched_control": skipped,
+    write_report(a.out, records, summary, {"comparisons": comparisons, "skipped_no_fair_triple": skipped, "relevance": a.relevance,
                                            "missing_video": len(report.missing_video), "config": a.config,
                                            "split": a.split, "data": str(a.data)})
     print(to_markdown(summary))
@@ -209,6 +213,9 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--split", default="train", choices=["train", "dev"])
     s.add_argument("--config", default="configs/cpu.yaml")
     s.add_argument("--damage", default="delete", choices=[d.value for d in DamageType])
+    s.add_argument("--relevance", default="any", choices=sorted(RELEVANCE_CHOICES),
+                   help="which relevance sources may define targeted damage; use 'annotation' when "
+                        "answers are visual (e.g. LongVideoBench)")
     s.add_argument("--max-steps", type=int, default=2)
     s.add_argument("--limit", type=int)
     s.add_argument("--seed", type=int, default=0)
@@ -233,6 +240,9 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--policies", default="transcript_only,uniform,retrieval,scout_similarity,heuristic",
                    help="comma list; learned policies as learned=path/to/head.npz")
     s.add_argument("--damage", default="delete", choices=[d.value for d in DamageType])
+    s.add_argument("--relevance", default="any", choices=sorted(RELEVANCE_CHOICES),
+                   help="which relevance sources may define targeted damage; use 'annotation' when "
+                        "answers are visual (e.g. LongVideoBench)")
     s.add_argument("--limit", type=int)
     s.add_argument("--seed", type=int, default=0)
     s.add_argument("--out", required=True)
