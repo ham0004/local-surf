@@ -22,6 +22,7 @@ by that repository's `hf_hub_download`/tar-split convention.
 from __future__ import annotations
 
 import dataclasses
+import http.client
 import json
 import time
 import urllib.error
@@ -100,16 +101,23 @@ class RemoteMultipartTar:
             try:
                 req = urllib.request.Request(url, headers=headers)
                 with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                    if resp.status not in (200, 206):
-                        raise RuntimeError(f"unexpected status {resp.status} reading {part.name}")
-                    return resp.read()
+                    # A 200 means the server ignored Range and is sending the
+                    # WHOLE part (5 GB here); never read that into memory.
+                    if resp.status != 206 and not (resp.status == 200 and local_off == 0 and length == part.size):
+                        raise RuntimeError(f"server did not honour Range (status {resp.status}) for {part.name}")
+                    data = resp.read(length)
+                if len(data) != length:
+                    # Truncated body: transient network behaviour, retry.
+                    last_error = RuntimeError(f"short read: {len(data)} of {length} bytes from {part.name}")
+                    continue
+                return data
             except urllib.error.HTTPError as e:
                 if e.code in (429, 500, 502, 503, 504):
                     last_error = e
                     continue
                 raise RuntimeError(f"HTTP {e.code} reading {part.name} bytes {local_off}-{local_off+length-1}: "
                                    f"{e.read()[:200]!r}") from e
-            except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
+            except (urllib.error.URLError, TimeoutError, ConnectionError, OSError, http.client.HTTPException) as e:
                 last_error = e
                 continue
         raise RuntimeError(
@@ -163,15 +171,23 @@ class RemoteMultipartTar:
             offset += 512 + data_blocks * 512
 
     def extract_to(self, entry: RemoteTarEntry, dest: str | Path, chunk_size: int = 8 * 1024 * 1024) -> int:
-        """Download one entry's payload to ``dest`` in chunks (bounded memory)."""
-        Path(dest).parent.mkdir(parents=True, exist_ok=True)
+        """Download one entry's payload to ``dest`` in chunks (bounded memory).
+
+        Written to ``<dest>.part`` and renamed only once complete, so an
+        interrupted download can never leave a truncated file at ``dest`` that
+        a resume would mistake for a finished one.
+        """
+        dest = Path(dest)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        tmp = dest.with_name(dest.name + ".part")
         data_offset = entry.global_offset + 512
         written = 0
-        with open(dest, "wb") as fh:
+        with open(tmp, "wb") as fh:
             while written < entry.size:
                 n = min(chunk_size, entry.size - written)
                 fh.write(self.read(data_offset + written, n))
                 written += n
+        tmp.replace(dest)
         return written
 
 

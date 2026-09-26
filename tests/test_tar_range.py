@@ -222,5 +222,38 @@ def test_build_catalog_resumes_after_a_permanent_outage_partway_through(server, 
     assert full.complete
     reference = {e.name for e in RemoteMultipartTar(base, parts).iter_entries()}
     assert set(full.entries) == reference
-    # resuming must not re-request the header for the entry it already had
-    assert all(name != "a.txt" for name, _ in _RangeHandler.requests[:1])
+    # resuming must NOT start again from byte 0 of the archive (the header of
+    # the entry it already had): the first request after resume starts later.
+    first_part, first_range = _RangeHandler.requests[0]
+    assert not (first_part == "t.part.aa" and first_range.startswith("bytes=0-"))
+
+
+def test_server_ignoring_range_is_rejected_not_read_whole(server):
+    # A 200 for a partial request means the server would stream the WHOLE part.
+    base, parts = server
+    orig = _RangeHandler.do_GET
+
+    def ignore_range(self):
+        self.send_response(200)
+        data = self.parts["t.part.aa"]
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+    _RangeHandler.do_GET = ignore_range
+    try:
+        tar = RemoteMultipartTar(base, parts, max_retries=0)
+        with pytest.raises(RuntimeError, match="did not honour Range"):
+            tar.read(512, 512)
+    finally:
+        _RangeHandler.do_GET = orig
+
+
+def test_extract_is_atomic_no_partial_file_left_at_dest(server, tmp_path):
+    base, parts = server
+    tar = RemoteMultipartTar(base, parts)
+    entry = {e.name: e for e in tar.iter_entries()}["dir/b.txt"]
+    _RangeHandler.fail_from_request_n = _RangeHandler._request_count + 1   # outage during payload
+    flaky = RemoteMultipartTar(base, parts, max_retries=0, retry_backoff_s=0.0)
+    with pytest.raises(RuntimeError):
+        flaky.extract_to(entry, tmp_path / "b.txt")
+    assert not (tmp_path / "b.txt").exists()          # never a truncated final file
