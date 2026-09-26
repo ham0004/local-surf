@@ -85,6 +85,11 @@ def prepare(video_path: str | Path, transcript: Transcript, question: str, optio
         frames = {c.id: f for c, f in zip(candidates, res.frames, strict=True)}
         rec.decoded_frames = res.frames_visited
 
+    # Model loading is a one-off (cold) cost; meter it apart from scoring so
+    # reports can show cold single-query cost and warm per-query cost.
+    if hasattr(scout, "ensure_loaded"):
+        with meter.stage("scout_load"):
+            scout.ensure_loaded()
     with meter.stage("scout") as rec:
         by_frame = scout.score(question, list(frames.values()))
         signals = {cid: by_frame[f.id] for cid, f in frames.items()}
@@ -124,6 +129,9 @@ def answer_with(prep: Prepared, state: EvidenceState, answerer: Answerer, meter:
     excerpt = pack_excerpt(prep.question, prep.transcript.segments, prep.windows, unit_to_segments,
                            max_words=max_excerpt_words, extra_segment_ids=state.extra_segment_ids)
     frames = sorted((prep.frames[c] for c in state.looked_at), key=lambda f: f.decoded_pts_s)
+    if hasattr(answerer, "ensure_loaded"):
+        with meter.stage(f"{stage}_load"):
+            answerer.ensure_loaded()
     with meter.stage(stage) as rec:
         answer, usage = answerer.answer(AnswerRequest(prep.question, prep.options, excerpt, frames))
         rec.visual_tokens, rec.text_tokens, rec.selected_frames = usage.visual_tokens, usage.text_tokens, len(frames)

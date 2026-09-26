@@ -55,9 +55,13 @@ class HFVLMAnswerer:
         return [{"role": "system", "content": [{"type": "text", "text": SYSTEM_PROMPT}]},
                 {"role": "user", "content": content}]
 
-    def answer(self, req: AnswerRequest) -> tuple[Answer, AnswerUsage]:
+    def ensure_loaded(self) -> None:
+        """Load weights now so loading is metered as its own (cold) stage."""
         if self._model is None:
             self._load()
+
+    def answer(self, req: AnswerRequest) -> tuple[Answer, AnswerUsage]:
+        self.ensure_loaded()
         torch = self._torch
         inputs = self._processor.apply_chat_template(
             self._messages(req), tokenize=True, add_generation_prompt=True, return_dict=True, return_tensors="pt"
