@@ -1,0 +1,22 @@
+"""Local dataset layout: loading, hashed splits, and missing-file reporting."""
+
+from videoqa import fixtures
+from videoqa.datasets import load_local_dataset
+
+
+def test_load_synthetic_dataset_assigns_splits_and_reports_missing(tmp_path):
+    fixtures.write_dataset(tmp_path, n_videos=3, seed0=200)
+    (tmp_path / "videos" / "synth_0201.mp4").unlink()            # simulate a dead link
+    items, report = load_local_dataset(tmp_path)
+    assert report.loaded == 6
+    assert len(report.missing_video) == 3                          # 3 questions of the missing video
+    assert all(it.qa.source_split in {"train", "dev", "calibration", "test"} for it in items)
+    assert all(len(it.transcript.segments) == 11 for it in items)
+
+
+def test_split_filter(tmp_path):
+    fixtures.write_dataset(tmp_path, n_videos=4, seed0=300)
+    all_items, _ = load_local_dataset(tmp_path)
+    some = {all_items[0].qa.source_split}
+    filtered, _ = load_local_dataset(tmp_path, splits=tuple(some))
+    assert filtered and all(it.qa.source_split in some for it in filtered)
