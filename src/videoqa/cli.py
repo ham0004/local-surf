@@ -107,17 +107,29 @@ def cmd_train(a) -> None:
     print(json.dumps(res, indent=2))
 
 
+def parse_policy_spec(spec: str):
+    """``name`` | ``learned=<head.npz>`` | ``learned=<head.npz>@<stop_threshold>``.
+
+    The ``@threshold`` form overrides the dev-tuned STOP threshold, so paired
+    and unpaired heads can be compared along the same accuracy-vs-frames curve
+    instead of at two different, separately tuned thresholds (which confounded
+    earlier comparisons)."""
+    name, _, rest = spec.strip().partition("=")
+    ckpt, _, thr = rest.partition("@")
+    pol = make_policy(name, ckpt or None)
+    if ckpt:
+        pol.name = f"learned[{Path(ckpt).stem}]"
+    if thr:
+        pol.stop_threshold = float(thr)
+        pol.name = f"{pol.name}@{float(thr):g}"
+    return pol
+
+
 def cmd_evaluate(a) -> None:
     cfg = load_config(a.config)
     items, report = load_local_dataset(a.data, splits=(a.split,))
     items = items[: a.limit] if a.limit else items
-    policies = []
-    for spec in a.policies.split(","):
-        name, _, ckpt = spec.partition("=")          # e.g. learned=runs/ckpt/head_paired.npz
-        pol = make_policy(name, ckpt or None)
-        if ckpt:
-            pol.name = f"learned[{Path(ckpt).stem}]"
-        policies.append(pol)
+    policies = [parse_policy_spec(spec) for spec in a.policies.split(",")]
     records, skipped = evaluate([(it.qa, it.video_path, it.transcript) for it in items], policies, cfg,
                                 budget_from_config(cfg), _scout(cfg), make_answerer(cfg),
                                 dtype=DamageType(a.damage), seed=a.seed,
@@ -238,7 +250,7 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--split", default="test")
     s.add_argument("--config", default="configs/cpu.yaml")
     s.add_argument("--policies", default="transcript_only,uniform,retrieval,scout_similarity,heuristic",
-                   help="comma list; learned policies as learned=path/to/head.npz")
+                   help="comma list; learned policies as learned=path/to/head.npz or learned=path@threshold")
     s.add_argument("--damage", default="delete", choices=[d.value for d in DamageType])
     s.add_argument("--relevance", default="any", choices=sorted(RELEVANCE_CHOICES),
                    help="which relevance sources may define targeted damage; use 'annotation' when "

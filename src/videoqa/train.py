@@ -62,7 +62,7 @@ def realised_net_gain(head: UtilityHead, rows: list[LabelRow], threshold: float,
 
 
 def tune_threshold(head: UtilityHead, dev_rows: list[LabelRow], look_cost: float,
-                   grid=np.linspace(-0.2, 0.8, 51)) -> tuple[float, float]:
+                   grid=np.linspace(-0.2, 1.0, 61)) -> tuple[float, float]:
     """Grid search the STOP threshold on dev rows; ties go to the HIGHER
     threshold (cheaper policy)."""
     best_t, best_v = float(grid[0]), -np.inf
