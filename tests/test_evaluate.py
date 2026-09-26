@@ -1,0 +1,44 @@
+"""Evaluation harness: conditions, fair charging, hypothesis metrics, bootstrap."""
+
+import dataclasses
+
+from videoqa import fixtures
+from videoqa.answerer import FixtureAnswerer
+from videoqa.config import budget_from_config, load_config
+from videoqa.controller import TranscriptOnlyPolicy, UniformPolicy
+from videoqa.evaluate import EvalRecord, cluster_bootstrap_diff, evaluate, summarise, to_markdown
+from videoqa.scout import PixelStatsScout
+
+CFG = load_config("configs/cpu.yaml")
+BUDGET = dataclasses.replace(budget_from_config(CFG), max_frames=8)
+
+
+def test_evaluate_runs_all_conditions_and_charges_text_only_fairly(lecture_video):
+    qa = [q for q in fixtures.qa_items() if q.qa_id.endswith("q_lr")][0]
+    recs, skipped = evaluate([(qa, str(lecture_video), fixtures.transcript())],
+                             [TranscriptOnlyPolicy(), UniformPolicy()], CFG, BUDGET, PixelStatsScout(),
+                             FixtureAnswerer())
+    assert skipped == 0
+    assert {r.condition for r in recs} == {"clean", "targeted_damage", "control_damage", "asr_noise"}
+    text_only = [r for r in recs if r.policy == "transcript_only"]
+    assert all(r.decoded_frames == 0 and r.frames == 0 for r in text_only)   # never charged decoding
+    s = summarise(recs)
+    # transcript-only fails exactly when answer-relevant speech is removed
+    assert s["transcript_only"]["clean"]["quality"] == 1.0
+    assert s["transcript_only"]["targeted_damage"]["quality"] == 0.0
+    assert s["transcript_only"]["control_damage"]["quality"] == 1.0
+    assert "selectivity" in s["uniform"]["hypothesis"]
+    assert "| uniform | clean |" in to_markdown(s)
+
+
+def _rec(q, v, pol, quality):
+    return EvalRecord(q, v, pol, "clean", quality, 0, 0, 0, 0.0, [])
+
+
+def test_cluster_bootstrap_resamples_videos():
+    recs = []
+    for v in range(10):
+        for k in range(3):
+            recs += [_rec(f"v{v}q{k}", f"v{v}", "a", 1.0), _rec(f"v{v}q{k}", f"v{v}", "b", 0.0)]
+    out = cluster_bootstrap_diff(recs, "a", "b", "clean", n_boot=200)
+    assert out["diff"] == 1.0 and out["ci95_low"] == 1.0 and out["n_videos"] == 10
