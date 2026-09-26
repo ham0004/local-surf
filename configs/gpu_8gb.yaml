@@ -10,5 +10,7 @@ scout:
 answerer:
   backend: hf_vlm
   model_id: Qwen/Qwen3-VL-2B-Instruct
+  # Pinned Hub revision (verified 2026-09-26, Apache-2.0).
+  revision: 89644892e4d85e24eaac8bacfd4f463576704203
   dtype: bfloat16
   frame_max_side: 448
