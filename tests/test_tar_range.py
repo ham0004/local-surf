@@ -34,11 +34,18 @@ def _build_tar() -> bytes:
 class _RangeHandler(http.server.BaseHTTPRequestHandler):
     parts: dict[str, bytes] = {}
     requests: list[tuple[str, str]] = []  # (path, range header) for assertions
+    fail_first_n: int = 0                 # simulate this many transient 503s before succeeding
+    _fail_count = 0
 
     def do_GET(self) -> None:  # noqa: N802 - stdlib method name
         name = self.path.lstrip("/")
         rng = self.headers.get("Range", "")
         type(self).requests.append((name, rng))
+        if type(self)._fail_count < type(self).fail_first_n:
+            type(self)._fail_count += 1
+            self.send_response(503)
+            self.end_headers()
+            return
         data = self.parts.get(name)
         if data is None:
             self.send_response(404)
@@ -64,6 +71,8 @@ def server():
     part_a, part_b = raw[:split], raw[split:]
     _RangeHandler.parts = {"t.part.aa": part_a, "t.part.ab": part_b}
     _RangeHandler.requests = []
+    _RangeHandler.fail_first_n = 0
+    _RangeHandler._fail_count = 0
     httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _RangeHandler)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
@@ -123,3 +132,34 @@ def test_read_across_part_boundary_raises(server):
 def test_rejects_non_512_aligned_part_sizes():
     with pytest.raises(ValueError):
         RemoteMultipartTar("http://x/", [TarPart("p", 513)])
+
+
+def test_transient_failures_are_retried_and_eventually_succeed(server):
+    # Regression: a real 40-video download died on the first transient network
+    # error after downloading only 1 file. Simulate 3 straight 503s (fewer
+    # than max_retries) and confirm the read still succeeds.
+    base, parts = server
+    _RangeHandler.fail_first_n = 3
+    tar = RemoteMultipartTar(base, parts, max_retries=6, retry_backoff_s=0.01)
+    header = tar.read(0, 512)
+    assert len(header) == 512
+    assert _RangeHandler._fail_count == 3   # it really did fail 3 times first
+
+
+def test_persistent_failures_raise_after_max_retries(server):
+    base, parts = server
+    _RangeHandler.fail_first_n = 100   # always fails
+    tar = RemoteMultipartTar(base, parts, max_retries=2, retry_backoff_s=0.01)
+    with pytest.raises(RuntimeError, match="giving up after 3 attempts"):
+        tar.read(0, 512)
+    assert _RangeHandler._fail_count == 3   # 1 initial + 2 retries, then gave up
+
+
+def test_not_found_fails_immediately_without_retrying(server):
+    base, _ = server
+    _RangeHandler.requests.clear()
+    # "missing.part" isn't a key in _RangeHandler.parts -> the server 404s it.
+    tar = RemoteMultipartTar(base, [TarPart("missing.part", 512)], max_retries=6, retry_backoff_s=0.01)
+    with pytest.raises(RuntimeError, match="HTTP 404"):
+        tar.read(0, 512)
+    assert len(_RangeHandler.requests) == 1   # no retries for a non-transient error

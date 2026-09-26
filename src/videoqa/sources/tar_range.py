@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -46,13 +47,15 @@ class RemoteMultipartTar:
     """A tar archive spread across ``parts``, addressed by one HTTP GET per part."""
 
     def __init__(self, base_url: str, parts: list[TarPart], token: str | None = None,
-                 timeout: float = 30.0) -> None:
+                 timeout: float = 30.0, max_retries: int = 6, retry_backoff_s: float = 2.0) -> None:
         if any(p.size % 512 for p in parts):
             raise ValueError("every part size must be a multiple of 512 for header-safe range reads")
         self.base_url = base_url.rstrip("/") + "/"
         self.parts = parts
         self.token = token
         self.timeout = timeout
+        self.max_retries = max_retries
+        self.retry_backoff_s = retry_backoff_s
         self._cum = []
         total = 0
         for p in parts:
@@ -69,7 +72,15 @@ class RemoteMultipartTar:
 
     def read(self, global_offset: int, length: int) -> bytes:
         """Read ``length`` bytes starting at ``global_offset``. Must not straddle
-        a part boundary (guaranteed by 512-aligned headers/data + part sizes)."""
+        a part boundary (guaranteed by 512-aligned headers/data + part sizes).
+
+        A full scan of LongVideoBench's archive is ~750 requests; over a real
+        network some of those WILL time out or reset transiently (measured: a
+        connection timeout killed a 40-video download after only 1 file).
+        Transient failures (timeouts, connection errors, HTTP 429/5xx) are
+        retried with exponential backoff; a non-transient HTTP error (401,
+        404, ...) is raised immediately since retrying cannot fix it.
+        """
         if length <= 0:
             return b""
         part_idx, local_off = self._locate(global_offset)
@@ -78,17 +89,33 @@ class RemoteMultipartTar:
             raise ValueError(f"read of {length}B at {global_offset} would straddle part {part.name}; "
                              "this should not happen with 512-aligned tar part sizes")
         url = self.base_url + part.name
-        req = urllib.request.Request(url, headers={"Range": f"bytes={local_off}-{local_off + length - 1}"})
+        headers = {"Range": f"bytes={local_off}-{local_off + length - 1}"}
         if self.token:
-            req.add_header("Authorization", f"Bearer {self.token}")
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                if resp.status not in (200, 206):
-                    raise RuntimeError(f"unexpected status {resp.status} reading {part.name}")
-                return resp.read()
-        except urllib.error.HTTPError as e:
-            raise RuntimeError(f"HTTP {e.code} reading {part.name} bytes {local_off}-{local_off+length-1}: "
-                               f"{e.read()[:200]!r}") from e
+            headers["Authorization"] = f"Bearer {self.token}"
+
+        last_error: Exception | None = None
+        for attempt in range(self.max_retries + 1):
+            if attempt > 0:
+                time.sleep(self.retry_backoff_s * (2 ** (attempt - 1)))
+            try:
+                req = urllib.request.Request(url, headers=headers)
+                with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                    if resp.status not in (200, 206):
+                        raise RuntimeError(f"unexpected status {resp.status} reading {part.name}")
+                    return resp.read()
+            except urllib.error.HTTPError as e:
+                if e.code in (429, 500, 502, 503, 504):
+                    last_error = e
+                    continue
+                raise RuntimeError(f"HTTP {e.code} reading {part.name} bytes {local_off}-{local_off+length-1}: "
+                                   f"{e.read()[:200]!r}") from e
+            except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
+                last_error = e
+                continue
+        raise RuntimeError(
+            f"giving up after {self.max_retries + 1} attempts reading {part.name} "
+            f"bytes {local_off}-{local_off+length-1}: {last_error!r}"
+        ) from last_error
 
     def iter_entries(self, stop_after: set[str] | None = None):
         """Yield :class:`RemoteTarEntry` in archive order.
