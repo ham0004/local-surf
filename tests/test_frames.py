@@ -47,3 +47,28 @@ def test_average_hash_is_layout_level_only(lecture_video):
 def test_average_hash_is_stable():
     img = fixtures.render_slide(fixtures.SLIDES[0])
     assert average_hash(img) == average_hash(img.copy())
+
+
+def test_seeking_reduces_decoded_frames_on_short_gop_video(tmp_path):
+    """With keyframes every 2 s, sparse requests should not decode the whole span."""
+    from fractions import Fraction
+
+    import av
+    import numpy as np
+
+    path = tmp_path / "short_gop.mp4"
+    with av.open(str(path), mode="w") as c:
+        s = c.add_stream("libx264", rate=Fraction(10, 1))
+        s.width, s.height, s.pix_fmt = 64, 48, "yuv420p"
+        s.options = {"g": "20", "keyint_min": "20", "sc_threshold": "0"}   # keyframe every 2 s
+        for i in range(600):                                               # 60 s
+            img = np.full((48, 64, 3), i % 255, dtype=np.uint8)
+            for pkt in s.encode(av.VideoFrame.from_ndarray(img, format="rgb24")):
+                c.mux(pkt)
+        for pkt in s.encode():
+            c.mux(pkt)
+    times = [5.0, 30.0, 55.0]
+    seek = decode_at(path, times)
+    linear = decode_at(path, times, seek_gap_s=float("inf"))
+    assert [f.decoded_pts_s for f in seek.frames] == [f.decoded_pts_s for f in linear.frames]
+    assert seek.frames_visited < linear.frames_visited / 3
