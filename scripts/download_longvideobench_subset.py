@@ -131,7 +131,9 @@ def main() -> None:
     for vid in video_ids:
         sub_name = f"subtitles/{by_video[vid][0]['subtitle_path']}"
         raw = json.loads(subs.extractfile(sub_name).read().decode("utf-8"))
-        t = subtitles_to_transcript(vid, raw)
+        rec0 = by_video[vid][0]
+        t = subtitles_to_transcript(vid, raw, offset_s=rec0["starting_timestamp_for_subtitles"],
+                                    clip_duration_s=rec0["duration"])
         transcripts[vid] = t
         (out / "transcripts" / f"{vid}.json").write_text(
             json.dumps([{"start": s.start_s, "end": s.end_s, "text": s.text} for s in t.segments]),

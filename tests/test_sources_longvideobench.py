@@ -44,6 +44,36 @@ def test_subtitles_to_transcript_handles_null_end_and_null_start():
     assert t.segments[1].start_s == t.segments[1].end_s == 23.0   # null end -> zero-duration point
 
 
+def test_subtitles_to_transcript_rebases_onto_the_clips_own_timeline():
+    # Measured directly: a 9.0s clip shipped with a subtitle file containing
+    # speech up to 553s, because LongVideoBench trims short clips out of a
+    # longer source video but ships the FULL video's subtitle track.
+    # starting_timestamp_for_subtitles=417 means clip-local 0 == global 417.
+    raw = [{"start": "00:06:59.929", "end": "00:07:02.500", "line": "in this clip"},   # 419.929-422.5 global
+          {"start": "00:00:01.000", "end": "00:00:02.000", "line": "long before the clip"}]  # 1-2 global
+    t = subtitles_to_transcript("vid", raw, offset_s=417.0, clip_duration_s=9.0)
+    assert [s.text for s in t.segments] == ["in this clip"]
+    seg = t.segments[0]
+    assert abs(seg.start_s - 2.929) < 1e-6 and abs(seg.end_s - 5.5) < 1e-6
+
+
+def test_subtitles_to_transcript_clamps_a_segment_straddling_the_clip_boundary():
+    # A line spanning clip-local -1s to +2s (i.e. starts just before the clip)
+    # is kept (some of it is audible) but clamped to [0, clip_duration_s].
+    raw = [{"start": "00:00:09.000", "end": "00:00:12.000", "line": "straddles the start"}]  # local -1..2 with offset 10
+    t = subtitles_to_transcript("vid", raw, offset_s=10.0, clip_duration_s=5.0)
+    assert len(t.segments) == 1
+    assert t.segments[0].start_s == 0.0 and t.segments[0].end_s == 2.0
+
+
+def test_subtitles_to_transcript_ids_have_no_gaps_after_dropping_out_of_range_segments():
+    raw = [{"start": "00:00:01.000", "end": "00:00:02.000", "line": "kept one"},
+          {"start": "00:01:00.000", "end": "00:01:01.000", "line": "far outside clip, dropped"},
+          {"start": "00:00:03.000", "end": "00:00:04.000", "line": "kept two"}]
+    t = subtitles_to_transcript("vid", raw, offset_s=0.0, clip_duration_s=5.0)
+    assert [s.id for s in t.segments] == ["s00000", "s00001"]
+
+
 def test_extract_quoted_span_handles_straight_and_smart_quotes():
     assert extract_quoted_span("the subtitle says 'hello world'") == "hello world"
     assert extract_quoted_span("caption ‘like this’ appears") == "like this"

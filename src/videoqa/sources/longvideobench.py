@@ -75,8 +75,29 @@ def _entry_fields(e: dict) -> tuple[float, float, str] | None:
     return parse_timestamp(e["start"]), parse_timestamp(e["end"]), e["line"]
 
 
-def subtitles_to_transcript(video_id: str, subtitle_entries: list[dict]) -> Transcript:
+def subtitles_to_transcript(video_id: str, subtitle_entries: list[dict], offset_s: float = 0.0,
+                            clip_duration_s: float | None = None) -> Transcript:
     """Convert the raw subtitle JSON list into our Transcript, in time order.
+
+    CRITICAL, measured directly from the archive: many LongVideoBench videos
+    are short clips extracted from a much longer source video, but the
+    subtitle file shipped for that video id covers the FULL original video's
+    audio track — e.g. a video whose ``duration`` field is 9.0s came with a
+    subtitle file containing speech timestamped up to 553s. The record field
+    ``starting_timestamp_for_subtitles`` gives the clip's start on that FULL
+    timeline; without subtracting it, "transcript" text would include speech
+    from parts of the source video that were never in the file we actually
+    have, silently fabricating evidence for every downstream stage.
+
+    ``offset_s`` (pass the record's ``starting_timestamp_for_subtitles``)
+    re-bases every timestamp onto the clip's own local time axis
+    (local = global - offset_s). ``clip_duration_s`` (pass the record's
+    ``duration``) then drops any segment with NO overlap with ``[0,
+    clip_duration_s]`` and clamps the rest to that range. Because only
+    line-level (not word-level) timestamps exist, a segment straddling a clip
+    boundary keeps its full text even though only part of it is actually
+    audible in this file — a known imprecision of the source data, not
+    something we can resolve without finer timestamps.
 
     A few entries have identical (degenerate) start/end timestamps in the raw
     data (e.g. "51.709" for both) — TranscriptSegment requires end >= start, so
@@ -85,11 +106,16 @@ def subtitles_to_transcript(video_id: str, subtitle_entries: list[dict]) -> Tran
     """
     segs = []
     parsed = sorted((f for e in subtitle_entries if (f := _entry_fields(e)) is not None), key=lambda t: t[0])
-    for i, (start, end, text) in enumerate(parsed):
+    for start, end, text in parsed:
         text = text.strip()
         if not text:
             continue
-        segs.append(TranscriptSegment(id=f"s{i:05d}", start_s=start, end_s=max(start, end), text=text))
+        start, end = start - offset_s, max(start, end) - offset_s
+        if clip_duration_s is not None:
+            if end < 0 or start > clip_duration_s:
+                continue  # no overlap with the shipped clip at all
+            start, end = max(0.0, start), min(clip_duration_s, end)
+        segs.append(TranscriptSegment(id=f"s{len(segs):05d}", start_s=start, end_s=max(start, end), text=text))
     return Transcript(video_id=video_id, segments=segs, source="longvideobench_subtitle")
 
 
