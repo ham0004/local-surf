@@ -15,6 +15,17 @@ transcript damage meaningful) and a subtitle file. Short videos keep the
 pilot's bandwidth and label-generation cost small; scaling up later means
 raising --n-videos and/or --max-duration.
 
+Video ids starting with "@" (the dataset's TikTok-sourced clips, e.g.
+"@healthfood-6867204066108329221") are excluded from selection: a full,
+completed scan of every entry in the video archive (3,992 entries, confirmed
+via the persisted catalog — see below) never found ANY of them there, so they
+are recorded as confirmed absent rather than repeatedly searched for.
+
+A local catalog (``<cache>/lvb_video_catalog.json``) remembers every archive
+entry this script has ever seen, by byte offset, so re-running with a wider
+selection (more videos, longer max-duration) never re-scans bytes it has
+already read — only genuinely new names trigger more scanning.
+
 Usage:
     uv run python scripts/download_longvideobench_subset.py \\
         --out data/longvideobench --n-videos 40 --token $HF_TOKEN
@@ -41,7 +52,7 @@ from huggingface_hub import hf_hub_download  # noqa: E402
 
 from videoqa.schemas import to_jsonable  # noqa: E402
 from videoqa.sources.longvideobench import T_STAR_CATEGORIES, convert_item, subtitles_to_transcript  # noqa: E402
-from videoqa.sources.tar_range import RemoteMultipartTar, hf_dataset_tar_parts  # noqa: E402
+from videoqa.sources.tar_range import RemoteMultipartTar, hf_dataset_tar_parts, load_catalog, save_catalog  # noqa: E402
 
 DATASET_ID = "longvideobench/LongVideoBench"
 LICENSE_NOTE = "CC-BY-NC-SA-4.0 (non-commercial), longvideobench/LongVideoBench, gated dataset"
@@ -52,12 +63,16 @@ PART_NAMES = [f"videos.tar.part.{c}" for c in
 
 
 def select_videos(val_data: list[dict], max_duration: float, n_videos: int,
-                  subtitle_names: set[str]) -> list[str]:
+                  subtitle_names: set[str], known_absent: frozenset[str] = frozenset()) -> list[str]:
     by_video: dict[str, list[dict]] = {}
     for d in val_data:
         by_video.setdefault(d["video_id"], []).append(d)
     picked = []
     for vid, items in sorted(by_video.items()):
+        if vid.startswith("@"):
+            continue  # TikTok-sourced ids: confirmed absent from this video archive (see module docstring)
+        if vid in known_absent:
+            continue
         if items[0]["duration"] > max_duration:
             continue
         if not any(i["question_category"] in T_STAR_CATEGORIES for i in items):
@@ -96,7 +111,11 @@ def main() -> None:
     subs = tarfile.open(sub_path)
     subtitle_names = set(subs.getnames())
 
-    video_ids = select_videos(val_data, a.max_duration, a.n_videos, subtitle_names)
+    catalog_path = Path(a.cache) / "lvb_video_catalog.json"
+    catalog = load_catalog(catalog_path)
+    known_absent = frozenset() if not catalog.complete else frozenset(
+        vid for d in val_data if (vid := d["video_id"]) and f"videos/{vid}.mp4" not in catalog.entries)
+    video_ids = select_videos(val_data, a.max_duration, a.n_videos, subtitle_names, known_absent)
     print(f"Selected {len(video_ids)} videos (target {a.n_videos}, max_duration {a.max_duration}s).", flush=True)
     if a.dry_run:
         print(json.dumps(video_ids, indent=2))
@@ -137,23 +156,58 @@ def main() -> None:
     n_scanned = 0
     downloaded_bytes = 0
     scan_error: str | None = None
-    if wanted_names:
-        print(f"Scanning the remote video archive for {len(wanted_names)} remaining files "
-             "(header-only requests; each may retry on transient network errors)...", flush=True)
+
+    def _extract_wanted(name: str, entry) -> None:
+        nonlocal downloaded_bytes
+        vid = name[len("videos/") : -len(".mp4")]
+        downloaded_bytes += tar.extract_to(entry, out / "videos" / f"{vid}.mp4")
+        found.add(vid)
+        print(f"  [{len(found)}/{len(video_ids)}] {vid}.mp4 ({entry.size / 1e6:.1f} MB)", flush=True)
+
+    # Resolve whatever we can straight from the cached catalog first: zero
+    # network requests for names we have already scanned in a previous run.
+    resolved_from_cache = 0
+    for name in list(wanted_names):
+        if name in catalog.entries:
+            _extract_wanted(name, catalog.entries[name])
+            wanted_names.discard(name)
+            resolved_from_cache += 1
+    if catalog.entries:
+        print(f"Resolved {resolved_from_cache} names from the cached catalog "
+             f"({len(catalog.entries)} entries known, complete={catalog.complete}).", flush=True)
+
+    if wanted_names and not catalog.complete:
+        print(f"Scanning for {len(wanted_names)} names not yet in the cached catalog, "
+             f"resuming at byte {catalog.next_offset:,} of {tar.total_size:,} "
+             "(each request may retry on transient network errors)...", flush=True)
+        since_save = 0
         try:
-            for entry in tar.iter_entries(stop_after=wanted_names):
+            for entry in tar.iter_entries(stop_after=wanted_names, start_offset=catalog.next_offset):
                 n_scanned += 1
+                catalog.entries[entry.name] = entry
+                data_blocks = (entry.size + 511) // 512
+                catalog.next_offset = entry.global_offset + 512 + data_blocks * 512
+                since_save += 1
+                if since_save >= 50:
+                    save_catalog(catalog, catalog_path)
+                    since_save = 0
                 if entry.name in wanted_names:
-                    vid = entry.name[len("videos/") : -len(".mp4")]
-                    dest = out / "videos" / f"{vid}.mp4"
-                    downloaded_bytes += tar.extract_to(entry, dest)
-                    found.add(vid)
-                    print(f"  [{len(found)}/{len(video_ids)}] {vid}.mp4 ({entry.size / 1e6:.1f} MB)", flush=True)
+                    _extract_wanted(entry.name, entry)
+                    wanted_names.discard(entry.name)
+            # Normal completion with names still unresolved means iter_entries
+            # ran off the true end of the archive (stop_after was never
+            # satisfied) rather than stopping early - so we now know the FULL
+            # contents of the archive, even though not everything we wanted
+            # was in it.
+            if wanted_names:
+                catalog.complete = True
         except Exception as e:  # noqa: BLE001 - deliberately broad: we still want partial results saved
             scan_error = f"{type(e).__name__}: {e}"
             print(f"Archive scan stopped early after exhausting retries: {scan_error}\n"
-                 "Writing partial results; re-run the same command to resume (already-downloaded "
-                 "videos are skipped).", flush=True)
+                 "Writing partial results; re-run the same command to resume "
+                 "(the catalog and already-downloaded videos are both kept).", flush=True)
+        finally:
+            save_catalog(catalog, catalog_path)
     elapsed = time.perf_counter() - t0
     missing = [v for v in video_ids if v not in found]
 
@@ -172,9 +226,11 @@ def main() -> None:
         "n_videos_downloaded": len(found), "missing_videos": missing,
         "n_questions": len(qa_lines), "n_with_evidence_quote": len(ratios),
         "mean_evidence_match_ratio": sum(ratios) / len(ratios) if ratios else None,
-        "n_archive_entries_scanned": n_scanned, "downloaded_video_bytes": downloaded_bytes,
+        "n_archive_entries_scanned_this_run": n_scanned, "downloaded_video_bytes": downloaded_bytes,
         "download_seconds": round(elapsed, 1), "created": time.strftime("%Y-%m-%d %H:%M:%S"),
         "scan_error": scan_error, "complete": scan_error is None and not missing,
+        "catalog_path": str(catalog_path), "catalog_entries_known": len(catalog.entries),
+        "catalog_scan_complete": catalog.complete,
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print(json.dumps(manifest, indent=2))
