@@ -57,11 +57,50 @@ concrete argument for manually auditing a sample of any newly-integrated real da
 trusting pipeline output from it, exactly as `docs/DATA_FEASIBILITY.md` and the original research
 plan both required.
 
+### Bug 6: matched-control separation too strict for short clips
+
+Running `build-labels` on the real subset first yielded only 5/25 train and 0/4 dev usable
+questions (everything else hit `skipped_no_matched_control`). Diagnosis: `select_matched_control`
+required a control segment to be >= 10s from the targeted one — a sane default for a lecture, but
+almost impossible on a 9-70s clip with only 1-5 total transcript segments. Fixed with
+`auto_min_distance_s`: scales the requirement to 15% of the transcript's own covered span (floor
+1.0s, cap 10.0s), so a lecture-length fixture is unaffected (span large enough to hit the cap) but
+a short clip gets a proportionally smaller requirement. Recovered usable triples from 7/40 to
+24/40 (train 5->14, dev 0->2, test 2->7).
+
+### First real pilot result (train 14 / dev 2 / test 7 questions — see caveats)
+
+Full tables: `reports/pilot_lvb_real/summary.md`. Checkpoints and manifests also archived there.
+
+| | paired | unpaired |
+|---|---|---|
+| dev pair-difference MAE (predicting gain_targeted - gain_control on HELD-OUT questions) | 0.0199 | 0.0421 |
+| test selectivity (targeted_response - control_overspend) | **+0.14** | **+0.00** |
+
+The paired head predicts the held-out targeted-vs-control difference about twice as accurately as
+the unpaired head, and on the test set it shows the hypothesized pattern (reacts to targeted
+damage, does not overspend on control damage) while the unpaired head shows no reaction to either.
+This is the first result in the direction the hypothesis predicts.
+
+**This is not evidence, and must not be reported as such.** With 7 test questions, the paired vs.
+unpaired frame-count difference under targeted damage has a bootstrap 95% CI of **[0.0, 0.43]**
+(computed by the evaluation harness's own cluster bootstrap) — it does not exclude zero, and the
+two heads produce byte-identical ANSWER QUALITY in every single condition (the extra frame changed
+nothing about correctness here). Both heads' dev-tuned STOP threshold came out at the top of the
+search grid (0.8, i.e. "almost never look"), which is itself a symptom of too little dev data (2
+questions, 18 pairs) to calibrate a threshold meaningfully. Read this as: the plumbing produces a
+directionally sensible signal on real data and did not break; it says nothing yet about whether
+the paired-training hypothesis holds.
+
 ### Next
 
-Run `build-labels` → `train-controller` → `evaluate` on this real 40-video subset (same commands
-already exercised on synthetic data), then decide whether to scale up the subset before or after
-seeing results.
+**Scale up the dataset.** The bottleneck that made the first LongVideoBench download slow (a
+~2-hour archive scan) is now solved — the full 3,992-entry directory is cached locally, so
+fetching more videos costs only their (small, ~2 MB average) download bandwidth. A run with
+~150-300 usable questions (proportionally ~250-500 videos given the ~57% "no matched control /
+no relevant segment" attrition rate measured here) is the minimum for the bootstrap intervals to
+plausibly separate from zero. After that: multiple training seeds, a wider dev-tuning threshold
+search, and only then treat any surviving effect as a claim worth writing up.
 
 ## 2026-09-26 — session 1
 
