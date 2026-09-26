@@ -155,3 +155,11 @@ def test_convert_item_uses_every_quote_in_a_two_anchor_question():
               "question": "What happens between 'first we open the box' and 'then we close the lid'?"}
     out = convert_item(record, Transcript("v", segs), "license")
     assert out.qa.evidence_intervals_s == [(1, 2), (7, 8)]
+
+
+def test_subtitle_text_is_unescaped_and_single_line():
+    # Real example: 'or as an added layer of security&nbsp;\nagainst potential predators.'
+    raw = [{"start": "00:00:01.000", "end": "00:00:02.000",
+            "line": "or as an added layer of security&nbsp;\nagainst potential predators."}]
+    t = subtitles_to_transcript("v", raw)
+    assert t.segments[0].text == "or as an added layer of security against potential predators."

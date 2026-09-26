@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import dataclasses
 import difflib
+import html
 import re
 
 from ..schemas import QAItem, Transcript, TranscriptSegment
@@ -116,7 +117,11 @@ def subtitles_to_transcript(video_id: str, subtitle_entries: list[dict], offset_
     segs = []
     parsed = sorted((f for e in subtitle_entries if (f := _entry_fields(e)) is not None), key=lambda t: t[0])
     for start, end, text in parsed:
-        text = text.strip()
+        # Formatting only, words unchanged: 10% of real segments contain line
+        # breaks and 4% HTML entities ("security&nbsp;<newline>against"). A newline
+        # inside a segment would also break the answerer prompt's one-line-per-
+        # segment "[id time] text" layout.
+        text = re.sub(r"\s+", " ", html.unescape(text)).strip()
         if not text:
             continue
         start, end = start - offset_s, max(start, end) - offset_s
