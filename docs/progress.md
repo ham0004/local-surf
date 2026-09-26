@@ -31,6 +31,8 @@ correctly-located, answer-relevant transcript span after the fix below.
 2. **Selecting videos whose id happened to be absent from the archive silently turned into a full
    ~3,992-entry, ~2-hour scan** (searching for something that will never be found forces scanning
    to the true end). Fixed: excluded that id pattern (confirmed absent by the completed scan) and
+   **[CORRECTED in session 3: wrong — those videos are stored under `video_path`, not `video_id`;
+   all 753 val videos are present. The exclusion was removed.]**
    added a persisted, resumable catalog so this cost is paid at most once, ever.
 3. **A second subtitle JSON shape** (`{"timestamp": [start, end], "text": ...}` for TikTok-sourced
    clips, vs. `{"start", "end", "line"}` for YouTube-sourced ones) raised `KeyError`. Fixed.
@@ -69,6 +71,10 @@ a short clip gets a proportionally smaller requirement. Recovered usable triples
 24/40 (train 5->14, dev 0->2, test 2->7).
 
 ### First real pilot result (train 14 / dev 2 / test 7 questions — see caveats)
+
+> **[INVALID — see session 3.]** The answerer received no transcript on 35/40 of these videos
+> (BM25 IDF bug), so the damage conditions did not change its input at all. The numbers below
+> are kept only as a record; `reports/pilot_lvb_real/INVALID.md` explains why.
 
 Full tables: `reports/pilot_lvb_real/summary.md`. Checkpoints and manifests also archived there.
 

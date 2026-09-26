@@ -71,45 +71,43 @@ used for training, we need: a written rubric, an automatic grader, and a manual 
 representative sample (≥ 50 items, two annotators). Until then, EduVidQA is evaluation-only
 and reported separately.
 
-## LongVideoBench: real subset downloaded (2026-09-27)
+## LongVideoBench: real data (updated 2026-09-27, session 3 audit)
 
-Access granted (Hugging Face login + accepted dataset terms). 40 real videos, 40 real
-multiple-choice questions, real (often noisy, auto-generated) subtitles downloaded via
-`scripts/download_longvideobench_subset.py` — see [docs/progress.md](progress.md) for the full
-account of what broke and was fixed along the way. Summary of the final, corrected dataset:
+Access granted (Hugging Face login + accepted dataset terms). `scripts/download_longvideobench_subset.py`
+fetches videos straight out of the 161.6 GB archive by byte range, using a complete, cached
+directory of the archive (3,992 entries). Measured eligibility (has a T*-category question that
+quotes a subtitle, and a subtitle file):
 
 | | Value |
 |---|---|
-| Videos | 40, all duration ≤ 70 s, all with a T*-category (subtitle-quoting) question |
-| Total video size | 98 MB |
-| Questions | 40 (one per video in this pass) |
-| Questions with a correctly-located answer-relevant transcript span | 23 / 40 (mean fuzzy-match ratio 0.80) |
-| Splits (video-level hash) | train 25, dev 4, calibration 1, test 10 |
+| Eligible videos | **252** (all durations; 128 are <= 70 s) |
+| T*-category questions on them | **440** |
+| ... with a locatable quote | 360 |
+| ... with the quote located in the clip's own transcript | **352** |
+| Total video size | 9.22 GB |
 | License | CC-BY-NC-SA-4.0 (non-commercial), recorded per item |
 
-**Critical bug found and fixed before any experiment touched this data:** LongVideoBench trims
-short clips out of longer source videos but ships each clip's *full original* subtitle track
-under the same id — a 9.0s clip arrived with subtitle text timestamped up to 553s. Every one of
-the 40 videos had this offset (30–2871s). Uncorrected, transcripts would have contained speech
-never actually present in the clip, invalidating every downstream measurement. Fixed in
-`videoqa.sources.longvideobench.subtitles_to_transcript` (rebases + clips timestamps using the
-record's `starting_timestamp_for_subtitles` and `duration` fields); verified afterward that zero
-transcript segments or evidence intervals exceed any video's real decoded duration.
+Real-data pitfalls found and fixed (details in `docs/progress.md`, each with a regression test):
 
-Two other real format quirks were found and fixed along the way: a second subtitle JSON shape for
-TikTok-sourced clips, and null end-timestamps in that shape. The dataset's TikTok-sourced videos
-("@username-..." ids) are excluded from selection — a full scan of the video archive confirmed
-they are not present in it (only YouTube-sourced videos are).
+1. **Subtitle timeline offset.** Short clips ship their *source* video's full subtitle track;
+   times must be re-based by `starting_timestamp_for_subtitles` and clipped to `duration`.
+2. **Archive names use `video_path`, not `video_id`.** The 135 TikTok-sourced videos (id
+   `@user-<n>`) are stored as `videos/<n>.mp4`. An earlier version looked them up by id, failed,
+   and wrongly concluded they were absent.
+3. **Two subtitle JSON shapes** and **null timestamps** in the TikTok shape.
+4. **Quote extraction**: apostrophes taken as quote marks (29/440 questions), one-letter quotes
+   swallowing the next quote, only the first of several quotes used, long lines diluting the
+   fuzzy-match score.
+5. **Retrieval on tiny transcripts**: most clips form a single retrieval unit, where the
+   `rank_bm25` IDF goes negative and nothing is retrieved — the answerer then got no transcript.
 
-The download is resumable and caches the archive's directory listing locally, so scaling from 40
-to more videos does not repeat the (slow, ~1–2 hour) full-archive scan.
+**Relevance for damage.** Gold answers here are visual ("eggs"), so only the dataset-native
+quote-anchored evidence is used to decide what "answer-relevant speech" is
+(`--relevance annotation`), never word overlap with the answer.
 
 ## Next concrete steps
 
-1. ~~Authenticate to Hugging Face, accept LongVideoBench terms, download a small video subset.~~ **Done.**
-2. Run the controller pipeline (`build-labels` → `train-controller` → `evaluate`) on this real
-   40-video subset as a pilot, same as was done on synthetic data.
-3. Decide whether to scale the subset up (more videos, and/or raise `--max-duration` past 70s)
-   before or after seeing pilot results.
-4. For EduVidQA, decide with the project owner whether downloading the YouTube videos is
+1. ~~Authenticate to Hugging Face, accept LongVideoBench terms, download videos.~~ **Done** (all 252).
+2. Run the controller pipeline on all 252 videos (in progress; results will go to `reports/lvb_full/`).
+3. For EduVidQA, decide with the project owner whether downloading the YouTube videos is
    permissible for this research; if yes, fetch transcripts and record per-video availability.
