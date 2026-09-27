@@ -85,4 +85,6 @@ def test_candidates_carry_relevance_rank_and_policy_uses_it():
     late = [c for c in cands if c.time_s > 50][0]
     assert late.rank == 0 and [c for c in cands if c.time_s < 50][0].rank == 1
     obs = ControllerObservation("q", None, [], cands, {}, [], 0, 3, 3, 100.0)
-    assert RetrievalPolicy().decide(obs, 0, 0).candidate_id == late.id
+    from videoqa.features import legal_actions_costed
+    legal = legal_actions_costed(obs, 0, 0, 64, 4096, lambda cid: 1.0, 1.0)
+    assert RetrievalPolicy().decide(obs, legal).candidate_id == late.id

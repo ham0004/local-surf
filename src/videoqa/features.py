@@ -21,7 +21,9 @@ is exactly what the experiments test.  Nothing here assumes the answer.
 
 from __future__ import annotations
 
+import dataclasses
 import math
+from collections.abc import Callable
 
 from .damage import MASK_TOKEN
 from .retrieval import tokenize
@@ -50,6 +52,9 @@ CANDIDATE_FEATURES = (
     "n_looked_frac",
     "min_dist_to_looked",          # temporal novelty vs. frames already acquired
     "expand_action",               # 1 for EXPAND_TRANSCRIPT pseudo-candidate
+    # Added 2026-09-28 (feature set v2; 26-feature checkpoints are incompatible):
+    "scouted",                     # 1 if the scout has actually looked at this candidate
+    "retrieval_rank_inv",          # 1 / (1 + window relevance rank); 0 if not retrieved
 )
 
 
@@ -115,6 +120,8 @@ def candidate_features(obs: ControllerObservation, cand: Candidate, g: dict[str,
         g["n_looked_frac"],
         novelty,
         0.0,
+        float(sig is not None),
+        1.0 / (1.0 + cand.rank) if cand.rank is not None else 0.0,
     ]
 
 
@@ -154,3 +161,34 @@ def legal_actions(obs: ControllerObservation, rescue_frames_left: int,
     if obs.expansions_used < max_expansions:
         actions.append((ActionKind.EXPAND_TRANSCRIPT, None))
     return actions
+
+
+@dataclasses.dataclass(frozen=True)
+class LegalAction:
+    """An action the budget allows right now, with its measured marginal cost."""
+
+    kind: ActionKind
+    candidate_id: str | None
+    cost_ms: float = 0.0
+    visual_tokens: int = 0
+
+
+def legal_actions_costed(obs: ControllerObservation, rescue_frames_left: int, max_expansions: int,
+                         tokens_per_frame: int, visual_tokens_left: int,
+                         look_cost_ms: Callable[[str], float], expand_cost_ms: float) -> list[LegalAction]:
+    """THE legality check (one place for every policy and every path).
+
+    A LOOK is legal only if frames, rounds and the rescue reserve allow it AND
+    its exact visual tokens fit in what is left of the token budget; the check
+    happens before generation, never after. Each action carries its marginal
+    cost from the shared CostModel.
+    """
+    out = [LegalAction(ActionKind.STOP, None)]
+    for kind, cid in legal_actions(obs, rescue_frames_left, max_expansions):
+        if kind == ActionKind.STOP:
+            continue
+        if kind == ActionKind.EXPAND_TRANSCRIPT:
+            out.append(LegalAction(kind, None, expand_cost_ms))
+        elif tokens_per_frame <= visual_tokens_left:
+            out.append(LegalAction(kind, cid, look_cost_ms(cid), tokens_per_frame))
+    return out

@@ -22,7 +22,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 from .answerer import Answerer, AnswerRequest
 from .controller import Policy
+from .cost_model import DEFAULT, CostModel
 from .costs import CostMeter
+from .features import legal_actions_costed
 from .frames import VideoInfo, decode_at, probe
 from .packing import pack_excerpt
 from .retrieval import Window, bm25_rank, build_windows, generate_candidates
@@ -154,9 +156,20 @@ def observation(prep: Prepared, state: EvidenceState, budget: Budget, rounds_lef
     )
 
 
-def frame_cap(budget: Budget, answerer: Answerer) -> int:
+def tokens_per_frame(answerer: Answerer, frame: Frame | None) -> int:
+    """Exact visual tokens ONE frame of this video costs the answerer, from the
+    answerer's own processor (all frames of a video share one resized size).
+    Replaces a running average from previous questions."""
+    if frame is None:
+        return 0
+    if hasattr(answerer, "visual_tokens"):
+        return int(answerer.visual_tokens([frame]))
+    return 256   # conservative fallback for answerers without a token counter
+
+
+def frame_cap(budget: Budget, answerer: Answerer, sample_frame: Frame | None = None) -> int:
     """Max frames allowed by BOTH the frame cap and the visual-token cap."""
-    per_frame = max(1, int(getattr(answerer, "visual_tokens_per_frame", 256)))
+    per_frame = max(1, tokens_per_frame(answerer, sample_frame)) if sample_frame is not None else 256
     return min(budget.max_frames, budget.max_visual_tokens // per_frame)
 
 
@@ -183,24 +196,38 @@ class RunResult:
     cap_violations: list[str]
 
 
-def run_policy(prep: Prepared, policy: Policy, answerer: Answerer, budget: Budget, meter: CostMeter) -> RunResult:
+def run_policy(prep: Prepared, policy: Policy, answerer: Answerer, budget: Budget, meter: CostMeter,
+               cost_model: CostModel | None = None) -> RunResult:
     """Run the acquisition loop, then answer once."""
     state = EvidenceState()
     actions: list[Action] = []
-    cap = frame_cap(budget, answerer)
+    sample = next(iter(prep.frames.values()), None)
+    tpf = tokens_per_frame(answerer, sample)
+    cap = frame_cap(budget, answerer, sample)
     rescue_cap = max(0, round(budget.rescue_fraction * budget.max_frames))
     violations: list[str] = []
+    cm = cost_model or DEFAULT
 
     for round_idx in range(budget.max_rounds):
-        # Reserve time for the final answer call: stop acquiring at 80% of the time cap.
+        # Best-effort time target (not a hard guarantee: there is no cancellation):
+        # stop acquiring at 80% of max_seconds to leave room for the answer call.
         if meter.total().elapsed_ms / 1000.0 > 0.8 * budget.max_seconds:
             actions.append(Action(ActionKind.STOP, reason="TIME_RESERVE_FOR_ANSWER"))
             break
         obs = observation(prep, state, budget, budget.max_rounds - round_idx, cap)
+        # Eager path: every candidate is already decoded and scouted, so a look
+        # only adds the answerer's prefill for its tokens.
+        legal = legal_actions_costed(obs, rescue_cap - state.rescue_used, budget.max_expansions, tpf,
+                                     budget.max_visual_tokens - tpf * len(state.looked_at),
+                                     lambda cid: cm.look_ms(tpf, decoded=True, scouted=True),
+                                     cm.expand_ms(40))
         with meter.stage("controller"):
-            action = policy.decide(obs, rescue_cap - state.rescue_used, budget.max_expansions)
+            action = policy.decide(obs, legal)
         actions.append(action)
         if action.kind == ActionKind.STOP:
+            break
+        if (action.kind, action.candidate_id) not in {(a.kind, a.candidate_id) for a in legal}:
+            violations.append(f"illegal_action:{action.kind.value}:{action.candidate_id}")
             break
         apply_action(prep, state, action)
 
