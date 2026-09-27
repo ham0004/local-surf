@@ -116,6 +116,15 @@ def cmd_build_labels(a) -> None:
     print(json.dumps(manifest, indent=2))
 
 
+def answerer_fingerprint(answerer) -> dict:
+    """Reproducibility record of the answerer; ``fingerprint`` may be a
+    property (HF answerer), a method, or absent (fixture)."""
+    fp = getattr(answerer, "fingerprint", None)
+    if callable(fp):
+        fp = fp()
+    return dict(fp) if fp else {"name": getattr(answerer, "name", type(answerer).__name__)}
+
+
 def cmd_build_assay(a) -> None:
     """Controlled paired assay labels (assay.py): common pool, exact keys."""
     from .assay import check_media_overlap, label_assay, write_assay  # noqa: PLC0415
@@ -126,16 +135,19 @@ def cmd_build_assay(a) -> None:
     items = items[: a.limit] if a.limit else items
     media = check_media_overlap([(it.qa, it.video_path) for it in items])
     answerer, cm = make_answerer(cfg), cost_model_from_config(cfg)
-    rows, pools, questions, stats = label_assay(
-        [(it.qa, it.video_path, it.transcript) for it in items], cfg, budget_from_config(cfg), _scout(cfg),
-        answerer, cm, dtype=DamageType(a.damage), seed=a.seed, relevance_methods=RELEVANCE_CHOICES[a.relevance],
-        log=lambda m: print(m, flush=True))
+    # The manifest is built BEFORE labelling so a bookkeeping error fails in
+    # seconds, not after hours of GPU work (this once lost a whole pilot).
     manifest = {"data": str(a.data), "split": a.split, "config": a.config, "damage_type": a.damage,
                 "relevance": a.relevance, "seed": a.seed, "missing_video": len(report.missing_video),
-                "answerer": getattr(answerer, "fingerprint", lambda: {"name": answerer.name})(),
+                "answerer": answerer_fingerprint(answerer),
                 "scout": {"backend": cfg["scout"]["backend"], **{k: v for k, v in cfg["scout"].items() if k != "backend"}},
                 "cost_model": dataclasses.asdict(cm), "media_fingerprints": len(media),
                 "created": time.strftime("%Y-%m-%d %H:%M:%S")}
+    json.dumps(manifest)                                  # must be serialisable now, not later
+    rows, pools, questions, stats = label_assay(
+        [(it.qa, it.video_path, it.transcript) for it in items], cfg, budget_from_config(cfg), _scout(cfg),
+        answerer, cm, dtype=DamageType(a.damage), seed=a.seed, relevance_methods=RELEVANCE_CHOICES[a.relevance],
+        log=lambda m: print(m, flush=True), checkpoint=Path(a.out) / "checkpoint.jsonl")
     print(json.dumps(write_assay(a.out, rows, pools, questions, stats, manifest), indent=2))
 
 

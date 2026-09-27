@@ -90,3 +90,31 @@ def test_write_and_read_round_trip(assay, tmp_path):
     report = write_assay(tmp_path, rows, pools, questions, stats, {"note": "test"})
     back, triplets = read_assay(tmp_path)
     assert len(back) == len(rows) and report["triplets"] == len(triplets) and report["note"] == "test"
+
+
+def test_checkpoint_resume_relabels_nothing(lecture_video, tmp_path):
+    """A crash after labelling must not lose work: the second run reloads the
+    checkpoint and makes zero answerer calls, with identical rows."""
+    ck = tmp_path / "checkpoint.jsonl"
+    args = (_items(lecture_video), CFG, budget_from_config(CFG), PixelStatsScout(), FixtureAnswerer())
+    rows1, _, q1, s1 = label_assay(*args, dtype=DamageType.DELETE, checkpoint=ck)
+    rows2, _, q2, s2 = label_assay(*args, dtype=DamageType.DELETE, checkpoint=ck)
+    assert s1.answer_calls > 0 and s2.answer_calls == 0
+    assert [r.canonical_key for r in rows1] == [r.canonical_key for r in rows2]
+    assert [r.gain for r in rows1] == [r.gain for r in rows2] and q1 == q2
+
+
+def test_answerer_fingerprint_property_method_or_absent():
+    from videoqa.cli import answerer_fingerprint
+
+    class Prop:
+        @property
+        def fingerprint(self):
+            return {"model_id": "m"}
+
+    class Meth:
+        def fingerprint(self):
+            return {"model_id": "m"}
+
+    assert answerer_fingerprint(Prop()) == answerer_fingerprint(Meth()) == {"model_id": "m"}
+    assert "name" in answerer_fingerprint(FixtureAnswerer())

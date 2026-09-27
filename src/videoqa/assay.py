@@ -389,17 +389,46 @@ def _git_commit() -> str:
 
 def label_assay(items: list[tuple[QAItem, str, Transcript]], cfg: dict, budget: Budget, scout: Scout,
                 answerer: Answerer, cost_model: CostModel = DEFAULT, dtype: DamageType = DamageType.DELETE,
-                seed: int = 0, relevance_methods: frozenset[str] | None = None, log=None):
+                seed: int = 0, relevance_methods: frozenset[str] | None = None, log=None,
+                checkpoint: str | Path | None = None):
+    """Label every item. With ``checkpoint`` (a .jsonl path), each finished
+    question is appended to disk at once and already-finished questions are
+    reloaded instead of relabelled, so a crash loses at most one question."""
     stats = AssayStats()
     answers = _Answers(answerer, stats)
     t0 = time.perf_counter()
     rows: list[AssayRow] = []
     pools, questions = {}, []
+    done: set[str] = set()
+    if checkpoint and Path(checkpoint).exists():
+        for line in Path(checkpoint).read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            rec = json.loads(line)
+            done.add(rec["qa_id"])
+            if rec.get("drop"):
+                stats.drops[rec["drop"]] += 1
+                continue
+            rows += [AssayRow(**d) for d in rec["rows"]]
+            pools[rec["qa_id"]] = rec["pool"]
+            questions.append(rec["question"])
+        if log:
+            log(f"resumed {len(done)} questions from {checkpoint}")
+
+    def save(rec: dict) -> None:
+        if checkpoint:
+            Path(checkpoint).parent.mkdir(parents=True, exist_ok=True)
+            with open(checkpoint, "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(to_jsonable(rec)) + "\n")
+
     for n, (qa, path, transcript) in enumerate(items):
         check_split(qa)
+        if qa.qa_id in done:
+            continue
         triple, reason = build_triple(qa, transcript, dtype=dtype, seed=seed, relevance_methods=relevance_methods)
         if triple is None:
             stats.drops[f"triple:{reason}"] += 1
+            save({"qa_id": qa.qa_id, "drop": f"triple:{reason}"})
             continue
         r, pool = label_question(qa, path, triple, cfg, budget, scout, answers, cost_model)
         rows += r
@@ -411,6 +440,8 @@ def label_assay(items: list[tuple[QAItem, str, Transcript]], cfg: dict, budget: 
             "targeted": to_jsonable(recs[TranscriptCondition.TARGETED_DAMAGE]),
             "control": to_jsonable(recs[TranscriptCondition.CONTROL_DAMAGE]),
         })
+        save({"qa_id": qa.qa_id, "rows": [dataclasses.asdict(x) for x in r], "pool": pools[qa.qa_id],
+              "question": questions[-1]})
         if log:
             log(f"[{n + 1}/{len(items)}] {qa.qa_id}: {len(r)} rows, pool {len(pool)}, "
                 f"calls {stats.answer_calls}, {time.perf_counter() - t0:.0f}s")
