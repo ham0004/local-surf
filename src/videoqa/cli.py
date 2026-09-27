@@ -92,10 +92,8 @@ def cmd_build_labels(a) -> None:
     items = items[: a.limit] if a.limit else items
     dtype = DamageType(a.damage)
     triples, skipped = _triples(items, dtype, a.seed, RELEVANCE_CHOICES[a.relevance])
-    # Label generation is train-only by construction; a dev label set is built
-    # the same way but only ever used for threshold tuning.
-    triples = [(dataclasses.replace(qa, source_split="train" if a.split == "train" else "unassigned"), p, t)
-               for qa, p, t in triples]
+    # train labels fit heads; dev labels only tune thresholds. The split is
+    # carried as loaded (no relabelling); labels.py refuses anything else.
     answerer = make_answerer(cfg)
     rows, examples, stats = label_items(triples, cfg, budget_from_config(cfg), _scout(cfg), answerer,
                                         max_steps=a.max_steps)
@@ -108,6 +106,29 @@ def cmd_build_labels(a) -> None:
                 "created": time.strftime("%Y-%m-%d %H:%M:%S")}
     write_labels(a.out, rows, examples, manifest)
     print(json.dumps(manifest, indent=2))
+
+
+def cmd_build_assay(a) -> None:
+    """Controlled paired assay labels (assay.py): common pool, exact keys."""
+    from .assay import check_media_overlap, label_assay, write_assay  # noqa: PLC0415
+
+    cfg = load_config(a.config)
+    splits = tuple(a.split.split(","))
+    items, report = load_local_dataset(a.data, splits=splits)
+    items = items[: a.limit] if a.limit else items
+    media = check_media_overlap([(it.qa, it.video_path) for it in items])
+    answerer, cm = make_answerer(cfg), cost_model_from_config(cfg)
+    rows, pools, questions, stats = label_assay(
+        [(it.qa, it.video_path, it.transcript) for it in items], cfg, budget_from_config(cfg), _scout(cfg),
+        answerer, cm, dtype=DamageType(a.damage), seed=a.seed, relevance_methods=RELEVANCE_CHOICES[a.relevance],
+        log=lambda m: print(m, flush=True))
+    manifest = {"data": str(a.data), "split": a.split, "config": a.config, "damage_type": a.damage,
+                "relevance": a.relevance, "seed": a.seed, "missing_video": len(report.missing_video),
+                "answerer": getattr(answerer, "fingerprint", lambda: {"name": answerer.name})(),
+                "scout": {"backend": cfg["scout"]["backend"], **{k: v for k, v in cfg["scout"].items() if k != "backend"}},
+                "cost_model": dataclasses.asdict(cm), "media_fingerprints": len(media),
+                "created": time.strftime("%Y-%m-%d %H:%M:%S")}
+    print(json.dumps(write_assay(a.out, rows, pools, questions, stats, manifest), indent=2))
 
 
 def cmd_train(a) -> None:
@@ -263,6 +284,17 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--look-cost", type=float, default=0.02)
     s.add_argument("--seed", type=int, default=0)
     s.set_defaults(fn=cmd_train)
+
+    s = sub.add_parser("build-assay", help="controlled paired assay labels (common pool, exact pair keys)")
+    s.add_argument("--data", required=True)
+    s.add_argument("--split", default="train", help="train, dev or train,dev (test is refused)")
+    s.add_argument("--config", default="configs/cpu.yaml")
+    s.add_argument("--damage", default="delete", choices=[d.value for d in DamageType])
+    s.add_argument("--relevance", default="any", choices=sorted(RELEVANCE_CHOICES))
+    s.add_argument("--limit", type=int)
+    s.add_argument("--seed", type=int, default=0)
+    s.add_argument("--out", required=True)
+    s.set_defaults(fn=cmd_build_assay)
 
     s = sub.add_parser("evaluate")
     s.add_argument("--data", required=True)

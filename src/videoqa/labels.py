@@ -223,8 +223,9 @@ def label_items(items: list[tuple[QAItem, str, TranscriptTriple]], cfg: dict, bu
     t0 = time.perf_counter()
     rows, examples = [], []
     for qa, path, triple in items:
-        if qa.source_split not in ("train", "unassigned"):
-            raise ValueError(f"refusing to label {qa.qa_id} from split {qa.source_split!r}: train only")
+        # train = fitting, dev = threshold / lambda calibration; test is locked.
+        if qa.source_split not in ("train", "dev"):
+            raise ValueError(f"refusing to label {qa.qa_id} from split {qa.source_split!r}: train/dev only")
         for cond in TranscriptCondition:
             r, e = label_condition(qa, path, cond, triple, cfg, budget, scout, cache, **kw)
             rows += r
