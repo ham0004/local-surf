@@ -5,9 +5,10 @@ docs/models.md).  Loaded lazily on first use, kept frozen (eval + no_grad).
 
 Token accounting is MEASURED, not estimated: visual tokens are the number of
 image placeholder tokens the processor actually inserted into input_ids, and
-text tokens are the remainder.  ``visual_tokens_per_frame`` starts as a
-conservative guess and is replaced by the measured average after the first
-call that contains frames, so later frame caps use real numbers.
+text tokens are the remainder. ``visual_tokens(frames)`` gives the exact count
+for specific images BEFORE generation (from the image processor's patch grid),
+so a frame can be refused when it would exceed the budget. (An earlier version
+admitted frames using a running average from previous questions.)
 
 For multiple choice we also return ``confidence`` = softmax over the option-
 letter logits at the first generated position.  It is an UNCALIBRATED model
@@ -16,8 +17,10 @@ score, stored for analysis and for the confidence-threshold baseline only.
 
 from __future__ import annotations
 
-from .answerer import SYSTEM_PROMPT, AnswerRequest, AnswerUsage, build_prompt_text, parse_option_letter
-from .schemas import Answer
+import hashlib
+
+from .answerer import SYSTEM_PROMPT, AnswerRequest, AnswerUsage, build_prompt_text, finalize_answer
+from .schemas import Answer, Frame
 
 
 class HFVLMAnswerer:
@@ -27,16 +30,45 @@ class HFVLMAnswerer:
                  revision: str | None = None, cache_dir: str | None = None) -> None:
         self.model_id, self.device, self.dtype = model_id, device, dtype
         self.max_new_tokens, self.revision, self.cache_dir = max_new_tokens, revision, cache_dir
-        self.visual_tokens_per_frame = 256   # replaced by a measured value after the first image call
         self._model = self._processor = None
+
+    def _ensure_processor(self) -> None:
+        """The processor alone (no weights): enough to count tokens exactly."""
+        if self._processor is None:
+            from transformers import AutoProcessor  # noqa: PLC0415
+
+            self._processor = AutoProcessor.from_pretrained(self.model_id, revision=self.revision,
+                                                            cache_dir=self.cache_dir)
+
+    def visual_tokens(self, frames: list[Frame]) -> int:
+        """Exact visual tokens these images will cost, computed before generation
+        from the image processor's patch grid (verified equal to the placeholder
+        count in real calls: 220 for a 640x360 frame)."""
+        if not frames:
+            return 0
+        self._ensure_processor()
+        ip = self._processor.image_processor
+        grid = ip(images=[f.image for f in frames], return_tensors="pt")["image_grid_thw"]
+        return int(sum(int(t) * int(h) * int(w) for t, h, w in grid.tolist()) // ip.merge_size ** 2)
+
+    def count_text_tokens(self, text: str) -> int:
+        self._ensure_processor()
+        return len(self._processor.tokenizer(text, add_special_tokens=False)["input_ids"])
+
+    @property
+    def fingerprint(self) -> dict:
+        """What must be recorded with every label so it can be reproduced."""
+        return {"model_id": self.model_id, "revision": self.revision, "dtype": self.dtype,
+                "max_new_tokens": self.max_new_tokens, "decoding": "greedy",
+                "system_prompt_sha256": hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest()}
 
     def _load(self) -> None:
         import torch  # noqa: PLC0415 - heavy optional dependency
-        from transformers import AutoModelForImageTextToText, AutoProcessor  # noqa: PLC0415
+        from transformers import AutoModelForImageTextToText  # noqa: PLC0415
 
         self._torch = torch
         kw = dict(revision=self.revision, cache_dir=self.cache_dir)
-        self._processor = AutoProcessor.from_pretrained(self.model_id, **kw)
+        self._ensure_processor()
         self._model = AutoModelForImageTextToText.from_pretrained(
             self.model_id, dtype=getattr(torch, self.dtype), device_map=self.device, **kw
         ).eval()
@@ -69,8 +101,6 @@ class HFVLMAnswerer:
         ids = inputs["input_ids"][0]
         n_visual = int((ids == self._image_token_id).sum())
         usage = AnswerUsage(visual_tokens=n_visual, text_tokens=int(ids.numel()) - n_visual)
-        if req.frames:
-            self.visual_tokens_per_frame = max(1, n_visual // len(req.frames))
 
         with torch.no_grad():
             out = self._model.generate(**inputs, max_new_tokens=self.max_new_tokens, do_sample=False,
@@ -79,15 +109,9 @@ class HFVLMAnswerer:
         text = self._processor.batch_decode(new_tokens[None], skip_special_tokens=True)[0].strip()
         usage.text_tokens += int(new_tokens.numel())
 
-        option_index, confidence = None, None
+        probs = None
         if req.options:
             letters = "ABCDEFGH"[: len(req.options)]
             letter_ids = [self._processor.tokenizer.convert_tokens_to_ids(c) for c in letters]
-            probs = torch.softmax(out.scores[0][0, letter_ids].float(), dim=-1)
-            option_index = parse_option_letter(text, len(req.options))
-            if option_index is None:                      # fall back to the most likely letter
-                option_index = int(probs.argmax())
-            confidence = float(probs[option_index])
-        answer = Answer(text=text, option_index=option_index, confidence=confidence,
-                        citations_s=[f.decoded_pts_s for f in req.frames])
-        return answer, usage
+            probs = torch.softmax(out.scores[0][0, letter_ids].float(), dim=-1).tolist()
+        return finalize_answer(text, req.options, probs, req.frames, req.excerpt), usage

@@ -16,6 +16,7 @@ Key rules (tested in tests/test_frames.py):
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 from pathlib import Path
 
 import av
@@ -145,4 +146,11 @@ def _to_frame(frame: av.VideoFrame, pts: float, requested: float, max_side: int 
         image = image.resize((max(1, round(image.width * scale)), max(1, round(image.height * scale))),
                              Image.Resampling.BILINEAR)
     return Frame(id=fid, requested_s=requested, decoded_pts_s=round(pts, 4), width=image.width,
-                 height=image.height, image=image, phash=average_hash(image))
+                 height=image.height, image=image, phash=average_hash(image), digest=pixel_digest(image))
+
+
+def pixel_digest(image: Image.Image) -> str:
+    """sha256 of the exact RGB pixels (plus size). Two frames with the same
+    digest are the same visual evidence, whatever time they were requested at."""
+    rgb = image.convert("RGB")
+    return hashlib.sha256(f"{rgb.width}x{rgb.height}:".encode() + rgb.tobytes()).hexdigest()

@@ -232,6 +232,7 @@ class Frame:
     height: int
     image: Any = dataclasses.field(default=None, repr=False, compare=False)  # PIL.Image
     phash: str = ""  # perceptual hash used for cheap dedup
+    digest: str = ""  # sha256 of the exact pixels: the frame's identity in paired actions
     video_id: str = ""  # provenance: which video this frame was decoded from
 
 
@@ -344,11 +345,18 @@ class ControllerObservation:
 
 @dataclasses.dataclass
 class Answer:
-    text: str
-    option_index: int | None = None
+    text: str                              # raw model output, verbatim
+    option_index: int | None = None        # None when the model abstained
+    # Frame times the model actually CITED in its text, validated against the
+    # frames it was given. (It used to be a copy of every supplied frame.)
     citations_s: list[float] = dataclasses.field(default_factory=list)
-    confidence: float | None = None       # answerer's own score; NOT calibrated
+    confidence: float | None = None        # answerer's own score; NOT calibrated
     missing_evidence: str = ""
+    supplied_frame_times_s: list[float] = dataclasses.field(default_factory=list)
+    cited_segment_ids: list[str] = dataclasses.field(default_factory=list)   # transcript lines cited
+    invalid_citations: list[str] = dataclasses.field(default_factory=list)   # cited times matching nothing supplied
+    abstained: bool = False                # model said the evidence is insufficient
+    forced_choice: bool = False            # no letter in the text; option = model's most likely letter
 
 
 @dataclasses.dataclass
