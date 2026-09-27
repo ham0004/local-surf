@@ -60,3 +60,22 @@ def test_selectivity_bootstrap_per_question_and_paired_difference():
     diff = selectivity_bootstrap(recs, "sel", "flat", n_boot=200)
     assert diff["selectivity_diff"] == 2.0
     assert selectivity_bootstrap(recs, "missing") is None
+
+
+def test_recovery_table_uses_the_speech_failure_stratum():
+    from videoqa.evaluate import recovery_table, speech_failure_stratum
+
+    def rec(q, v, pol, cond, quality):
+        return EvalRecord(q, v, pol, cond, quality, 1, 0, 0, 0.0, [], warm_ms=100.0)
+    recs = []
+    for i in range(4):
+        q, v = f"q{i}", f"v{i}"
+        broke = i < 2                       # speech mattered for q0, q1 only
+        recs += [rec(q, v, "transcript_only", "clean", 1.0),
+                 rec(q, v, "transcript_only", "targeted_damage", 0.0 if broke else 1.0),
+                 rec(q, v, "looker", "targeted_damage", 1.0 if i == 0 else 0.0),
+                 rec(q, v, "looker", "control_damage", 1.0)]
+    assert speech_failure_stratum(recs) == {"q0", "q1"}
+    t = recovery_table(recs, n_boot=100)
+    assert t["stratum_questions"] == 2 and t["policies"]["looker"]["recovery"] == 0.5
+    assert t["policies"]["transcript_only"]["recovery"] == 0.0

@@ -244,3 +244,49 @@ def write_report(out_dir: str | Path, records: list[EvalRecord], summary: dict, 
     (out / "summary.json").write_text(json.dumps({"summary": summary, **extra}, indent=2), encoding="utf-8")
     (out / "summary.md").write_text(to_markdown(summary) + "\n", encoding="utf-8")
     return out
+
+
+# ---------------------------------------------------------------------------
+# Primary endpoint: recovery under important-speech failure, with its cost
+# ---------------------------------------------------------------------------
+
+
+def speech_failure_stratum(records: list[EvalRecord], baseline: str = "transcript_only") -> set[str]:
+    """Questions where the transcript mattered and the damage broke it:
+    the transcript-only baseline is right on CLEAN and wrong on TARGETED."""
+    q = {(r.qa_id, r.condition): r.quality for r in records if r.policy == baseline}
+    return {qa for (qa, c), v in q.items() if c == "clean" and v >= 1.0 and q.get((qa, "targeted_damage"), 1.0) < 1.0}
+
+
+def recovery_table(records: list[EvalRecord], baseline: str = "transcript_only", n_boot: int = 2000,
+                   seed: int = 0) -> dict:
+    """Per policy, on the stratum: recovery = mean quality under TARGETED,
+    with its warm cost and a 95% interval resampling whole videos. Also the
+    same policy's CONTROL-condition cost on those questions (overspend).
+    Compare policies at EQUAL cost (Pareto), not by recovery alone."""
+    stratum = speech_failure_stratum(records, baseline)
+    out: dict = {"stratum_questions": len(stratum), "policies": {}}
+    if not stratum:
+        return out
+    rng = np.random.default_rng(seed)
+    for pol in sorted({r.policy for r in records}):
+        t = [r for r in records if r.policy == pol and r.condition == "targeted_damage" and r.qa_id in stratum]
+        c = [r for r in records if r.policy == pol and r.condition == "control_damage" and r.qa_id in stratum]
+        if not t:
+            continue
+        by_video: dict[str, list[float]] = defaultdict(list)
+        for r in t:
+            by_video[r.video_id].append(r.quality)
+        vids = list(by_video)
+        boots = [np.mean([x for i in rng.choice(len(vids), len(vids)) for x in by_video[vids[i]]])
+                 for _ in range(n_boot)]
+        lo, hi = np.percentile(boots, [2.5, 97.5])
+        out["policies"][pol] = {
+            "recovery": float(np.mean([r.quality for r in t])), "ci95": [float(lo), float(hi)],
+            "n_questions": len(t), "n_videos": len(vids),
+            "targeted_warm_ms": float(np.mean([r.warm_ms for r in t])),
+            "control_warm_ms": float(np.mean([r.warm_ms for r in c])) if c else None,
+            "targeted_frames": float(np.mean([r.frames for r in t])),
+            "control_frames": float(np.mean([r.frames for r in c])) if c else None,
+        }
+    return out

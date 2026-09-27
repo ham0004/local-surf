@@ -26,7 +26,15 @@ from .controller import make_policy
 from .costs import CostMeter
 from .damage import ANNOTATION_RELEVANCE, make_triple
 from .datasets import load_local_dataset
-from .evaluate import cluster_bootstrap_diff, evaluate, selectivity_bootstrap, summarise, to_markdown, write_report
+from .evaluate import (
+    cluster_bootstrap_diff,
+    evaluate,
+    recovery_table,
+    selectivity_bootstrap,
+    summarise,
+    to_markdown,
+    write_report,
+)
 from .heads import TrainConfig
 from .labels import label_items, write_labels
 from .acquisition import VisualCache, prepare_text, run_lazy
@@ -217,12 +225,15 @@ def cmd_evaluate(a) -> None:
     selectivity = {pa: selectivity_bootstrap(records, pa) for pa in names}
     selectivity_diffs = {f"{pa} - {pb}": selectivity_bootstrap(records, pa, pb)
                          for i, pa in enumerate(names) for pb in names[i + 1:]}
-    write_report(a.out, records, summary, {"comparisons": comparisons, "selectivity": selectivity,
+    recovery = recovery_table(records)
+    write_report(a.out, records, summary, {"primary_recovery": recovery,
+                                           "comparisons": comparisons, "selectivity": selectivity,
                                            "selectivity_diffs": selectivity_diffs,
                                            "skipped_no_fair_triple": skipped, "relevance": a.relevance,
                                            "missing_video": len(report.missing_video), "config": a.config,
                                            "split": a.split, "data": str(a.data)})
     print(to_markdown(summary))
+    print(json.dumps({"primary_recovery": recovery}, indent=2))
 
 
 def cmd_profile(a) -> None:
