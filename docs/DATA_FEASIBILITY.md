@@ -108,6 +108,9 @@ quote-anchored evidence is used to decide what "answer-relevant speech" is
 ## Next concrete steps
 
 1. ~~Authenticate to Hugging Face, accept LongVideoBench terms, download videos.~~ **Done** (all 252).
-2. Run the controller pipeline on all 252 videos (in progress; results will go to `reports/lvb_full/`).
+2. ~~Run the controller pipeline on all 252 videos.~~ **Done** — `reports/lvb_full/RESULTS.md`. Finding:
+   LongVideoBench cannot test the hypothesis (answers are visual; removing the quoted line does not
+   make looking more valuable). A spoken-and-visible dataset is needed; check it first with
+   `scripts/analyze_premise.py` on a small pilot.
 3. For EduVidQA, decide with the project owner whether downloading the YouTube videos is
    permissible for this research; if yes, fetch transcripts and record per-video availability.

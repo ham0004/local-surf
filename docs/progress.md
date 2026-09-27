@@ -1,5 +1,49 @@
 # Progress log
 
+## 2026-09-27 — session 3: audit of session 2, full LongVideoBench run
+
+### Audit: errors found in session 2 (each fixed in its own commit, with a regression test)
+
+1. **Answerer saw no transcript on 35/40 real videos.** `rank_bm25`'s IDF is negative for terms in
+   most documents; single-unit clips scored < 0, nothing was retrieved, and packing had no
+   fallback. This invalidated the session-2 pilot (`reports/pilot_lvb_real/INVALID.md`).
+2. **135 TikTok videos wrongly declared "confirmed absent"** — they are stored under `video_path`,
+   not `video_id`. All 753 val videos are in the archive.
+3. **Payload reads crossing a part boundary raised** ("would straddle"); a test encoded the bug.
+4. **Quote extraction**: apostrophes as quote marks (29/440), one-letter quotes swallowing the next
+   quote, only the first of several quotes used, long lines diluting the match score.
+5. **Download robustness**: truncated files looked complete on resume; a Range-ignoring server
+   would have streamed 5 GB into memory; `qa.jsonl` order changed between runs.
+6. **Subtitle formatting**: newlines/HTML entities in 10% of segments broke the prompt layout.
+7. **Evaluation design**: paired vs unpaired compared at different tuned thresholds and no CI on
+   selectivity. Added threshold sweeps (`learned=head.npz@t`) and a video-clustered bootstrap.
+8. Smaller: a vacuous test assertion; a misleading manifest key (`skipped_no_matched_control`);
+   the answer-overlap relevance fallback is now excludable (`--relevance annotation`).
+
+### Full run (all 252 eligible videos, 440 questions, 330 fair triples)
+
+Results and caveats: **`reports/lvb_full/RESULTS.md`**. In short:
+
+* **Main hypothesis: null.** No paired-vs-unpaired selectivity difference at any matched threshold;
+  5-seed dev pair-difference MAE 0.156 ± 0.005 vs 0.159 ± 0.006.
+* **The premise does not hold on this dataset.** Over 3,185 matched label pairs, the value of
+  looking is not higher under targeted than control damage (−0.022 [−0.050, +0.004]; dev
+  replicates). LongVideoBench's quoted subtitle is only a *when*-pointer to a *visual* answer and
+  is repeated in the question, so removing it changes nothing for the answerer. The dataset
+  cannot test the hypothesis; it is a negative control.
+* **Secondary, significant:** question-similar frames beat uniform frames by +0.14 [+0.05, +0.25]
+  at equal frame count; uniform frames add nothing over the transcript.
+
+### Next
+
+A dataset where the answer is spoken **and** visible (lecture slides read aloud) is required to
+test the hypothesis at all — EduVidQA (pending the YouTube-download decision) or a purpose-built
+set. Before labelling it, run `scripts/analyze_premise.py` on a small pilot: if
+gain_targeted − gain_control is not clearly positive, the controller cannot learn selectivity
+there either. Independently, the sparse utility signal (only ~9% of frame actions help this 2B
+answerer) suggests trying a stronger answerer or crop/resolution actions.
+
+
 ## 2026-09-27 — session 2: first real dataset
 
 ### Built

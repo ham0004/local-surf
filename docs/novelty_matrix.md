@@ -43,3 +43,11 @@ Nothing below is a claim that something has "never been done". A finite search c
 - Same damage *type* (deletion vs. substitution vs. timestamp shift).
 - Control segments must not overlap the answer-relevant segments.
 - The video and gold answer are unchanged.
+
+## Evidence so far (2026-09-27)
+
+LongVideoBench (252 videos, 330 fair triples) gave a **null** paired-vs-unpaired result, but it
+neither supports nor falsifies the claim: measured on real labels, removing the answer-relevant
+line did not make looking more valuable there (−0.022 [−0.050, +0.004]), so the condition the
+hypothesis depends on is absent. Falsification criterion 2 above still needs a dataset where that
+condition holds. See `reports/lvb_full/RESULTS.md`.

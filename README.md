@@ -20,7 +20,7 @@ work, and [docs/architecture.md](docs/architecture.md) for a plain-language tour
 | M1 frozen baseline end to end | done — synthetic lecture (GPU + CPU profiles in `reports/`) and real LongVideoBench videos |
 | M2 measurable acquisition | done: windows, candidates, scout, typed actions, hard caps, rescue, packing, evidence ledger, contact sheet |
 | M3 labels + training | done — real frozen-VLM labels on LongVideoBench (330 fair question triples) |
-| M4 evaluation on real benchmarks | LongVideoBench: all 252 eligible videos / 440 questions; see `reports/lvb_full/` once the run completes. EduVidQA / Video-MME not started |
+| M4 evaluation on real benchmarks | LongVideoBench done (252 videos / 440 questions): **null result, and the dataset does not satisfy the hypothesis's premise** — see [reports/lvb_full/RESULTS.md](reports/lvb_full/RESULTS.md). EduVidQA / Video-MME not started |
 | M5 reproducibility | this README, pinned `uv.lock`, configs; results tables only from logs |
 
 Details, open problems and measured numbers: [docs/progress.md](docs/progress.md).
