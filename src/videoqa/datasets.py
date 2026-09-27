@@ -66,8 +66,14 @@ def load_local_dataset(root: str | Path, splits: tuple[str, ...] | None = None) 
         if not line.strip():
             continue
         qa = _qa_from_json(json.loads(line))
-        if qa.source_split in ("", "unknown", "unassigned"):
-            qa = dataclasses.replace(qa, source_split=split_of(qa.video_id))
+        # experiment_split = OUR split. Items without one get a hashed split by
+        # video. official_split (the dataset's own release split) is preserved
+        # untouched: e.g. LongVideoBench items stay official_split="validation"
+        # even when their experiment_split is "test".
+        if qa.experiment_split in ("", "unknown", "unassigned"):
+            exp = qa.source_split if qa.source_split not in ("", "unknown", "unassigned") else split_of(qa.video_id)
+            qa = dataclasses.replace(qa, experiment_split=exp)
+        qa = dataclasses.replace(qa, source_split=qa.experiment_split)   # legacy alias
         if splits and qa.source_split not in splits:
             continue
         video = _find(root / "videos", qa.video_id, VIDEO_EXTS)

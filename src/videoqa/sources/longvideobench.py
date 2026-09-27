@@ -224,5 +224,9 @@ def convert_item(record: dict, transcript: Transcript, license_note: str) -> Con
         source_dataset="LongVideoBench",
         source_split="unassigned",        # we assign our own train/dev/calibration/test by video (splits.py)
         provenance_and_license=license_note,
+        # The quoted subtitle tells WHEN to look; it is not speech that contains
+        # the (visual) answer. Kept distinct so it is never mistaken for one.
+        evidence_type="temporal_anchor" if intervals else "unknown",
+        official_split="validation",      # every item comes from the official validation release
     )
     return ConvertedItem(qa=qa, evidence_match_ratio=ratio, quoted_span=quote)

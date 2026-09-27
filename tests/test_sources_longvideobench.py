@@ -163,3 +163,11 @@ def test_subtitle_text_is_unescaped_and_single_line():
             "line": "or as an added layer of security&nbsp;\nagainst potential predators."}]
     t = subtitles_to_transcript("v", raw)
     assert t.segments[0].text == "or as an added layer of security against potential predators."
+
+
+def test_quoted_subtitle_is_recorded_as_a_temporal_anchor_not_answer_speech():
+    segs = [TranscriptSegment("s0", 1, 2, "the water while increased levels of")]
+    record = {"id": "v_0", "video_id": "v", "candidates": ["a", "b"], "correct_choice": 1,
+              "question": "What happened after the subtitle 'the water while increased levels of' appeared?"}
+    qa = convert_item(record, Transcript("v", segs), "license").qa
+    assert qa.evidence_type == "temporal_anchor" and qa.official_split == "validation"

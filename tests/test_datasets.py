@@ -20,3 +20,17 @@ def test_split_filter(tmp_path):
     some = {all_items[0].qa.source_split}
     filtered, _ = load_local_dataset(tmp_path, splits=tuple(some))
     assert filtered and all(it.qa.source_split in some for it in filtered)
+
+
+def test_official_split_is_preserved_separately_from_experiment_split(tmp_path):
+    import json
+    fixtures.write_dataset(tmp_path, n_videos=1, seed0=500)
+    rows = [json.loads(line) for line in (tmp_path / "qa.jsonl").read_text().splitlines()]
+    for r in rows:
+        r["official_split"] = "validation"
+    (tmp_path / "qa.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    items, _ = load_local_dataset(tmp_path)
+    for it in items:
+        assert it.qa.official_split == "validation"
+        assert it.qa.experiment_split in {"train", "dev", "calibration", "test"}
+        assert it.qa.source_split == it.qa.experiment_split
