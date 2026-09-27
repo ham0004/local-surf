@@ -75,9 +75,17 @@ class UtilityHead:
         return H @ self.w2 + self.b2[0]
 
     # --- training ----------------------------------------------------------
-    def fit(self, X: np.ndarray, y: np.ndarray, pairs: np.ndarray, cfg: TrainConfig) -> list[float]:
+    def fit(self, X: np.ndarray, y: np.ndarray, pairs: np.ndarray, cfg: TrainConfig,
+            extra_pairs: list[tuple[np.ndarray, float]] | None = None,
+            rank_pairs: np.ndarray | None = None, lambda_rank: float = 0.0) -> list[float]:
         """Full-batch training.  ``pairs`` is an (P, 2) int array of row indices
-        (targeted_row, control_row).  Returns the loss curve."""
+        (targeted_row, control_row), weighted by ``cfg.lambda_pair``.
+
+        ``extra_pairs``: further (index array (P, 2), weight) difference terms,
+        each Huber((u_a - u_b) - (y_a - y_b)) (V2 uses clean->targeted and
+        clean->control). ``rank_pairs``: (R, 2) rows (hi, lo) whose measured
+        gain is strictly ordered; adds lambda_rank * softplus(-(u_hi - u_lo)).
+        Returns the loss curve."""
         self.mu = X.mean(axis=0)
         self.sigma = X.std(axis=0) + 1e-6
         self.sigma[self.sigma < 1e-5] = 1.0   # constant features (e.g. bias) stay as-is
@@ -99,15 +107,27 @@ class UtilityHead:
             du = g_abs / len(y)
             loss = loss_abs.mean()
 
-            # paired term: d/du_t = +g, d/du_c = -g
-            if cfg.lambda_pair > 0 and len(pairs):
-                t, c = pairs[:, 0], pairs[:, 1]
+            # difference terms: d/du_a = +g, d/du_b = -g
+            terms = [(pairs, cfg.lambda_pair)] + list(extra_pairs or [])
+            for P, weight in terms:
+                if weight <= 0 or not len(P):
+                    continue
+                t, c = P[:, 0], P[:, 1]
                 r = (u[t] - u[c]) - (y[t] - y[c])
                 loss_pair, g_pair = _huber_grad(r, cfg.huber_delta)
-                loss += cfg.lambda_pair * loss_pair.mean()
-                scale = cfg.lambda_pair / len(pairs)
+                loss += weight * loss_pair.mean()
+                scale = weight / len(P)
                 np.add.at(du, t, scale * g_pair)
                 np.add.at(du, c, -scale * g_pair)
+
+            # ranking term: softplus(-(u_hi - u_lo)), gradient -sigmoid(-(d))
+            if lambda_rank > 0 and rank_pairs is not None and len(rank_pairs):
+                hi, lo = rank_pairs[:, 0], rank_pairs[:, 1]
+                d = u[hi] - u[lo]
+                loss += lambda_rank * np.logaddexp(0.0, -d).mean()
+                g = -lambda_rank / len(rank_pairs) / (1.0 + np.exp(d))
+                np.add.at(du, hi, g)
+                np.add.at(du, lo, -g)
 
             # backward through the MLP
             g_w2 = H.T @ du + cfg.weight_decay * self.w2

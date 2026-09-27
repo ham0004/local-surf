@@ -131,6 +131,20 @@ def cmd_build_assay(a) -> None:
     print(json.dumps(write_assay(a.out, rows, pools, questions, stats, manifest), indent=2))
 
 
+def cmd_train_assay(a) -> None:
+    """V0/V1/V2 heads on assay-v2 labels; decision lambda calibrated on dev."""
+    from .train_assay import train_assay  # noqa: PLC0415
+
+    price = a.price_per_s if a.price_per_s is not None else cost_model_from_config(load_config(a.config)).lambda_per_s
+    res = train_assay(a.train_labels, a.dev_labels, a.out, TrainConfig(epochs=a.epochs, hidden=a.hidden),
+                      price_per_s=price, seeds=tuple(int(x) for x in a.seeds.split(",")))
+    brief = {v: [{"seed": s["seed"], "lambda": s["lambda"], **s["dev"],
+                  "dev_utility": s["dev_at_lambda"]["all"]["utility"]} for s in runs]
+             for v, runs in res["variants"].items()}
+    print(json.dumps({"train": res["train"], "dev": res["dev"], "price_per_s": price,
+                      "reference": {k: v["all"] for k, v in res["reference"].items()}, "variants": brief}, indent=2))
+
+
 def cmd_train(a) -> None:
     res = train_paired_and_unpaired(a.train_labels, a.dev_labels, a.out,
                                     TrainConfig(epochs=a.epochs, hidden=a.hidden, seed=a.seed),
@@ -295,6 +309,17 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--seed", type=int, default=0)
     s.add_argument("--out", required=True)
     s.set_defaults(fn=cmd_build_assay)
+
+    s = sub.add_parser("train-assay", help="V0/V1/V2 heads on assay labels, lambda calibrated on dev")
+    s.add_argument("--train-labels", required=True)
+    s.add_argument("--dev-labels", required=True)
+    s.add_argument("--config", default="configs/cpu.yaml", help="source of the declared price of time")
+    s.add_argument("--price-per-s", type=float)
+    s.add_argument("--epochs", type=int, default=300)
+    s.add_argument("--hidden", type=int, default=32)
+    s.add_argument("--seeds", default="0,1,2")
+    s.add_argument("--out", required=True)
+    s.set_defaults(fn=cmd_train_assay)
 
     s = sub.add_parser("evaluate")
     s.add_argument("--data", required=True)
