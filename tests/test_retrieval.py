@@ -70,3 +70,19 @@ def test_term_in_every_unit_still_scores_positive():
 
 def test_units_without_any_query_term_are_still_dropped():
     assert bm25_rank("zebra", _units()) == []
+
+
+
+def test_candidates_carry_relevance_rank_and_policy_uses_it():
+    # Regression: windows come back in time order, so candidate ids were
+    # chronological and RetrievalPolicy looked at the EARLIEST window first.
+    from videoqa.controller import RetrievalPolicy
+    from videoqa.schemas import ControllerObservation
+    units = _units()
+    ranked = [(units[4], 9.0), (units[0], 1.0)]          # the late unit is the better match
+    windows = build_windows(ranked, units, neighbour_expansion=0, video_duration_s=100)
+    cands = generate_candidates(windows, 100, per_window=1, uniform=0, rescue=0)
+    late = [c for c in cands if c.time_s > 50][0]
+    assert late.rank == 0 and [c for c in cands if c.time_s < 50][0].rank == 1
+    obs = ControllerObservation("q", None, [], cands, {}, [], 0, 3, 3, 100.0)
+    assert RetrievalPolicy().decide(obs, 0, 0).candidate_id == late.id

@@ -161,15 +161,19 @@ def generate_candidates(windows: list[Window], video_duration_s: float, per_wind
     out: list[Candidate] = []
     last_t = max(0.0, video_duration_s - 1e-3)
 
-    def add(t: float, source: CandidateSource, window_id: str | None = None) -> None:
+    def add(t: float, source: CandidateSource, window_id: str | None = None, rank: int | None = None) -> None:
         t = min(max(0.0, t), last_t)
         if all(abs(t - c.time_s) >= min_separation_s for c in out):
-            out.append(Candidate(id=f"c{len(out):03d}", time_s=round(t, 3), source=source, window_id=window_id))
+            out.append(Candidate(id=f"c{len(out):03d}", time_s=round(t, 3), source=source,
+                                 window_id=window_id, rank=rank))
 
+    # Windows arrive in TIME order; rank records relevance order explicitly, so a
+    # policy that means "best match first" does not silently get "earliest first".
+    rank_of = {w.id: r for r, w in enumerate(sorted(windows, key=lambda w: -w.score))}
     for w in windows:
         for k in range(per_window):
             frac = 0.5 if per_window == 1 else k / (per_window - 1)
-            add(w.start_s + frac * (w.end_s - w.start_s), CandidateSource.TRANSCRIPT_RETRIEVAL, w.id)
+            add(w.start_s + frac * (w.end_s - w.start_s), CandidateSource.TRANSCRIPT_RETRIEVAL, w.id, rank_of[w.id])
 
     for k in range(uniform):
         add((k + 0.5) * video_duration_s / uniform, CandidateSource.UNIFORM)

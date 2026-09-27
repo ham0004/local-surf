@@ -95,8 +95,8 @@ class RetrievalPolicy:
         acts = _look_actions(obs, rescue_frames_left, max_expansions, {CandidateSource.TRANSCRIPT_RETRIEVAL})
         if not acts:
             return Action(ActionKind.STOP, reason="NO_RETRIEVED_LEFT")
-        # candidates are generated best-window-first; keep that order
-        kind, cand = min(acts, key=lambda a: a[1].id)
+        # best-matching window first (explicit rank), then earliest within it
+        kind, cand = min(acts, key=lambda a: (a[1].rank if a[1].rank is not None else 1 << 30, a[1].time_s))
         return Action(kind, cand.id, reason="RETRIEVAL_NEXT")
 
 

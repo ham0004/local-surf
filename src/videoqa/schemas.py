@@ -216,6 +216,7 @@ class Candidate:
     time_s: float
     source: CandidateSource
     window_id: str | None = None   # transcript window that proposed it, if any
+    rank: int | None = None        # relevance rank of that window (0 = best match); None if not retrieved
 
 
 @dataclasses.dataclass
