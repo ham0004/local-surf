@@ -8,6 +8,8 @@ import pytest
 from videoqa.damage import (
     ANNOTATION_RELEVANCE,
     MASK_TOKEN,
+    build_triple,
+    severity_matched,
     asr_style_noise,
     auto_min_distance_s,
     derive_relevant_segments,
@@ -68,8 +70,9 @@ def test_triple_is_matched_in_count_and_type(dtype):
     assert len(t_rec.damaged_segment_ids) == len(c_rec.damaged_segment_ids)
     # control never touches the answer-relevant segment
     assert set(c_rec.damaged_segment_ids).isdisjoint(t_rec.damaged_segment_ids)
-    # word counts matched closely (fixture lines are 6-10 words)
-    assert abs(t_rec.words_affected - c_rec.words_affected) <= 3
+    # EFFECTIVE damage matched within the predeclared tolerance, and both real edits
+    assert severity_matched(t_rec.changed_tokens, c_rec.changed_tokens)
+    assert t_rec.changed and c_rec.changed
 
 
 def test_control_is_far_from_relevant_and_answer_free():
@@ -142,7 +145,7 @@ def test_make_triple_recovers_a_short_clip_that_a_fixed_10s_distance_would_rejec
     # 9s clip, 3 short segments - representative of the real failure mode.
     segs = [TranscriptSegment("s0", 0.0, 1.0, "welcome to the shop"),
            TranscriptSegment("s1", 2.0, 3.0, "eggs are on the bottom shelf"),
-           TranscriptSegment("s2", 6.0, 7.0, "thanks for watching")]
+           TranscriptSegment("s2", 6.0, 7.0, "thanks a lot for watching today")]
     t = Transcript("clip", segs)
     qa = QAItem(qa_id="q", video_id="clip", question="what is on the shelf",
                gold_answer="eggs", evidence_segment_ids=["s1"])
@@ -156,3 +159,75 @@ def test_annotation_only_relevance_rejects_the_answer_overlap_fallback():
     assert make_triple(_qa(), _lecture(), relevance_methods=ANNOTATION_RELEVANCE) is None
     annotated = _qa(evidence_intervals_s=[(31.0, 33.0)])
     assert make_triple(annotated, _lecture(), relevance_methods=ANNOTATION_RELEVANCE) is not None
+
+
+
+# --- regression tests for the 2026-09-28 matching repairs -------------------
+
+def _seg(i, start, text):
+    return TranscriptSegment(f"s{i}", start, start + 1.0, text)
+
+
+def test_severity_mismatch_is_rejected_not_used():
+    # 6-word target, only a 3-word line available far away -> no fair control.
+    t = Transcript("v", [_seg(0, 0, "eggs are on the bottom shelf"), _seg(1, 30, "thanks for watching")])
+    qa = QAItem(qa_id="q", video_id="v", question="q", gold_answer="eggs", evidence_segment_ids=["s0"])
+    triple, reason = build_triple(qa, t)
+    assert triple is None and reason == "no_matched_control"
+
+
+def test_control_excludes_the_whole_relevant_set_not_just_capped_targets():
+    # 5 relevant lines, only 3 are targeted; the other 2 must never be controls.
+    segs = [_seg(i, 20 * i, "alpha beta gamma delta") for i in range(10)]
+    t = Transcript("v", segs)
+    relevant = [f"s{i}" for i in range(5)]
+    qa = QAItem(qa_id="q", video_id="v", question="q", gold_answer="zzz", evidence_segment_ids=relevant)
+    for seed in range(10):
+        triple, _ = build_triple(qa, t, seed=seed, max_targets=3)
+        ctrl = triple.records[TranscriptCondition.CONTROL_DAMAGE].damaged_segment_ids
+        assert set(ctrl).isdisjoint(relevant)
+
+
+def test_number_swap_needs_a_number_bearing_control_and_rejects_no_op_targets():
+    t = Transcript("v", [_seg(0, 0, "the rate is 0.3 here"), _seg(1, 40, "we saw 12 cats"),
+                         _seg(2, 80, "no digits in this line")])
+    qa = QAItem(qa_id="q", video_id="v", question="q", gold_answer="0.3", evidence_segment_ids=["s0"])
+    triple, _ = build_triple(qa, t, dtype=DamageType.NUMBER_SWAP, seed=0)
+    c = triple.records[TranscriptCondition.CONTROL_DAMAGE]
+    assert c.damaged_segment_ids == ["s1"] and c.changed and c.changed_tokens == 1
+    no_number = QAItem(qa_id="q2", video_id="v", question="q", gold_answer="x", evidence_segment_ids=["s2"])
+    assert build_triple(no_number, t, dtype=DamageType.NUMBER_SWAP)[1] == "targets_not_damageable"
+
+
+def test_time_shift_moves_target_and_control_the_same_way():
+    t = Transcript("v", [_seg(i, 30 + 40 * i, "one two three four") for i in range(4)])
+    qa = QAItem(qa_id="q", video_id="v", question="q", gold_answer="zzz", evidence_segment_ids=["s1"])
+    for seed in range(6):
+        triple, _ = build_triple(qa, t, dtype=DamageType.TIME_SHIFT, seed=seed, shift_s=15.0)
+        tr = triple.records[TranscriptCondition.TARGETED_DAMAGE]
+        cr = triple.records[TranscriptCondition.CONTROL_DAMAGE]
+        assert tr.displacement_s == cr.displacement_s and abs(tr.displacement_s) == 15.0
+
+
+def test_damage_record_describes_the_effective_edit():
+    triple, reason = build_triple(_qa(), _lecture(), dtype=DamageType.DELETE, seed=0)
+    assert reason == "ok"
+    r = triple.records[TranscriptCondition.TARGETED_DAMAGE]
+    assert r.changed and r.changed_tokens == 10 and r.time_coverage_s == 8.0
+    assert r.intervals_s == [(30.0, 38.0)] and r.role == "targeted"
+
+
+def test_every_exclusion_has_a_reason():
+    assert build_triple(_qa(gold_answer="zebra"), _lecture())[1] == "no_relevant_segment"
+    assert build_triple(_qa(), _lecture(), relevance_methods=ANNOTATION_RELEVANCE)[1] == "relevance_source_excluded"
+
+
+def test_extra_controls_are_distinct_valid_matches():
+    triple, _ = build_triple(_qa(), _lecture(), dtype=DamageType.DELETE, seed=0)
+    primary = triple.records[TranscriptCondition.CONTROL_DAMAGE].damaged_segment_ids
+    t_tokens = triple.records[TranscriptCondition.TARGETED_DAMAGE].changed_tokens
+    seen = [primary]
+    for role, (_, rec) in triple.extra_controls.items():
+        assert rec.role == role and rec.damaged_segment_ids not in seen
+        assert severity_matched(t_tokens, rec.changed_tokens)
+        seen.append(rec.damaged_segment_ids)

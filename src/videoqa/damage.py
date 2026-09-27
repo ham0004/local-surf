@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import copy
 import dataclasses
+import itertools
 import random
 import re
 
@@ -144,16 +145,20 @@ def _swap_numbers(seg: TranscriptSegment, rng: random.Random) -> tuple[Transcrip
 
 
 def _time_shift(seg: TranscriptSegment, rng: random.Random, shift_s: float) -> tuple[TranscriptSegment, int]:
-    """Move the segment in time by +/- ``shift_s`` (misaligned subtitles)."""
-    delta = shift_s if rng.random() < 0.5 else -shift_s
-    start = max(0.0, seg.start_s + delta)
-    end = max(start, seg.end_s + delta)
+    """Move the segment in time by ``shift_s`` (signed; misaligned subtitles).
+
+    The SIGN is chosen by the caller once per triple, so the targeted and the
+    control segment move in the same direction by the same amount; clamping at
+    0 s can still shorten the effective shift, which the damage record measures.
+    """
+    start = max(0.0, seg.start_s + shift_s)
+    end = max(start, seg.end_s + shift_s)
     return dataclasses.replace(seg, start_s=start, end_s=end), len(seg.text.split())
 
 
 def _apply(seg: TranscriptSegment, dtype: DamageType, rng: random.Random,
            shift_s: float) -> tuple[TranscriptSegment | None, int]:
-    """Apply one damage type; returns (new segment or None if deleted, words affected)."""
+    """Apply one damage type; returns (new segment or None if deleted, tokens changed)."""
     if dtype == DamageType.DELETE:
         return None, len(seg.text.split())
     if dtype == DamageType.MASK_WORDS:
@@ -165,28 +170,53 @@ def _apply(seg: TranscriptSegment, dtype: DamageType, rng: random.Random,
     raise ValueError(dtype)
 
 
+def effect_size(seg: TranscriptSegment, dtype: DamageType, shift_s: float = 15.0) -> int:
+    """Tokens the operation would change in ``seg`` (0 = it would be a no-op).
+
+    The COUNT of changed tokens does not depend on which replacement digit is
+    drawn, so this is a seed-independent severity measure for matching.
+    """
+    new_seg, n = _apply(seg, dtype, random.Random(0), shift_s)
+    if dtype == DamageType.TIME_SHIFT and new_seg is not None and new_seg.start_s == seg.start_s:
+        return 0   # clamped to no movement at all
+    return n
+
+
 def damage_transcript(transcript: Transcript, segment_ids: list[str], dtype: DamageType,
-                      condition: TranscriptCondition, seed: int,
-                      shift_s: float = 15.0) -> tuple[Transcript, DamageRecord]:
-    """Return a damaged COPY of ``transcript`` plus a record of what changed.
+                      condition: TranscriptCondition, seed: int, shift_s: float = 15.0,
+                      role: str = "", support_type: str = "") -> tuple[Transcript, DamageRecord]:
+    """Return a damaged COPY of ``transcript`` plus a record of what actually changed.
 
     The original transcript object is never modified.
     """
     rng = random.Random(seed)
     targets = set(segment_ids)
     new_segments: list[TranscriptSegment] = []
-    words_affected = 0
+    changed_tokens = 0
+    coverage = 0.0
+    intervals: list[tuple[float, float]] = []
+    shifts: list[float] = []
     for seg in transcript.segments:
         if seg.id in targets:
             new_seg, n = _apply(seg, dtype, rng, shift_s)
-            words_affected += n
+            if dtype == DamageType.TIME_SHIFT and new_seg is not None:
+                shifts.append(new_seg.start_s - seg.start_s)
+                if new_seg.start_s == seg.start_s:
+                    n = 0
+            changed_tokens += n
+            coverage += seg.duration_s
+            intervals.append((seg.start_s, seg.end_s))
             if new_seg is not None:
                 new_segments.append(new_seg)
         else:
             new_segments.append(copy.copy(seg))
     new_segments.sort(key=lambda s: s.start_s)
-    record = DamageRecord(condition=condition, damage_type=dtype,
-                          damaged_segment_ids=sorted(targets), words_affected=words_affected, seed=seed)
+    record = DamageRecord(condition=condition, damage_type=dtype, damaged_segment_ids=sorted(targets),
+                          words_affected=sum(len(s.text.split()) for s in transcript.segments if s.id in targets),
+                          seed=seed, changed_tokens=changed_tokens, time_coverage_s=round(coverage, 3),
+                          intervals_s=sorted(intervals), changed=changed_tokens > 0,
+                          displacement_s=round(sum(shifts) / len(shifts), 3) if shifts else 0.0,
+                          role=role, support_type=support_type)
     return Transcript(transcript.video_id, new_segments, source=f"{transcript.source}+{condition.value}"), record
 
 
@@ -194,62 +224,83 @@ def damage_transcript(transcript: Transcript, segment_ids: list[str], dtype: Dam
 # Matched control selection
 # ---------------------------------------------------------------------------
 
+# PREDECLARED on 2026-09-28, before any new outcome was inspected: a control is
+# matched when its effective changed-token count is within max(1, 20 %) of the
+# targeted count. Sets outside this tolerance are dropped, never used.
+SEVERITY_TOLERANCE = 0.20
+
+
+def severity_matched(targeted_tokens: int, control_tokens: int, tolerance: float = SEVERITY_TOLERANCE) -> bool:
+    return abs(control_tokens - targeted_tokens) <= max(1, round(tolerance * targeted_tokens))
+
 
 def _eligible_for_type(seg: TranscriptSegment, dtype: DamageType) -> bool:
-    """A control segment must be able to receive the same kind of damage.
-    E.g. NUMBER_SWAP control segments must actually contain a number."""
-    if dtype == DamageType.NUMBER_SWAP:
-        return bool(re.search(r"\d", seg.text)) or any(
-            w.lower().strip(".,;:!?") in _NUMBER_WORDS for w in seg.text.split()
-        )
-    if dtype == DamageType.MASK_WORDS:
-        return bool(_content_tokens(seg.text))
-    return True
+    """A segment can take ``dtype`` only if the damage would actually change
+    something (so NUMBER_SWAP needs a number, and no-op controls are rejected)."""
+    return effect_size(seg, dtype) > 0
 
 
-def select_matched_control(transcript: Transcript, relevant_ids: list[str], dtype: DamageType,
-                           answer_text: str, seed: int, min_distance_s: float = 10.0) -> list[str] | None:
-    """Pick control segments matched to the relevant ones.
-
-    Rules (each is tested):
-      * same NUMBER of segments as the targeted set;
-      * none of them is relevant, and none shares a content token with the answer;
-      * each is at least ``min_distance_s`` away from every relevant segment, so
-        neighbouring context that also carries the answer is not touched;
-      * word counts are matched greedily: for each relevant segment (longest
-        first) take the unused eligible segment with the closest word count,
-        breaking ties randomly (seeded).
-
-    Returns None when no matched control exists (e.g. very short video); the
-    caller must then drop the example rather than use an unmatched control.
-    """
-    rng = random.Random(seed)
+def _control_pool(transcript: Transcript, all_relevant_ids: list[str], dtype: DamageType,
+                  answer_text: str, min_distance_s: float) -> list[TranscriptSegment]:
+    """Segments that may serve as controls: not relevant (the WHOLE known
+    relevant set, not only the capped targets), far from every relevant
+    segment, not answer-bearing, and damageable by ``dtype``."""
     by_id = transcript.by_id()
-    relevant = [by_id[i] for i in relevant_ids if i in by_id]
+    relevant = [by_id[i] for i in all_relevant_ids if i in by_id]
     answer_tokens = _content_tokens(answer_text)
+    excluded = set(all_relevant_ids)
 
-    def far_from_relevant(seg: TranscriptSegment) -> bool:
+    def far(seg: TranscriptSegment) -> bool:
         return all(seg.start_s >= r.end_s + min_distance_s or seg.end_s <= r.start_s - min_distance_s
                    for r in relevant)
 
-    pool = [
-        s for s in transcript.segments
-        if s.id not in relevant_ids
-        and far_from_relevant(s)
-        and not (answer_tokens & _content_tokens(s.text))
-        and _eligible_for_type(s, dtype)
-    ]
-    if len(pool) < len(relevant):
-        return None
+    return [s for s in transcript.segments
+            if s.id not in excluded and far(s) and not (answer_tokens & _content_tokens(s.text))
+            and _eligible_for_type(s, dtype)]
 
-    chosen: list[str] = []
-    for r in sorted(relevant, key=lambda s: -len(s.text.split())):
-        target_len = len(r.text.split())
-        rng.shuffle(pool)  # random tie-breaking, deterministic via seed
-        best = min(pool, key=lambda s: abs(len(s.text.split()) - target_len))
-        chosen.append(best.id)
-        pool.remove(best)
-    return chosen
+
+def _combos(targets: list[TranscriptSegment], pool: list[TranscriptSegment], dtype: DamageType,
+            k: int = 6) -> list[tuple[str, ...]]:
+    """All severity-matched control sets: one control per target, drawn from
+    each target's ``k`` closest-effect pool segments (bounded search)."""
+    t_total = sum(effect_size(t, dtype) for t in targets)
+    options = []
+    for t in targets:
+        te = effect_size(t, dtype)
+        options.append(sorted(pool, key=lambda s: (abs(effect_size(s, dtype) - te), s.start_s))[:k])
+    out = set()
+    for combo in itertools.product(*options):
+        ids = tuple(s.id for s in combo)
+        if len(set(ids)) != len(ids):
+            continue
+        if severity_matched(t_total, sum(effect_size(s, dtype) for s in combo)):
+            out.add(tuple(sorted(ids)))
+    return sorted(out)
+
+
+def select_matched_control(transcript: Transcript, relevant_ids: list[str], dtype: DamageType,
+                           answer_text: str, seed: int, min_distance_s: float = 10.0,
+                           all_relevant_ids: list[str] | None = None) -> list[str] | None:
+    """Pick one severity-matched control set for the targeted segments.
+
+    Rules (each is tested):
+      * same number of segments and same damage type as the targeted set;
+      * never a segment from the complete known relevant set
+        (``all_relevant_ids``; defaults to ``relevant_ids``), never within
+        ``min_distance_s`` of one, never sharing a content token with the answer;
+      * effective changed tokens within the predeclared tolerance
+        (:data:`SEVERITY_TOLERANCE`), and never a no-op;
+      * among all valid sets, a seeded random choice.
+
+    Returns None when no matched control exists; the caller drops the example.
+    """
+    by_id = transcript.by_id()
+    targets = [by_id[i] for i in relevant_ids if i in by_id]
+    pool = _control_pool(transcript, all_relevant_ids or relevant_ids, dtype, answer_text, min_distance_s)
+    combos = _combos(targets, pool, dtype)
+    if not combos:
+        return None
+    return list(random.Random(seed).choice(combos))
 
 
 # ---------------------------------------------------------------------------
@@ -264,6 +315,10 @@ class TranscriptTriple:
     control: Transcript
     records: dict[TranscriptCondition, DamageRecord]
     relevance_method: str
+    # Extra matched controls for ablations: role -> (transcript, record).
+    # "control_near": the valid control set closest in time to the targets;
+    # "control_distant": the farthest. Absent when identical to the primary.
+    extra_controls: dict[str, tuple[Transcript, DamageRecord]] = dataclasses.field(default_factory=dict)
 
     def by_condition(self) -> dict[TranscriptCondition, Transcript]:
         return {
@@ -277,14 +332,11 @@ def auto_min_distance_s(transcript: Transcript, fraction: float = 0.15, floor_s:
                         cap_s: float = 10.0) -> float:
     """Scale the matched-control separation to how much speech there actually is.
 
-    The original default (a flat 10 s) assumes a lecture-length video; it was
-    measured to reject 22 of 40 real LongVideoBench clips (9-70 s, often only
-    1-5 transcript segments spanning barely 10 s) because almost no segment
-    could ever be 10 s from another. Scaling by the transcript's own covered
-    span keeps a full-lecture fixture at the original 10 s (span large enough
-    to hit ``cap_s``) while giving short clips a proportionally smaller,
-    still-meaningful separation instead of silently discarding almost every
-    question.
+    A flat 10 s assumes a lecture-length video; it was measured to reject 22 of
+    40 real LongVideoBench clips (9-70 s, often only 1-5 transcript segments).
+    Scaling by the transcript's own covered span keeps a full-lecture fixture at
+    10 s (span large enough to hit ``cap_s``) while giving short clips a
+    proportionally smaller separation.
     """
     if not transcript.segments:
         return floor_s
@@ -296,57 +348,69 @@ def auto_min_distance_s(transcript: Transcript, fraction: float = 0.15, floor_s:
 # gold-answer word-overlap fallback).
 ANNOTATION_RELEVANCE = frozenset({"annotation_ids", "annotation_intervals"})
 
+# Every reason a question can be excluded from the paired experiment.
+DROP_REASONS = ("no_relevant_segment", "relevance_source_excluded", "targets_not_damageable",
+                "no_matched_control")
+
+
+def build_triple(qa: QAItem, transcript: Transcript, dtype: DamageType = DamageType.DELETE,
+                 seed: int = 0, max_targets: int = 3, min_distance_s: float | None = None,
+                 relevance_methods: frozenset[str] | None = None,
+                 shift_s: float = 15.0) -> tuple[TranscriptTriple | None, str]:
+    """Build CLEAN / TARGETED / CONTROL transcripts, or say exactly why not.
+
+    Returns ``(triple, "ok")`` or ``(None, reason)`` with reason in
+    :data:`DROP_REASONS`, so every exclusion can be counted and reported.
+    """
+    rel = derive_relevant_segments(qa, transcript)
+    if not rel.segment_ids:
+        return None, "no_relevant_segment"
+    if relevance_methods is not None and rel.method not in relevance_methods:
+        return None, "relevance_source_excluded"
+    by_id = transcript.by_id()
+    targets = [t for t in rel.segment_ids[:max_targets] if _eligible_for_type(by_id[t], dtype)]
+    if not targets:
+        return None, "targets_not_damageable"
+    distance = auto_min_distance_s(transcript) if min_distance_s is None else min_distance_s
+    target_segs = [by_id[t] for t in targets]
+    pool = _control_pool(transcript, rel.segment_ids, dtype, qa.gold_answer, distance)
+    combos = _combos(target_segs, pool, dtype)
+    if not combos:
+        return None, "no_matched_control"
+    primary = list(random.Random(seed).choice(combos))
+
+    # One shift sign per triple, so targeted and control move the same way.
+    signed_shift = shift_s if random.Random(seed + 1).random() < 0.5 else -shift_s
+    support = qa.evidence_type
+    clean_record = DamageRecord(TranscriptCondition.CLEAN, None, [], 0, seed, role="clean", support_type=support)
+    targeted, t_rec = damage_transcript(transcript, targets, dtype, TranscriptCondition.TARGETED_DAMAGE, seed,
+                                        signed_shift, role="targeted", support_type=support)
+    control, c_rec = damage_transcript(transcript, primary, dtype, TranscriptCondition.CONTROL_DAMAGE, seed,
+                                       signed_shift, role="control", support_type=support)
+
+    def gap(ids: tuple[str, ...]) -> float:
+        return min(min(abs(by_id[i].start_s - t.start_s) for t in target_segs) for i in ids)
+
+    extra: dict[str, tuple[Transcript, DamageRecord]] = {}
+    for role, pick in (("control_near", min(combos, key=gap)), ("control_distant", max(combos, key=gap))):
+        taken = [primary] + [r.damaged_segment_ids for _, r in extra.values()]
+        if list(pick) not in taken:
+            extra[role] = damage_transcript(transcript, list(pick), dtype, TranscriptCondition.CONTROL_DAMAGE,
+                                            seed, signed_shift, role=role, support_type=support)
+    return TranscriptTriple(
+        clean=transcript, targeted=targeted, control=control,
+        records={TranscriptCondition.CLEAN: clean_record, TranscriptCondition.TARGETED_DAMAGE: t_rec,
+                 TranscriptCondition.CONTROL_DAMAGE: c_rec},
+        relevance_method=rel.method, extra_controls=extra,
+    ), "ok"
+
 
 def make_triple(qa: QAItem, transcript: Transcript, dtype: DamageType = DamageType.DELETE,
                 seed: int = 0, max_targets: int = 3,
                 min_distance_s: float | None = None,
                 relevance_methods: frozenset[str] | None = None) -> TranscriptTriple | None:
-    """Build CLEAN / TARGETED / CONTROL transcripts for one question.
-
-    ``min_distance_s`` is the minimum separation required between a targeted
-    and a control segment; ``None`` (the default) auto-scales it to the
-    transcript's own span via :func:`auto_min_distance_s` rather than assuming
-    a fixed video length.
-
-    ``relevance_methods`` restricts which relevance sources may define the
-    targeted segments (None = any). Use :data:`ANNOTATION_RELEVANCE` when the
-    gold answer is visual (e.g. LongVideoBench: "eggs", "Wearing a helmet"):
-    there the word-overlap fallback just targets whichever line happens to
-    mention the answer word, which need not be the moment the question is
-    about, and would add a noisy relevance source to the paired signal.
-
-    Returns None if the question has no answer-relevant speech (nothing to
-    target) or if no matched control can be found.  Dropping such items is
-    safer than silently producing an unfair pair.
-    """
-    rel = derive_relevant_segments(qa, transcript)
-    if relevance_methods is not None and rel.method not in relevance_methods:
-        return None
-    targets = rel.segment_ids[:max_targets]
-    if not targets:
-        return None
-    # NUMBER_SWAP / MASK_WORDS targets must themselves be damageable.
-    by_id = transcript.by_id()
-    targets = [t for t in targets if _eligible_for_type(by_id[t], dtype)]
-    if not targets:
-        return None
-    distance = auto_min_distance_s(transcript) if min_distance_s is None else min_distance_s
-    control_ids = select_matched_control(transcript, targets, dtype, qa.gold_answer, seed, min_distance_s=distance)
-    if control_ids is None:
-        return None
-
-    clean_record = DamageRecord(TranscriptCondition.CLEAN, None, [], 0, seed)
-    targeted, t_rec = damage_transcript(transcript, targets, dtype, TranscriptCondition.TARGETED_DAMAGE, seed)
-    control, c_rec = damage_transcript(transcript, control_ids, dtype, TranscriptCondition.CONTROL_DAMAGE, seed)
-    return TranscriptTriple(
-        clean=transcript,
-        targeted=targeted,
-        control=control,
-        records={TranscriptCondition.CLEAN: clean_record,
-                 TranscriptCondition.TARGETED_DAMAGE: t_rec,
-                 TranscriptCondition.CONTROL_DAMAGE: c_rec},
-        relevance_method=rel.method,
-    )
+    """Backward-compatible wrapper around :func:`build_triple` (drops the reason)."""
+    return build_triple(qa, transcript, dtype, seed, max_targets, min_distance_s, relevance_methods)[0]
 
 
 # ---------------------------------------------------------------------------
