@@ -35,4 +35,14 @@ dataset.
    separately as feasibility evidence only.
 
 ## Screen results
-(filled in when runs/stratum/*.json are complete)
+| dataset | n | attempted | drops | text-only acc clean / targeted / control | stratum 1 | rate | qualifies |
+|---|---|---|---|---|---|---|---|
+| Video-MME (subtitled) | 50 | 84 | no answer words in subtitles 32, no matched control 2 | 0.54 / 0.50 / 0.54 | 2 | 0.04 | no |
+| LongVideoBench | 50 | 60 | no relevant segment 5, no matched control 5 | 0.22 / 0.26 / 0.22 | 2 | 0.04 | no |
+
+Video-MME: 38% of the attempted questions have no subtitle line containing
+the answer's words, and targeted damage changes almost no answers. Clean
+text-only accuracy of 0.54 on 4-way questions largely survives targeted
+damage, so it probably comes from the question and options, not from the
+speech. Neither dataset meets the rule. EduVidQA and NExT-GQA are screened
+next (runs/stratum/*.json).
