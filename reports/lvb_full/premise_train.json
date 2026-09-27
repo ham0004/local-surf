@@ -1,0 +1,66 @@
+{
+  "labels": "runs/lvb_full/labels_train",
+  "n_rows": 12874,
+  "n_pairs": 3185,
+  "conditions": {
+    "clean": {
+      "n_questions": 208,
+      "base_quality": 0.3125,
+      "mean_action_gain": 0.024203069657615112,
+      "p_gain_pos": 0.08913813459268005,
+      "p_gain_neg": 0.06493506493506493,
+      "mean_best_action_gain": 0.2692307692307692
+    },
+    "targeted_damage": {
+      "n_questions": 208,
+      "base_quality": 0.3557692307692308,
+      "mean_action_gain": 0.001465845793022574,
+      "p_gain_pos": 0.08208736440926415,
+      "p_gain_neg": 0.08062151861624157,
+      "mean_best_action_gain": 0.2548076923076923
+    },
+    "control_damage": {
+      "n_questions": 208,
+      "base_quality": 0.3125,
+      "mean_action_gain": 0.024830032515518772,
+      "p_gain_pos": 0.08867868755542418,
+      "p_gain_neg": 0.0638486550399054,
+      "mean_best_action_gain": 0.27403846153846156
+    }
+  },
+  "paired_gain_targeted_minus_control": {
+    "mean": -0.021664050235478807,
+    "ci95_low": -0.04987689393939394,
+    "ci95_high": 0.0043295424277400634,
+    "p_pos": 0.026687598116169546,
+    "p_neg": 0.04803767660910518,
+    "p_zero": 0.9252747252747253,
+    "n_questions": 208
+  },
+  "per_category": {
+    "T2A": {
+      "n_pairs": 725,
+      "mean": 0.023448275862068966
+    },
+    "T2E": {
+      "n_pairs": 494,
+      "mean": -0.06072874493927125
+    },
+    "T2O": {
+      "n_pairs": 556,
+      "mean": -0.044964028776978415
+    },
+    "T3E": {
+      "n_pairs": 631,
+      "mean": -0.012678288431061807
+    },
+    "T3O": {
+      "n_pairs": 671,
+      "mean": -0.026825633383010434
+    },
+    "TOS": {
+      "n_pairs": 108,
+      "mean": -0.046296296296296294
+    }
+  }
+}

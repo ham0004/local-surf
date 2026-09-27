@@ -1,0 +1,21 @@
+{
+  "checkpoint": "runs\\lvb_full\\ckpt_seed4\\head_unpaired.npz",
+  "train_config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "epochs": 300,
+    "lambda_pair": 0.0,
+    "huber_delta": 0.5,
+    "weight_decay": 0.0001,
+    "seed": 4
+  },
+  "n_train_rows": 12874,
+  "n_train_pairs": 3185,
+  "n_dev_rows": 3339,
+  "n_dev_pairs": 741,
+  "final_train_loss": 0.05749418586648977,
+  "train_pair_diff_mae": 0.09866896018593825,
+  "dev_pair_diff_mae": 0.15723731206744623,
+  "stop_threshold": 0.2,
+  "dev_realised_net_gain": 0.004134615384615384
+}

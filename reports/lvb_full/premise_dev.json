@@ -1,0 +1,62 @@
+{
+  "labels": "runs/lvb_full/labels_dev",
+  "n_rows": 3339,
+  "n_pairs": 741,
+  "conditions": {
+    "clean": {
+      "n_questions": 48,
+      "base_quality": 0.2916666666666667,
+      "mean_action_gain": 0.050518134715025906,
+      "p_gain_pos": 0.13212435233160622,
+      "p_gain_neg": 0.08160621761658031,
+      "mean_best_action_gain": 0.4375
+    },
+    "targeted_damage": {
+      "n_questions": 48,
+      "base_quality": 0.2916666666666667,
+      "mean_action_gain": 0.04792746113989637,
+      "p_gain_pos": 0.13212435233160622,
+      "p_gain_neg": 0.08419689119170984,
+      "mean_best_action_gain": 0.4375
+    },
+    "control_damage": {
+      "n_questions": 48,
+      "base_quality": 0.2708333333333333,
+      "mean_action_gain": 0.060723514211886306,
+      "p_gain_pos": 0.13824289405684753,
+      "p_gain_neg": 0.07751937984496124,
+      "mean_best_action_gain": 0.4583333333333333
+    }
+  },
+  "paired_gain_targeted_minus_control": {
+    "mean": -0.016194331983805668,
+    "ci95_low": -0.10637212755256754,
+    "ci95_high": 0.08259498810558796,
+    "p_pos": 0.05398110661268556,
+    "p_neg": 0.07017543859649122,
+    "p_zero": 0.8758434547908233,
+    "n_questions": 48
+  },
+  "per_category": {
+    "T2A": {
+      "n_pairs": 146,
+      "mean": 0.00684931506849315
+    },
+    "T2E": {
+      "n_pairs": 129,
+      "mean": 0.06976744186046512
+    },
+    "T2O": {
+      "n_pairs": 70,
+      "mean": -0.2857142857142857
+    },
+    "T3E": {
+      "n_pairs": 88,
+      "mean": 0.0
+    },
+    "T3O": {
+      "n_pairs": 308,
+      "mean": -0.006493506493506494
+    }
+  }
+}

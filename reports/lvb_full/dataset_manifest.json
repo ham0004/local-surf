@@ -1,0 +1,23 @@
+{
+  "dataset": "longvideobench/LongVideoBench",
+  "license": "CC-BY-NC-SA-4.0 (non-commercial), longvideobench/LongVideoBench, gated dataset",
+  "selection": {
+    "n_videos": null,
+    "max_duration": null,
+    "order": "sha256(video_id)"
+  },
+  "n_videos_selected": 252,
+  "n_videos_available": 252,
+  "missing_videos": [],
+  "download_errors": {},
+  "n_questions": 440,
+  "n_with_evidence_quote": 360,
+  "mean_evidence_match_ratio": 0.9748905241766833,
+  "downloaded_video_bytes_this_run": 0,
+  "download_seconds": 0.0,
+  "created": "2026-09-27 05:25:36",
+  "complete": true,
+  "catalog_path": "cache\\lvb_meta\\lvb_video_catalog.json",
+  "catalog_entries": 3992,
+  "catalog_complete": true
+}

@@ -1,0 +1,21 @@
+{
+  "data": "data/longvideobench_full",
+  "split": "dev",
+  "config": "configs/gpu_12gb.yaml",
+  "answerer": "hf_vlm",
+  "answerer_model": "Qwen/Qwen3-VL-2B-Instruct",
+  "answerer_revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+  "damage_type": "delete",
+  "relevance": "annotation",
+  "seed": 0,
+  "questions": 48,
+  "skipped_no_fair_triple": 17,
+  "missing_video": 0,
+  "answer_calls": 3483,
+  "cache_hits": 64,
+  "labelling_seconds": 3832.45,
+  "created": "2026-09-27 10:14:02",
+  "n_rows": 3339,
+  "n_examples": 208,
+  "n_pairs": 741
+}
