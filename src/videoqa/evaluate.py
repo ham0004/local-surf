@@ -17,10 +17,16 @@ metrics:
 Uncertainty: paired cluster bootstrap over VIDEOS (questions of one video are
 resampled together), giving 95% intervals for policy differences.
 
-Cost fairness: all policies share one prepare() per (question, condition) for
-speed, but each run is CHARGED the prepare stages it would need on its own.
-The transcript-only baseline needs no decoding or scouting, so it is charged
-only probe + retrieval.
+Cost fairness (changed 2026-09-28): every (policy, condition) run executes
+the lazy selective-search path (acquisition.py) on its own: its own text
+preparation, its own frame cache and its own meter. A policy is therefore
+charged exactly the decode and scout work it actually caused; nothing is
+shared or charged back. Policy order is rotated per question so no policy
+always runs first (file-system cache). ``total_ms`` includes one-off model
+loading if it happened inside the run; ``warm_ms`` excludes every
+``*_load`` stage and is the per-query cost to compare. The old eager path
+(decode + scout everything, then charge back) is kept with ``eager=True``
+only to reproduce historical results.
 """
 
 from __future__ import annotations
@@ -37,6 +43,8 @@ from .answerer import Answerer, answer_quality
 from .controller import Policy, TranscriptOnlyPolicy
 from .costs import CostMeter
 from .damage import asr_style_noise, make_triple
+from .acquisition import VisualCache, prepare_text, run_lazy
+from .cost_model import DEFAULT, CostModel
 from .pipeline import prepare, run_policy
 from .schemas import Budget, DamageType, QAItem, Transcript
 from .scout import Scout
@@ -57,6 +65,10 @@ class EvalRecord:
     decoded_frames: int
     total_ms: float
     cap_violations: list[str]
+    warm_ms: float = 0.0          # total_ms without one-off model loading
+    scouted_frames: int = 0
+    answer: str = ""              # raw answer text (trace)
+    option: int | None = None
 
 
 def _conditions(qa: QAItem, transcript: Transcript, dtype: DamageType, seed: int,
@@ -71,31 +83,43 @@ def _conditions(qa: QAItem, transcript: Transcript, dtype: DamageType, seed: int
 def evaluate(items: list[tuple[QAItem, str, Transcript]], policies: list[Policy], cfg: dict, budget: Budget,
              scout: Scout, answerer: Answerer, dtype: DamageType = DamageType.DELETE, seed: int = 0,
              asr_wer: float = 0.2,
-             relevance_methods: frozenset[str] | None = None) -> tuple[list[EvalRecord], int]:
+             relevance_methods: frozenset[str] | None = None, cost_model: CostModel = DEFAULT,
+             eager: bool = False) -> tuple[list[EvalRecord], int]:
     """Run every policy on every (question, condition).  Returns records and the
     number of questions skipped because no fair triple could be built (no
     answer-relevant segment from an allowed relevance source, or no matched
     control)."""
     records: list[EvalRecord] = []
     skipped = 0
-    for qa, video_path, transcript in items:
+    max_side = cfg["answerer"].get("frame_max_side")
+    for q_idx, (qa, video_path, transcript) in enumerate(items):
         conds = _conditions(qa, transcript, dtype, seed, asr_wer, relevance_methods)
         if conds is None:
             skipped += 1
             continue
         for cond_name, observed in conds.items():
-            prep_meter = CostMeter()
-            prep = prepare(video_path, observed, qa.question, qa.options, cfg, scout, prep_meter)
-            for policy in policies:
+            if eager:
+                prep_meter = CostMeter()
+                shared = prepare(video_path, observed, qa.question, qa.options, cfg, scout, prep_meter)
+            k = q_idx % len(policies)
+            for policy in policies[k:] + policies[:k]:          # rotated order
                 meter = CostMeter()
-                text_only = isinstance(policy, TranscriptOnlyPolicy)
-                meter.records = [copy.copy(r) for r in prep_meter.records
-                                 if not text_only or r.stage in _TEXT_ONLY_STAGES]
-                res = run_policy(prep, policy, answerer, budget, meter)
+                if eager:
+                    text_only = isinstance(policy, TranscriptOnlyPolicy)
+                    meter.records = [copy.copy(r) for r in prep_meter.records
+                                     if not text_only or r.stage in _TEXT_ONLY_STAGES]
+                    res = run_policy(shared, policy, answerer, budget, meter, cost_model)
+                else:
+                    prep = prepare_text(video_path, observed, qa.question, qa.options, cfg, meter)
+                    cache = VisualCache(prep, scout, meter, max_side, qa.video_id)
+                    res = run_lazy(prep, cache, policy, answerer, budget, meter, cost_model)
                 total = meter.total()
+                warm = sum(r.elapsed_ms for r in meter.records if not r.stage.endswith("_load"))
                 records.append(EvalRecord(qa.qa_id, qa.video_id, policy.name, cond_name,
                                           answer_quality(res.answer, qa), len(res.frames), total.visual_tokens,
-                                          total.decoded_frames, total.elapsed_ms, res.cap_violations))
+                                          total.decoded_frames, total.elapsed_ms, res.cap_violations,
+                                          warm_ms=warm, scouted_frames=total.scored_frames,
+                                          answer=res.answer.text, option=res.answer.option_index))
     return records, skipped
 
 
@@ -120,6 +144,8 @@ def summarise(records: list[EvalRecord]) -> dict[str, dict[str, dict[str, float]
                 "visual_tokens": float(np.mean([r.visual_tokens for r in rs])),
                 "decoded_frames": float(np.mean([r.decoded_frames for r in rs])),
                 "total_ms": float(np.mean([r.total_ms for r in rs])),
+                "warm_ms": float(np.mean([r.warm_ms for r in rs])),
+                "scouted_frames": float(np.mean([r.scouted_frames for r in rs])),
                 "p95_ms": float(np.percentile([r.total_ms for r in rs], 95)),
                 "cap_violations": int(sum(bool(r.cap_violations) for r in rs)),
             }
@@ -191,14 +217,15 @@ def selectivity_bootstrap(records: list[EvalRecord], policy_a: str, policy_b: st
 
 def to_markdown(summary: dict) -> str:
     """Compact table: one row per (policy, condition)."""
-    lines = ["| policy | condition | n | quality | frames | visual tok | decoded | mean ms | p95 ms |",
-             "|---|---|---|---|---|---|---|---|---|"]
+    lines = ["| policy | condition | n | quality | frames | visual tok | decoded | scouted | warm ms | mean ms | p95 ms |",
+             "|---|---|---|---|---|---|---|---|---|---|---|"]
     for pol, conds in summary.items():
         for cond in CONDITIONS:
             if cond in conds:
                 m = conds[cond]
                 lines.append(f"| {pol} | {cond} | {m['n']} | {m['quality']:.3f} | {m['frames']:.2f} | "
-                             f"{m['visual_tokens']:.0f} | {m['decoded_frames']:.0f} | {m['total_ms']:.0f} | "
+                             f"{m['visual_tokens']:.0f} | {m['decoded_frames']:.0f} | "
+                             f"{m.get('scouted_frames', 0):.1f} | {m.get('warm_ms', 0):.0f} | {m['total_ms']:.0f} | "
                              f"{m['p95_ms']:.0f} |")
     lines += ["", "| policy | targeted_response | control_overspend | selectivity |", "|---|---|---|---|"]
     for pol, conds in summary.items():

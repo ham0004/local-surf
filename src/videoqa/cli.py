@@ -29,7 +29,9 @@ from .datasets import load_local_dataset
 from .evaluate import cluster_bootstrap_diff, evaluate, selectivity_bootstrap, summarise, to_markdown, write_report
 from .heads import TrainConfig
 from .labels import label_items, write_labels
-from .pipeline import prepare, run_policy, save_run
+from .acquisition import VisualCache, prepare_text, run_lazy
+from .cost_model import cost_model_from_config
+from .pipeline import save_run
 from .schemas import DamageType, to_jsonable
 from .scout import make_scout
 from .train import train_paired_and_unpaired
@@ -54,12 +56,20 @@ def cmd_ask(a) -> None:
     transcript = load_transcript(a.transcript, Path(a.video).stem)
     options = a.options.split("|") if a.options else None
     meter = CostMeter()
-    prep = prepare(a.video, transcript, a.question, options, cfg, _scout(cfg), meter)
-    policy = make_policy(a.policy, a.checkpoint)
-    res = run_policy(prep, policy, make_answerer(cfg), budget_from_config(cfg), meter)
+    cm = cost_model_from_config(cfg)
+    policy = make_policy(a.policy, a.checkpoint, cm)
+    res, prep = _run_lazy(a.video, transcript, a.question, options, cfg, _scout(cfg), make_answerer(cfg),
+                          policy, meter, cm)
     out = save_run(prep, res, a.out, {"config": a.config})
     print(json.dumps({"answer": to_jsonable(res.answer), "frames_s": [f.decoded_pts_s for f in res.frames],
                       "total_ms": round(meter.total().elapsed_ms), "result": str(out)}, indent=2))
+
+
+def _run_lazy(video, transcript, question, options, cfg, scout, answerer, policy, meter, cm):
+    """The deployed selective-search path (same code the evaluator runs)."""
+    prep = prepare_text(video, transcript, question, options, cfg, meter)
+    cache = VisualCache(prep, scout, meter, cfg["answerer"].get("frame_max_side"))
+    return run_lazy(prep, cache, policy, answerer, budget_from_config(cfg), meter, cm), prep
 
 
 RELEVANCE_CHOICES = {"any": None, "annotation": ANNOTATION_RELEVANCE}
@@ -107,16 +117,18 @@ def cmd_train(a) -> None:
     print(json.dumps(res, indent=2))
 
 
-def parse_policy_spec(spec: str):
+def parse_policy_spec(spec: str, cost_model=None):
     """``name`` | ``learned=<head.npz>`` | ``learned=<head.npz>@<stop_threshold>``.
 
     The ``@threshold`` form overrides the dev-tuned STOP threshold, so paired
     and unpaired heads can be compared along the same accuracy-vs-frames curve
     instead of at two different, separately tuned thresholds (which confounded
     earlier comparisons)."""
+    from .cost_model import DEFAULT  # noqa: PLC0415
+    cost_model = cost_model or DEFAULT
     name, _, rest = spec.strip().partition("=")
     ckpt, _, thr = rest.partition("@")
-    pol = make_policy(name, ckpt or None)
+    pol = make_policy(name, ckpt or None, cost_model)
     if ckpt:
         pol.name = f"learned[{Path(ckpt).stem}]"
     if thr:
@@ -129,11 +141,13 @@ def cmd_evaluate(a) -> None:
     cfg = load_config(a.config)
     items, report = load_local_dataset(a.data, splits=(a.split,))
     items = items[: a.limit] if a.limit else items
-    policies = [parse_policy_spec(spec) for spec in a.policies.split(",")]
+    cm = cost_model_from_config(cfg)
+    policies = [parse_policy_spec(spec, cm) for spec in a.policies.split(",")]
     records, skipped = evaluate([(it.qa, it.video_path, it.transcript) for it in items], policies, cfg,
                                 budget_from_config(cfg), _scout(cfg), make_answerer(cfg),
                                 dtype=DamageType(a.damage), seed=a.seed,
-                                relevance_methods=RELEVANCE_CHOICES[a.relevance])
+                                relevance_methods=RELEVANCE_CHOICES[a.relevance], cost_model=cm,
+                                eager=getattr(a, "eager", False))
     summary = summarise(records)
     names = [p.name for p in policies]
     comparisons = {}
@@ -170,8 +184,8 @@ def cmd_profile(a) -> None:
     runs = []
     for _ in range(a.repeats):
         meter = CostMeter()
-        prep = prepare(a.video, transcript, a.question, options, cfg, scout, meter)
-        res = run_policy(prep, policy, answerer, budget_from_config(cfg), meter)
+        res, _ = _run_lazy(a.video, transcript, a.question, options, cfg, scout, answerer, policy, meter,
+                           cost_model_from_config(cfg))
         runs.append({k: to_jsonable(v) for k, v in meter.by_stage().items()} | {"_answer": res.answer.text})
     stages = sorted({k for r in runs for k in r if not k.startswith("_")})
     warm = runs[1:] or runs
@@ -262,6 +276,8 @@ def main(argv: list[str] | None = None) -> None:
                         "answers are visual (e.g. LongVideoBench)")
     s.add_argument("--limit", type=int)
     s.add_argument("--seed", type=int, default=0)
+    s.add_argument("--eager", action="store_true",
+                   help="legacy path: decode+scout every candidate up front, then charge back (historical runs only)")
     s.add_argument("--out", required=True)
     s.set_defaults(fn=cmd_evaluate)
 

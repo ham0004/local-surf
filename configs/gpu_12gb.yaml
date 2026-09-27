@@ -13,3 +13,7 @@ answerer:
   revision: 89644892e4d85e24eaac8bacfd4f463576704203
   dtype: bfloat16
   frame_max_side: 640
+# Measured per-action costs (scripts/profile_costs.py); lambda is tuned on dev.
+cost_model:
+  path: configs/cost_model_rtx5060ti.yaml
+  lambda_per_s: 0.1
