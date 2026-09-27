@@ -79,6 +79,7 @@ from .schemas import (
     to_jsonable,
 )
 from .scout import Scout
+from .serialize import serialize
 
 ASSAY_VERSION = "assay-v2"
 CONDITIONS = (TranscriptCondition.CLEAN, TranscriptCondition.TARGETED_DAMAGE, TranscriptCondition.CONTROL_DAMAGE)
@@ -230,6 +231,7 @@ class AssayRow:
     abstained_after: bool
     forced_choice_after: bool
     expand_segment_ids: list[str]
+    obs_text: str = ""                     # serialize.serialize(obs, action): the LLM controller's input
 
 
 def _sha(obj) -> str:
@@ -343,7 +345,8 @@ def label_question(qa: QAItem, video_path: str, triple: TranscriptTriple, cfg: d
                     by_id[act.candidate_id].source.value if is_look else None,
                     q0, q1, q1 - q0, act.cost_ms, act.visual_tokens,
                     a0.text, a1.text, a0.option_index, a1.option_index, a1.abstained, a1.forced_choice,
-                    [s for s in nxt.extra_segment_ids if s not in state.extra_segment_ids]))
+                    [s for s in nxt.extra_segment_ids if s not in state.extra_segment_ids],
+                    serialize(obs, act.kind, by_id[act.candidate_id] if is_look else None)))
     return rows, pool
 
 
