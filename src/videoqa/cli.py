@@ -145,6 +145,25 @@ def cmd_train_assay(a) -> None:
                       "reference": {k: v["all"] for k, v in res["reference"].items()}, "variants": brief}, indent=2))
 
 
+def cmd_train_llm(a) -> None:
+    """Qwen3-0.6B + LoRA gain scorer on assay labels (V0/V1/V2), lambda on dev."""
+    from .llm_controller import LLMTrainConfig, train_llm  # noqa: PLC0415
+
+    price = a.price_per_s if a.price_per_s is not None else cost_model_from_config(load_config(a.config)).lambda_per_s
+    out = {}
+    for v in a.variants.split(","):
+        for seed in (int(x) for x in a.seeds.split(",")):
+            meta = train_llm(a.train_labels, a.dev_labels, a.out,
+                             LLMTrainConfig(variant=v, seed=seed, steps=a.steps), price_per_s=price)
+            out[f"{v}_seed{seed}"] = {k: meta[k] for k in ("lambda_per_s", "trainable_params", "train_tokens",
+                                                            "train_seconds", "peak_vram_gb",
+                                                            "dev_infer_ms_per_action_batched", "dev")} | {
+                "dev_utility": meta["dev_at_lambda"]["all"]["utility"]}
+    Path(a.out).mkdir(parents=True, exist_ok=True)
+    (Path(a.out) / "train_llm_summary.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
+    print(json.dumps(out, indent=2))
+
+
 def cmd_train(a) -> None:
     res = train_paired_and_unpaired(a.train_labels, a.dev_labels, a.out,
                                     TrainConfig(epochs=a.epochs, hidden=a.hidden, seed=a.seed),
@@ -162,6 +181,9 @@ def parse_policy_spec(spec: str, cost_model=None):
     from .cost_model import DEFAULT  # noqa: PLC0415
     cost_model = cost_model or DEFAULT
     name, _, rest = spec.strip().partition("=")
+    if name == "llm":
+        from .llm_controller import LLMController  # noqa: PLC0415
+        return LLMController(rest, cost_model)
     ckpt, _, thr = rest.partition("@")
     pol = make_policy(name, ckpt or None, cost_model)
     if ckpt:
@@ -320,6 +342,17 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--seeds", default="0,1,2")
     s.add_argument("--out", required=True)
     s.set_defaults(fn=cmd_train_assay)
+
+    s = sub.add_parser("train-llm", help="Qwen3-0.6B + LoRA controller on assay labels")
+    s.add_argument("--train-labels", required=True)
+    s.add_argument("--dev-labels", required=True)
+    s.add_argument("--config", default="configs/gpu_12gb.yaml")
+    s.add_argument("--price-per-s", type=float)
+    s.add_argument("--variants", default="V0,V1,V2")
+    s.add_argument("--seeds", default="0")
+    s.add_argument("--steps", type=int, default=300)
+    s.add_argument("--out", required=True)
+    s.set_defaults(fn=cmd_train_llm)
 
     s = sub.add_parser("evaluate")
     s.add_argument("--data", required=True)
