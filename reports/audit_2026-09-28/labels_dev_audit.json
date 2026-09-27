@@ -1,0 +1,32 @@
+{
+  "labels": "runs\\lvb_full\\labels_dev",
+  "questions": 48,
+  "source_videos": 25,
+  "rows": 3339,
+  "pairs": 741,
+  "damage_matching": {
+    "triples": 48,
+    "unequal_affected_words": 3,
+    "unequal_over_25pct": 1,
+    "unequal_over_50pct": 1,
+    "worst": {
+      "qa_id": "NWOF4GqpWaw_0",
+      "targeted_words": 2,
+      "control_words": 6
+    }
+  },
+  "pair_identity": {
+    "unequal_requested_time": 7,
+    "unequal_scout_features": 30,
+    "unequal_source_features": 7,
+    "expand_transcript_pairs": 48,
+    "identical_features": 195,
+    "identical_features_but_different_gain": 50
+  },
+  "sha256": {
+    "examples.jsonl": "a622045bb76164a7b05ef23e9a24a22111a21eba6e89c1a93cabb4213e959f13",
+    "manifest.json": "06488ace2e72494d57f2815071e01fbf47900eb05ab83bfb1ba999051e7fcada",
+    "pairs.json": "e211223f3bb750430508ce816d37f8a18f72539a2e2b2983950baabe106d9c14",
+    "rows.jsonl": "0c8ff54b2fce65ab6ce97a7e4ca717c569af96b5085767f2bc5a913be2ca9560"
+  }
+}
