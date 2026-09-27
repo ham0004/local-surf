@@ -55,6 +55,26 @@ class HFVLMAnswerer:
         self._ensure_processor()
         return len(self._processor.tokenizer(text, add_special_tokens=False)["input_ids"])
 
+    def prefill_ms(self, req: AnswerRequest) -> tuple[float, int, int]:
+        """Time ONE forward pass over the full prompt (image encoding + prefill,
+        no generation): the part of answering that grows with added frames.
+        Returns (ms, visual_tokens, prompt_text_tokens). Profiling only."""
+        import time  # noqa: PLC0415
+
+        self.ensure_loaded()
+        torch = self._torch
+        inputs = self._processor.apply_chat_template(
+            self._messages(req), tokenize=True, add_generation_prompt=True, return_dict=True, return_tensors="pt"
+        ).to(self._model.device)
+        ids = inputs["input_ids"][0]
+        n_visual = int((ids == self._image_token_id).sum())
+        torch.cuda.synchronize()
+        t0 = time.perf_counter()
+        with torch.no_grad():
+            self._model(**inputs)
+        torch.cuda.synchronize()
+        return (time.perf_counter() - t0) * 1000.0, n_visual, int(ids.numel()) - n_visual
+
     @property
     def fingerprint(self) -> dict:
         """What must be recorded with every label so it can be reproduced."""
@@ -108,6 +128,7 @@ class HFVLMAnswerer:
         new_tokens = out.sequences[0, ids.numel():]
         text = self._processor.batch_decode(new_tokens[None], skip_special_tokens=True)[0].strip()
         usage.text_tokens += int(new_tokens.numel())
+        usage.generated_tokens = int(new_tokens.numel())
 
         probs = None
         if req.options:

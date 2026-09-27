@@ -1,0 +1,19 @@
+cost_model:
+  device: NVIDIA GeForce RTX 5060 Ti (16 GB), bf16
+  measured: '2026-09-28'
+  n_videos: 8
+  repeats: 3
+  decode_ms_per_frame: 43.3
+  decode_ms_per_frame_sd: 12.4
+  scout_ms_per_frame: 46.8
+  scout_ms_per_frame_sd: 54.9
+  scout_neighbour_decode_ms: 17.5
+  prefill_ms_intercept: -20.5
+  prefill_ms_per_visual_token: 0.3629
+  prefill_ms_per_text_token: 0.1933
+  prefill_fit_residual_sd_ms: 26.1
+  generation_ms_intercept: -40.9
+  generation_ms_per_token: 38.06
+  controller_ms_per_step: 1.0
+  note: decode/scout are single-frame marginal costs; answer cost is a linear fit,
+    not a guarantee

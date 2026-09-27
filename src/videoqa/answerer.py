@@ -50,7 +50,8 @@ class AnswerUsage:
     """Token accounting reported by the answerer for the cost trace."""
 
     visual_tokens: int = 0
-    text_tokens: int = 0
+    text_tokens: int = 0          # prompt text tokens + generated tokens (as before)
+    generated_tokens: int = 0     # generated tokens only (their time dominates latency variance)
 
 
 class Answerer(Protocol):
