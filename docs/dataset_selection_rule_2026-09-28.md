@@ -46,3 +46,22 @@ text-only accuracy of 0.54 on 4-way questions largely survives targeted
 damage, so it probably comes from the question and options, not from the
 speech. Neither dataset meets the rule. EduVidQA and NExT-GQA are screened
 next (runs/stratum/*.json).
+
+## Release audit of the remaining candidates (no screen possible yet)
+- **EduVidQA** (github sourjyadip/eduvidqa-emnlp25, MIT licence for the code).
+  The release contains CSVs only: synthetic_train 3,909 questions from 157
+  videos, synthetic_test 1,056 from 40, real_world_test 269 from 99. Each row
+  has a YouTube id, a timestamp and a question. The answers are free-form long
+  answers; there are no multiple-choice options. Videos and transcripts are
+  NOT included; the README says to fetch them from YouTube with yt-dlp and
+  youtube-transcript-api. So the screen needs a YouTube transcript fetch
+  first, and scoring needs an audited free-form rubric (prompt section 5)
+  instead of option accuracy. Blocked on the user's go-ahead for YouTube
+  access.
+- **NExT-GQA**: from the NExT-QA source videos, with grounded temporal spans
+  for visual QA. Transcripts or subtitles are not part of the release as far
+  as the repository describes, and the questions target visual causal and
+  temporal events, so stratum 1 is expected to be near zero. Not a candidate
+  for the primary endpoint; possibly useful for stratum 2 (answer mainly
+  visual). Unverified: the repository has not been fetched.
+- **QVHighlights**: a retrieval dataset, not QA (per the prompt). Excluded.
