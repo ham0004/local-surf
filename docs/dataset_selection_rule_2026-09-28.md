@@ -93,3 +93,25 @@ Status: no candidate meets the rule. The next step is not another dataset
 switch. It is a controlled, marked-synthetic spoken-answer set built from
 these lecture transcripts, with a human audit, or TVQA if its licence is
 obtained. Both are proposals for the user to decide.
+
+## TVQA screen (2026-09-28; Vision-CAIR/TVQA-Long mirror, validation, per-clip subtitles)
+| | n | acc: no transcript | clean | targeted (≤3 annotated segs) | ALL annotated segs deleted | control | stratum 1 |
+|---|---|---|---|---|---|---|---|
+| TVQA val | 50 (60 tried; 8 no matched control, 2 no relevant seg) | 0.30 | 0.48 | 0.48 | 0.46 | 0.52 | 2 (0.04) |
+
+Here the speech clearly carries information (+0.18 over the no-transcript
+prior on 5-way questions), but it is spread across the clip. Removing
+every subtitle line inside TVQA's human-annotated moment barely hurts
+(0.48 → 0.46), because the rest of the dialogue still supports the
+answer. The clean excerpt contained an annotated line in 45 of 50 questions,
+so this is not a retrieval miss.
+
+## Cross-dataset diagnosis
+In no dataset does deleting a *local* piece of speech break answers:
+- LongVideoBench, Video-MME: the answers are visual; the subtitle is a time anchor.
+- EduVidQA synthetic: the reference answers are not drawn from the speech at the asked time.
+- TVQA: the answers are in the speech but redundant across the clip.
+The damage unit (≤3 segments) is the common factor. Any change to it
+(e.g. a speech outage over a whole region, with a matched outage
+elsewhere) is a protocol change. It must be declared before any controller
+result and reported as such.

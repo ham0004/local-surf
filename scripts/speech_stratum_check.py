@@ -107,6 +107,34 @@ def load_eduvidqa(root: Path) -> list[tuple[QAItem, object]]:
     return out
 
 
+def load_tvqa(raw: Path) -> list[tuple[QAItem, object]]:
+    """TVQA validation questions (Vision-CAIR/TVQA-Long mirror) with the
+    per-clip subtitles; ``ts`` is TVQA's human-annotated evidence moment."""
+    from videoqa.transcript import parse_json_segments  # noqa: PLC0415
+
+    ann = raw / "tvqa-long-annotations"
+    subs = {x["vid_name"]: x["sub"] for x in json.loads((ann / "tvqa_preprocessed_subtitles.json").read_text(encoding="utf-8"))}
+    out, cache = [], {}
+    for show, seasons in json.loads((ann / "tvqa_val_edited.json").read_text(encoding="utf-8")).items():
+        for season in seasons.values():
+            for ep in season.values():
+                for q in ep["questions"]:
+                    vid = q["vid_name"]
+                    key = vid if vid in subs else next((k for k in (f"{p}_{vid}" for p in ("bbt", "castle", "friends", "grey", "house", "met")) if k in subs), None)
+                    if key is None:
+                        continue
+                    if key not in cache:
+                        cache[key] = parse_json_segments(subs[key], key, source="tvqa_subtitles")
+                    t0, t1 = (float(x) for x in q["ts"].split("-"))
+                    opts = [q[f"a{i}"] for i in range(5)]
+                    out.append((QAItem(qa_id=str(q["qid"]), video_id=key, question=q["q"],
+                                       gold_answer=opts[q["answer_idx"]], options=opts,
+                                       gold_option_index=q["answer_idx"], evidence_intervals_s=[(t0, t1)],
+                                       source_dataset="TVQA", official_split="validation",
+                                       provenance_and_license="TVQA (via Vision-CAIR/TVQA-Long)"), cache[key]))
+    return out
+
+
 def excerpt_for(qa: QAItem, transcript, cfg: dict):
     """The same text-only excerpt transcript_only gets (acquisition.prepare_text
     + pipeline.answer_with), with duration taken from the last subtitle."""
@@ -127,7 +155,7 @@ def excerpt_for(qa: QAItem, transcript, cfg: dict):
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset", choices=("videomme", "lvb", "eduvidqa"), required=True)
+    ap.add_argument("--dataset", choices=("videomme", "lvb", "eduvidqa", "tvqa"), required=True)
     ap.add_argument("--raw", default=None, help="videomme: data/videomme_raw; lvb: data/longvideobench_full")
     ap.add_argument("--config", default="configs/gpu_12gb.yaml")
     ap.add_argument("--n", type=int, default=50)
@@ -136,8 +164,8 @@ def main() -> None:
 
     cfg = load_config(a.config)
     raw = Path(a.raw or {"videomme": "data/videomme_raw", "lvb": "data/longvideobench_full",
-                         "eduvidqa": "data/eduvidqa"}[a.dataset])
-    items = {"videomme": load_videomme, "lvb": load_lvb, "eduvidqa": load_eduvidqa}[a.dataset](raw)
+                         "eduvidqa": "data/eduvidqa", "tvqa": "data/tvqa_long_raw"}[a.dataset])
+    items = {"videomme": load_videomme, "lvb": load_lvb, "eduvidqa": load_eduvidqa, "tvqa": load_tvqa}[a.dataset](raw)
     items.sort(key=lambda x: _order(x[0].qa_id))
     answerer = make_answerer(cfg)
 
