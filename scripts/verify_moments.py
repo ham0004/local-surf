@@ -95,9 +95,24 @@ def main() -> None:
         if p is None:
             stats["parse_fail"] += 1
             continue
-        stats[f"relation:{p['relation']}"] += 1
+        stats[f"claimed:{p['relation']}"] += 1
         if p["relation"] == "none":
             continue
+        # The relation used downstream is MEASURED by the generator answering
+        # from one source at a time (mine_moments.check_answer), not claimed.
+        chk = rec.get("generator_checks", {})
+        sp_ok = chk.get("speech_only") == p["answer_index"]
+        fr_ok = chk.get("frame_only") == p["answer_index"]
+        claimed = p["relation"]
+        if claimed == "conflict":
+            measured = "conflict" if fr_ok else None
+        else:
+            measured = {(True, True): "both", (True, False): "speech_only",
+                        (False, True): "visual_only"}.get((sp_ok, fr_ok))
+        if measured is None:
+            stats["reject:not_answerable_from_either_source"] += 1
+            continue
+        p = {**p, "relation": measured, "claimed_relation": claimed}
         ok, why = grounded(p, rec["speech"])
         if not ok:
             stats[f"reject:{why}"] += 1
@@ -120,7 +135,7 @@ def main() -> None:
         items.append(qa)
         row = {"qa_id": qa.qa_id, "video_id": vid, "t0": t0, "t1": t1, "relation": p["relation"],
                "question": p["question"], "options": opts, "answer": opts[p["answer_index"]],
-               "fact": p.get("fact"), "speech_evidence": p.get("speech_evidence"),
+               "claimed_relation": p["claimed_relation"], "fact": p.get("fact"), "speech_evidence": p.get("speech_evidence"),
                "visual_evidence": p.get("visual_evidence"), **{f"correct_{k}": v for k, v in res.items()}}
         audit.append(row)
         stats[f"kept:{p['relation']}"] += 1

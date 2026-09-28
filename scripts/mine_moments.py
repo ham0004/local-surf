@@ -49,6 +49,7 @@ named result, or step of a calculation). Then say where it appears:
 - "conflict": the speech and the board/slide give DIFFERENT values for the same thing
 - "none": no specific fact in this window
 
+"speech_evidence" must be copied word for word from SPEECH (never from the board).
 Write a multiple-choice question about that fact with 4 options (one correct, three plausible but wrong,
 same type and length). The question must not contain the answer. Do not ask about the lecturer's
 appearance or the camera.
@@ -106,6 +107,27 @@ class Generator:
         return self.proc.batch_decode(out[:, inputs["input_ids"].shape[1]:], skip_special_tokens=True)[0].strip()
 
 
+BOILERPLATE = re.compile(r"creative commons license|opencourseware continue|ocw\.mit\.edu", re.I)
+
+CHECK = """{context}
+QUESTION: {q}
+A. {o0}
+B. {o1}
+C. {o2}
+D. {o3}
+Answer with the letter only. If the information above is not enough, answer X."""
+
+
+def check_answer(gen, images, context: str, item: dict) -> int | None:
+    """Ask the generator the question with ONE evidence source. The label
+    'both' is then measured (speech-only and frame-only both correct), not
+    taken from the generator's own claim."""
+    o = [str(x) for x in item["options"]]
+    text = gen(images, CHECK.format(context=context, q=item["question"], o0=o[0], o1=o[1], o2=o[2], o3=o[3]))
+    m = re.search(r"\b([ABCDX])\b", text.strip().upper())
+    return None if not m or m.group(1) == "X" else "ABCD".index(m.group(1))
+
+
 def parse_json(text: str) -> dict | None:
     m = re.search(r"\{.*\}", text, re.S)
     if not m:
@@ -145,19 +167,27 @@ def main() -> None:
             step = len(wins) / a.limit_windows
             wins = [wins[int(i * step)] for i in range(a.limit_windows)]
         for t0, t1, speech in wins:
-            if (vid, t0) in done:
+            if (vid, t0) in done or BOILERPLATE.search(speech):
                 continue
             frames = decode_at(video, [t0 + WINDOW_S / 2, t1 - 0.5], max_side=a.max_side, video_id=vid).frames
             text = gen([f.image for f in frames], PROMPT.format(w=WINDOW_S, t0=frames[0].decoded_pts_s,
                                                                 t1=frames[-1].decoded_pts_s,
                                                                 speech=speech[:1500] or "(silence)"))
+            parsed = parse_json(text)
+            checks = {}
+            if parsed and parsed["relation"] != "none":
+                checks["speech_only"] = check_answer(gen, [], f'The lecturer said: "{speech[:1500]}"', parsed)
+                checks["frame_only"] = check_answer(gen, [frames[-1].image], "Look at the board/slide in the image.",
+                                                    parsed)
             rec = {"video_id": vid, "t0": t0, "t1": t1, "frame_pts": [f.decoded_pts_s for f in frames],
-                   "speech": speech, "raw": text, "parsed": parse_json(text)}
+                   "speech": speech, "raw": text, "parsed": parsed, "generator_checks": checks}
             with open(raw_p, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(rec) + "\n")
             n += 1
-            rel = rec["parsed"]["relation"] if rec["parsed"] else "PARSE_FAIL"
-            print(f"{vid} {t0:6.0f}s {rel:12s} {(time.time() - t_start) / n:.1f}s/window", flush=True)
+            rel = parsed["relation"] if parsed else "PARSE_FAIL"
+            ok = {k: v == parsed["answer_index"] for k, v in checks.items()} if parsed else {}
+            print(f"{vid} {t0:6.0f}s claimed={rel:12s} measured={ok} {(time.time() - t_start) / n:.1f}s/window",
+                  flush=True)
 
 
 if __name__ == "__main__":
