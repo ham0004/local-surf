@@ -65,3 +65,31 @@ next (runs/stratum/*.json).
   for the primary endpoint; possibly useful for stratum 2 (answer mainly
   visual). Unverified: the repository has not been fetched.
 - **QVHighlights**: a retrieval dataset, not QA (per the prompt). Excluded.
+
+## EduVidQA screen (2026-09-28)
+Transcripts: 87 of 296 videos fetched before YouTube blocked the IP
+(IpBlocked). 69 of the 87 are manual English captions and 18 are ASR. There is
+no train/test video overlap. The screen used 43 official-train questions (one
+per video with a transcript), free-form, token F1 against the reference, with
+the question's own timestamp window added to the excerpt.
+
+| | F1 clean | F1 targeted | F1 control | F1 drop ≥ 0.10 under targeted | qualifies |
+|---|---|---|---|---|---|
+| EduVidQA synthetic_train | 0.278 | 0.280 | 0.278 | 0 / 43 | no |
+
+Diagnosis (runs/stratum/eduvidqa50.json):
+- The synthetic reference answers are long general explanations (median 121
+  words). Their content words (excluding the question's words) occur in the
+  timestamp window no more often than in a random 40 s window (6% vs 6%;
+  28% anywhere in the transcript). The answers are not grounded in the
+  speech at the asked time, so deleting that speech cannot hurt them.
+- Targeted damage deletes at most 3 of the median 9 segments in the window.
+- Token F1 against a 121-word reference is a weak scorer (prompt section 5
+  asks for an audited rubric for free-form answers).
+- Human-written real_world_test questions are official test and stay locked.
+  They are not used for screening or training.
+
+Status: no candidate meets the rule. The next step is not another dataset
+switch. It is a controlled, marked-synthetic spoken-answer set built from
+these lecture transcripts, with a human audit, or TVQA if its licence is
+obtained. Both are proposals for the user to decide.
