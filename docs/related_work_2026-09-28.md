@@ -29,3 +29,22 @@ Sources: https://arxiv.org/abs/2608.04509, https://arxiv.org/abs/2607.05438,
 https://arxiv.org/abs/2608.00076, https://arxiv.org/html/2605.19075,
 https://arxiv.org/abs/2603.20180, https://arxiv.org/pdf/2510.04428,
 https://pith.science/paper/2603.18558, https://arxiv.org/abs/2601.07459
+
+## Closer reading for the dual-stream idea (transcript scorer + CLIP stream)
+Read from arXiv HTML/abstract pages through a summariser, not a full manual
+read; claims marked (?) need checking in the PDF.
+
+| Paper | Transcript/subtitle use | Visual stream | Trained? | Answerer | Latency reported |
+|---|---|---|---|---|---|
+| VSI 2508.06869 | all-mpnet-base-v2 query–subtitle similarity + Gaussian spread around subtitle times | YOLO-World-110M object detection (target/cue objects) | no (plug-and-play) | GPT-4o | only relative (+9.7% time), FLOPs |
+| VideoAgent 2403.10517 | none | uniform frames, captions by LaViLa / CogAgent-18B, CLIP retrieval | no (zero-shot) | GPT-4 agent with 3-level self-confidence stop | no |
+| R-VLM 2312.04931 | none | MLP over CLIP chunk tokens, soft-matching loss | yes, end-to-end with the LLM | LLM | 2.56 s per 60 s video |
+| VideoStir 2604.05418 | abstract: "without relying on auxiliary information" (ASR use unclear (?)) | clip-level spatio-temporal graph + MLLM intent scorer on frames, IR-600K data | yes (scorer) | MLLM | (?) |
+
+Not found in these four: (a) a TRAINED scorer over transcript segments
+supervised by the frozen answerer's utility; (b) a fully local ≤4B stack
+with absolute wall-clock on a consumer GPU; (c) lecture videos, where speech
+carries answers. VSI's LongVideoBench gains come from its text-relevant
+subset, where (as measured here) subtitles serve as temporal anchors. A
+dual-stream design is still VSI-like; any claim must be differential
+against VSI as a baseline.
