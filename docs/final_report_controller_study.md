@@ -5,8 +5,9 @@ research hypothesis was **not supported, and could not be tested, on the
 data available**. Follow-up work (lecture-video QA) builds on this code but
 is a separate study.
 
-- Git: branch `QAframework`, tag `controller-study-v1` (this commit). The
-  revision work spans 32 commits from `1ba3c59` (the audited snapshot).
+- Git: the last commit of branch `QAframework`. New work continues on
+  branch `framework-2`, created from this commit. The revision work spans
+  32 commits from `1ba3c59` (the audited snapshot).
 - Tests: `195 passed` (`.venv/Scripts/python -m pytest -q`).
 - Hardware: RTX 5060 Ti 16 GB, Windows 11, Python 3.12, torch 2.11 cu128,
   transformers 5.17.
