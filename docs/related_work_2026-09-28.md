@@ -48,3 +48,42 @@ carries answers. VSI's LongVideoBench gains come from its text-relevant
 subset, where (as measured here) subtitles serve as temporal anchors. A
 dual-stream design is still VSI-like; any claim must be differential
 against VSI as a baseline.
+
+## Full-text reading (PDFs in cache/papers/, text via pypdf), 2026-09-28
+- VSI 2508.06869: training-free. The subtitle branch is all-mpnet-base-v2
+  cosine with a soft threshold (θ=0.5, γ=2) and a Gaussian spread (W=2 s).
+  The visual branch is YOLO-World-110M on target/cue objects that a VLM
+  (GPT-4o in their figure) lists first, with iterative spline-updated
+  sampling (~26 iterations). Search latency is 31.7 s per question at 64
+  frames (Table 3). Answerers: GPT-4o, LLaVA-Video-7B, Qwen2.5-VL-7B. There
+  is no OCR and no lecture data. Their subtitle gains concentrate on the
+  LongVideoBench text-referred subsets (subtitle as a temporal anchor).
+  Removing subtitles entirely changes F1 only from 83.7 to 83.2 (Table 6).
+  Code is public.
+- VideoStir 2604.05418: no speech or subtitles ("native input"). The frame
+  scorer is Qwen2.5-VL-3B with LoRA, distilled from Qwen2.5-VL-72B
+  RELEVANCE levels 1–5 (IR-600K), on 8×A100. Latency is listed as a
+  limitation and not reported.
+- VideoAgent 2403.10517: GPT-4 agent, CogAgent-18B/LaViLa captions,
+  EVA-CLIP-8B retrieval, 3-level self-confidence stop, zero-shot. No speech.
+- R-VLM 2312.04931: 1.8 M MLP on CLIP text features selects 4 s visual
+  chunks, trained end-to-end with a soft-matching loss. No speech.
+- 2607.05438: relevance ≠ utility for modality escalation (MultiModalQA,
+  text+table vs image). Post-draft calibrated value router trained on
+  counterfactual keep/escalate labels. The verifier predicts relevance
+  (F1 0.87) but not utility (F1 0.32). Utility oracle: 12% escalation. The
+  answerer is 72B and latency 4.49 s. Not video, not speech.
+- 2608.03161: lecture→knowledge graph (Faster-Whisper, EasyOCR,
+  Qwen2.5-VL-7B). Anchors combine visual change, transcript keywords and
+  first mention. 3 lectures, 3 seed questions. No QA benchmark, no
+  conflict, no cost.
+- CARGO-VL 2608.04509: image vs RETRIEVED TEXT conflict bundles (A/V/T/N)
+  on TextVQA/ScienceQA stills. Qwen3.5-9B trained with GRPO over bundles and
+  primal–dual abstention. No video, speech, lectures or acquisition cost.
+
+Gaps across all seven: lecture video QA where speech carries answers; a
+transcript-window localiser trained on answer UTILITY (the 2607.05438
+insight applied to temporal speech); board-text-aware cheap frame scoring;
+speech-vs-board conflict (CARGO-VL's A/V/T/N transposed to temporal speech,
+including ASR errors); end-to-end local ≤4B latency. Each piece is
+incremental on its own; the combination is the candidate contribution.
