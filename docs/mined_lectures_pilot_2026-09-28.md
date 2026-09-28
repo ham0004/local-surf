@@ -46,7 +46,7 @@ Strata that matter for the paired experiment (prior wrong, so the evidence matte
   answerer and is kept, not tuned.
 - Projection to all 106 MIT lectures (~100 windows each): ~10,600 windows,
   about 28 GPU hours at 9.5 s/window, which must run in resumable chunks.
-  At pilot rates that gives ~1,700 speech-dependent and ~560 visually
+  At pilot rates (21 and 7 per 177 windows) that gives ~1,260 speech-dependent and ~420 visually
   rescuable items before any prompt improvement.
 - Label quality is unknown until a human audit (runs/mined/pilot/audit.jsonl
   has timestamps for every item).
