@@ -66,3 +66,59 @@ was 1ba3c59 (148 tests); see docs/corrections/2026-09-28.md for the audit.
 docs/related_work_2026-09-28.md. CARGO-VL (counterfactual bundle training +
 controller) and 2607.05438 (cost-aware modality escalation) overlap
 substantially. No novelty claim is made.
+
+## Stage 3/5 pilot results (LongVideoBench, assay-v2; measured 2026-09-28)
+Commands: build-assay (train 40, dev 20, --relevance annotation), then
+train-assay --seeds 0,1,2. The first run was lost to a manifest bug after
+labelling (fixed in 05f285c; per-question checkpointing added).
+
+| | train | dev |
+|---|---|---|
+| questions attempted / labelled | 40 / 26 | 20 / 14 |
+| videos | 12 | 8 |
+| question drops | relevance not annotated 8, no relevant segment 3, no matched control 3 | relevance not annotated 5, no matched control 1 |
+| rows (look / expand) | 2544 / 156 | 1434 / 84 |
+| exact triplets, pair drops | 848, 0 | 478, 0 |
+| triplets with targeted−control gain ≠ 0 | 114 (13%) | 20 (4%) |
+| mean targeted−control gain | +0.054 | −0.017 |
+| answerer calls, labelling time | 2724, 56 min | 1520, 26 min |
+
+MLP heads on dev (mean ± sd over seeds 0,1,2; the n=20 rank set is the dev
+triplets with a nonzero difference, from few questions; 0.5 = chance):
+
+| variant | T−C rank acc | T−C diff MAE | gain MAE | realised gain targeted / control | look rate targeted / control | dev utility |
+|---|---|---|---|---|---|---|
+| V0 | 0.37 ± 0.06 | 0.148 | 0.315 | 0.071 / 0.060 | 0.60 / 0.58 | 0.060 ± 0.042 |
+| V1 | 0.48 ± 0.09 | 0.130 | 0.309 | 0.071 / 0.071 | 0.77 / 0.77 | 0.057 ± 0.024 |
+| V2 | 0.62 ± 0.09 | 0.182 | 0.386 | 0.095 / 0.095 | 0.88 / 0.89 | 0.075 ± 0.035 |
+| always stop | – | – | – | 0 / 0 | 0 / 0 | 0 |
+| oracle | – | – | – | 0.25 / 0.32 | 0.25 / 0.32 | 0.298 |
+
+Reading (feasibility only; not evidence for or against the hypothesis):
+- The pipeline works end to end on real data: exact pairs, zero pair drops,
+  lambda calibrated on dev, and references saved.
+- No variant looks more under targeted than under control damage. Even the
+  oracle acts less under targeted damage on dev (0.25 vs 0.32): on this dev
+  set, removing the annotated subtitle does not create a need to look.
+- V2's higher ranking accuracy (0.62) rests on 20 triplets from a handful of
+  questions and 3 seeds; its spread overlaps V1. Not significant, not claimed.
+- All learned heads reach 20–25% of oracle utility.
+
+Qwen3-0.6B + LoRA controller on the same labels (seed 0 only, 300 steps;
+train-llm):
+
+| variant | T−C rank acc (n=20) | T−C diff MAE | gain MAE | look rate clean / targeted / control | dev utility |
+|---|---|---|---|---|---|
+| V0 | 0.40 | 0.055 | 0.281 | 0.71 / 0.71 / 0.71 | 0.068 |
+| V1 | 0.40 | 0.068 | 0.263 | 0.86 / 0.89 / 0.86 | 0.112 |
+| V2 | 0.75 | 0.065 | 0.286 | 0.82 / 0.82 / 0.82 | 0.089 |
+
+Compute: 1,147,905 trainable parameters, 2.77 GB peak VRAM with gradient
+checkpointing, about 560 s per variant, 17 ms per scored action (batched).
+With one seed and 20 rank pairs, none of these differences can be
+distinguished from noise. The lower T−C diff MAE than the MLP mainly shows
+that predictions stay close to zero, because most true differences are zero.
+Look rates are again the same across conditions. Verdict on LongVideoBench:
+the paired-training hypothesis is **not testable** here (see the dataset
+selection doc). The pilot shows that both controllers train and run on real
+labels at known cost.
