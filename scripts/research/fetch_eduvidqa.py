@@ -19,7 +19,7 @@ interval [t-30, t+10] with evidence_type "inferred": the student asks about
 what was just said. This is an automatic proposal, audited later, not a
 human span.
 
-    python scripts/fetch_eduvidqa.py --raw data/eduvidqa_raw --out data/eduvidqa
+    python scripts/research/fetch_eduvidqa.py --raw data/eduvidqa_raw --out data/eduvidqa
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from videoqa.schemas import QAItem  # noqa: E402
 

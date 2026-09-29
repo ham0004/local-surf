@@ -13,7 +13,7 @@ Nothing here is ground truth: every item is marked synthetic, keeps its raw
 generator output, and is checked by scripts/verify_moments.py and by a
 small human audit (timestamps included so a person can check the moment).
 
-    python scripts/mine_moments.py --lectures data/mit_lectures --out runs/mined/pilot --limit-windows 40
+    python scripts/research/mine_moments.py --lectures data/mit_lectures --out runs/mined/pilot --limit-windows 40
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from videoqa.frames import decode_at  # noqa: E402
 from videoqa.transcript import load_transcript  # noqa: E402

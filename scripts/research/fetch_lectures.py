@@ -12,7 +12,7 @@ The Stanford / YouTube-licensed folders are excluded unless --courses names them
 Selection is a fixed sha256 order of the file name, so "--limit 5" is a
 reproducible pilot and a later full run is a superset of it.
 
-    python scripts/fetch_lectures.py --limit 5 --out data/mit_lectures
+    python scripts/research/fetch_lectures.py --limit 5 --out data/mit_lectures
 """
 
 from __future__ import annotations

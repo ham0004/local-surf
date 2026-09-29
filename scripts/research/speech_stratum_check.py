@@ -13,8 +13,8 @@ directly comparable. This is a feasibility screen, not a result: the targeted
 spans for Video-MME come from the noisy "answer_overlap" fallback because the
 dataset has no evidence annotations.
 
-    python scripts/speech_stratum_check.py --dataset videomme --n 50 --out runs/stratum/videomme50.json
-    python scripts/speech_stratum_check.py --dataset lvb --n 50 --out runs/stratum/lvb50.json
+    python scripts/research/speech_stratum_check.py --dataset videomme --n 50 --out runs/stratum/videomme50.json
+    python scripts/research/speech_stratum_check.py --dataset lvb --n 50 --out runs/stratum/lvb50.json
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ import time
 import zipfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from videoqa.answerer import AnswerRequest, answer_quality, make_answerer  # noqa: E402
 from videoqa.config import load_config  # noqa: E402

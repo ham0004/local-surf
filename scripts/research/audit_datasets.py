@@ -11,7 +11,7 @@ videos; the report keeps those separate.  Video availability (dead YouTube
 links etc.) can only be measured by actually attempting downloads, which this
 script does not do - see DATA_FEASIBILITY.md for the next step.
 
-Usage:  uv run python scripts/audit_datasets.py --out reports/data_audit.json
+Usage:  uv run python scripts/research/audit_datasets.py --out reports/data_audit.json
 """
 
 from __future__ import annotations

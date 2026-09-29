@@ -19,7 +19,7 @@ For every parsed item from scripts/mine_moments.py:
 Output qa.jsonl uses our QAItem schema, evidence_intervals_s = the window,
 evidence_type from the relation, and provenance marking it SYNTHETIC.
 
-    python scripts/verify_moments.py --lectures data/mit_lectures --mined runs/mined/pilot
+    python scripts/research/verify_moments.py --lectures data/mit_lectures --mined runs/mined/pilot
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from mine_moments import clean_captions  # noqa: E402
 from videoqa.answerer import AnswerRequest, make_answerer  # noqa: E402
