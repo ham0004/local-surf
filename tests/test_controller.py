@@ -5,15 +5,14 @@ import numpy as np
 from videoqa import fixtures
 from videoqa.controller import (
     HeuristicController,
-    LearnedController,
     RetrievalPolicy,
     ScoutSimilarityPolicy,
     TranscriptOnlyPolicy,
     UniformPolicy,
+    _UtilityController,
 )
 from videoqa.cost_model import DEFAULT
-from videoqa.features import CANDIDATE_FEATURES, legal_actions_costed
-from videoqa.heads import UtilityHead
+from videoqa.features import legal_actions_costed
 from videoqa.schemas import ActionKind, Candidate, CandidateSource, ControllerObservation, SceneType, ScoutSignals
 
 
@@ -71,18 +70,25 @@ def test_heuristic_returns_a_legal_action_with_reason():
     assert (a.kind, a.candidate_id) in {(x.kind, x.candidate_id) for x in legal} and a.reason
 
 
-def _head(bias):
-    head = UtilityHead(len(CANDIDATE_FEATURES), 4, 0)
-    head.w2[:] = 0.0
-    head.b2[:] = bias
-    return head
+class _ConstantGain(_UtilityController):
+    """Utility controller that predicts the same gain for every action, so the
+    tests isolate the gain - lambda * cost decision rule."""
+
+    name = "constant"
+
+    def __init__(self, gain, cost_model):
+        super().__init__(cost_model)
+        self.gain = gain
+
+    def score(self, X):
+        return np.full(len(X), self.gain)
 
 
-def test_learned_controller_stops_when_gain_does_not_pay_for_cost():
+def test_utility_controller_stops_when_gain_does_not_pay_for_cost():
     # Every action predicted to gain 0.05; every action costs 100 ms.
-    ctrl = LearnedController(_head(0.05), DEFAULT.with_lambda(1.0))     # 0.05 - 1.0*0.1 < 0 -> STOP
+    ctrl = _ConstantGain(0.05, DEFAULT.with_lambda(1.0))     # 0.05 - 1.0*0.1 < 0 -> STOP
     assert ctrl.decide(_obs(), _legal(_obs(), expand_ms=100.0)).kind == ActionKind.STOP
-    cheap = LearnedController(_head(0.05), DEFAULT.with_lambda(0.1))    # 0.05 - 0.01 > 0 -> act
+    cheap = _ConstantGain(0.05, DEFAULT.with_lambda(0.1))    # 0.05 - 0.01 > 0 -> act
     a = cheap.decide(_obs(), _legal(_obs()))
     assert a.kind != ActionKind.STOP and np.isfinite(a.predicted_utility)
 
@@ -91,5 +97,5 @@ def test_cost_decides_between_equally_useful_actions():
     # Same predicted gain everywhere: the cheapest legal action must win.
     obs = _obs()
     legal = legal_actions_costed(obs, 1, 0, 64, 4096, lambda cid: {"c001": 10.0}.get(cid, 500.0), 5.0)
-    a = LearnedController(_head(0.5), DEFAULT.with_lambda(1.0)).decide(obs, legal)
+    a = _ConstantGain(0.5, DEFAULT.with_lambda(1.0)).decide(obs, legal)
     assert a.candidate_id == "c001"

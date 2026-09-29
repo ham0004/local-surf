@@ -31,6 +31,15 @@ def test_evaluate_runs_all_conditions_and_charges_text_only_fairly(lecture_video
     assert "| uniform | clean |" in to_markdown(s)
 
 
+def test_clean_only_benchmark_mode_runs_every_question_once_per_policy(lecture_video):
+    items = [(q, str(lecture_video), fixtures.transcript()) for q in fixtures.qa_items()]
+    recs, skipped = evaluate(items, [TranscriptOnlyPolicy(), UniformPolicy()], CFG, BUDGET, PixelStatsScout(),
+                             FixtureAnswerer(), clean_only=True)
+    assert skipped == 0                                   # no fair-triple requirement in this mode
+    assert {r.condition for r in recs} == {"clean"}
+    assert len(recs) == 2 * len(items)
+
+
 def _rec(q, v, pol, quality):
     return EvalRecord(q, v, pol, "clean", quality, 0, 0, 0, 0.0, [])
 

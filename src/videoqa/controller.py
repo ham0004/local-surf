@@ -9,7 +9,7 @@ Each policy also declares how much visual scouting it needs, so the lazy
 acquisition path (acquisition.py) makes it pay for exactly that:
     scout_seed = "none"  no scout calls (transcript-only, uniform, retrieval)
                = "all"   scout every non-rescue candidate (scout similarity)
-               = k       scout a small seed set of k candidates (learned, heuristic)
+               = k       scout a small seed set of k candidates (heuristic)
 
 Baselines
     TranscriptOnlyPolicy   never looks.
@@ -17,18 +17,17 @@ Baselines
     RetrievalPolicy        where the observed transcript matched, best match first.
     ScoutSimilarityPolicy  highest question-frame similarity first.
     HeuristicController    hand-set linear gain estimate over the same features.
-Learned
-    LearnedController      UtilityHead (heads.py) predicts each action's gain.
 
 Utility controllers pick the action with the largest
     net = predicted_gain - lambda_per_s * cost_ms / 1000
 and STOP when no action has net > stop_threshold (0 by default): gain and cost
-are kept separate and combined only here, with the same CostModel that label
-analysis, training and threshold tuning use.
+are kept separate and combined only here, with the measured CostModel.
 
-The planned text-LLM controller (Qwen3-0.6B + LoRA) implements the same
-interface in llm_controller.py; the 26/28-feature MLP is kept as the small,
-auditable baseline.
+Version 1 note: learned controllers (an MLP utility head and a Qwen3-0.6B +
+LoRA scorer trained on paired transcript-damage labels) were built and
+tested, then removed from this branch because the available benchmarks gave
+them no signal to learn (see docs/final_report_controller_study.md; the code
+is in git history before the "v1: remove controller training" commit).
 """
 
 from __future__ import annotations
@@ -39,7 +38,6 @@ import numpy as np
 
 from .cost_model import DEFAULT, CostModel
 from .features import CANDIDATE_FEATURES, LegalAction, candidate_features, expand_features, global_features
-from .heads import UtilityHead
 from .schemas import Action, ActionKind, CandidateSource, ControllerObservation
 
 
@@ -205,36 +203,11 @@ class HeuristicController(_UtilityController):
         return X @ self.w
 
 
-class LearnedController(_UtilityController):
-    name = "learned"
-
-    def __init__(self, head: UtilityHead, cost_model: CostModel = DEFAULT, stop_threshold: float = 0.0) -> None:
-        super().__init__(cost_model, stop_threshold)
-        self.head = head
-
-    @classmethod
-    def from_file(cls, path, cost_model: CostModel = DEFAULT) -> LearnedController:
-        head, meta = UtilityHead.load(path)
-        if head.W1.shape[1] != len(CANDIDATE_FEATURES):
-            raise ValueError(f"{path}: head expects {head.W1.shape[1]} features, this code has "
-                             f"{len(CANDIDATE_FEATURES)} (checkpoint from an older feature set)")
-        lam = meta.get("lambda_per_s")
-        return cls(head, cost_model.with_lambda(lam) if lam is not None else cost_model,
-                   stop_threshold=meta.get("stop_threshold", 0.0))
-
-    def score(self, X):
-        return self.head.predict(X)
-
-
-def make_policy(name: str, checkpoint: str | None = None, cost_model: CostModel = DEFAULT, **kwargs) -> Policy:
+def make_policy(name: str, cost_model: CostModel = DEFAULT, **kwargs) -> Policy:
     simple = {"transcript_only": TranscriptOnlyPolicy, "uniform": UniformPolicy, "retrieval": RetrievalPolicy,
               "scout_similarity": ScoutSimilarityPolicy}
     if name in simple:
         return simple[name]()
     if name == "heuristic":
         return HeuristicController(cost_model, **kwargs)
-    if name == "learned":
-        if not checkpoint:
-            raise ValueError("learned policy needs --checkpoint")
-        return LearnedController.from_file(checkpoint, cost_model)
     raise ValueError(f"unknown policy {name!r}")

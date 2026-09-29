@@ -84,7 +84,7 @@ def evaluate(items: list[tuple[QAItem, str, Transcript]], policies: list[Policy]
              scout: Scout, answerer: Answerer, dtype: DamageType = DamageType.DELETE, seed: int = 0,
              asr_wer: float = 0.2,
              relevance_methods: frozenset[str] | None = None, cost_model: CostModel = DEFAULT,
-             eager: bool = False) -> tuple[list[EvalRecord], int]:
+             eager: bool = False, clean_only: bool = False) -> tuple[list[EvalRecord], int]:
     """Run every policy on every (question, condition).  Returns records and the
     number of questions skipped because no fair triple could be built (no
     answer-relevant segment from an allowed relevance source, or no matched
@@ -93,7 +93,8 @@ def evaluate(items: list[tuple[QAItem, str, Transcript]], policies: list[Policy]
     skipped = 0
     max_side = cfg["answerer"].get("frame_max_side")
     for q_idx, (qa, video_path, transcript) in enumerate(items):
-        conds = _conditions(qa, transcript, dtype, seed, asr_wer, relevance_methods)
+        conds = ({"clean": transcript} if clean_only
+                 else _conditions(qa, transcript, dtype, seed, asr_wer, relevance_methods))
         if conds is None:
             skipped += 1
             continue
