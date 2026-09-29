@@ -100,6 +100,12 @@ def cmd_evaluate(a) -> None:
     cfg = load_config(a.config)
     items, report = load_local_dataset(a.data, splits=tuple(a.split.split(",")))
     items = items[: a.limit] if a.limit else items
+    if getattr(a, "open_ended", False):
+        # Free-answer mode: hide the options so the model must write its own
+        # answer; it is scored later against the gold answer text (token F1 in
+        # the records, LLM judge in scripts/judge_open_ended.py).
+        items = [dataclasses.replace(it, qa=dataclasses.replace(it.qa, options=None, gold_option_index=None))
+                 for it in items]
     cm = cost_model_from_config(cfg)
     policies = [parse_policy_spec(spec, cm) for spec in a.policies.split(",")]
     records, skipped = evaluate([(it.qa, it.video_path, it.transcript) for it in items], policies, cfg,
@@ -215,6 +221,9 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--clean-only", action="store_true",
                    help="benchmark mode: every question on its original transcript only (no damage "
                         "conditions, so no question is skipped for lacking a fair triple)")
+    s.add_argument("--open-ended", action="store_true",
+                   help="hide the multiple-choice options: the model writes a free answer, scored against the "
+                        "gold answer text (token F1 here; LLM judge via scripts/judge_open_ended.py)")
     s.add_argument("--eager", action="store_true",
                    help="legacy path: decode+scout every candidate up front, then charge back (historical runs only)")
     s.add_argument("--out", required=True)
