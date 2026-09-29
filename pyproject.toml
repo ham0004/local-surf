@@ -1,7 +1,7 @@
 [project]
 name = "videoqa"
-version = "0.1.0"
-description = "Low-cost, evidence-grounded video QA: a small controller learns when damaged transcripts require looking at frames."
+version = "1.0.0"
+description = "Local, low-cost long-video question answering: transcript retrieval, selective frame acquisition with a cheap visual scout, and a small frozen vision-language model, with a full per-stage cost trace."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 # Core deps are deliberately light so the CPU smoke test runs anywhere.

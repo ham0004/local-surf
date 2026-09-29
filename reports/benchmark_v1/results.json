@@ -1,0 +1,306 @@
+{
+  "dataset": "LongVideoBench (validation subset held locally)",
+  "questions": 440,
+  "videos": 252,
+  "chance_accuracy": 0.21397727272727277,
+  "policies": {
+    "transcript_only": {
+      "n": 440,
+      "videos": 252,
+      "accuracy": 0.325,
+      "ci95": [
+        0.2828042596348884,
+        0.3673469387755102
+      ],
+      "frames_mean": 0.0,
+      "decoded_frames_mean": 0.0,
+      "scouted_frames_mean": 0.0,
+      "warm_ms_mean": 1142.8959886363732,
+      "warm_ms_median": 1140.8200500001158,
+      "no_option_rate": 0.0,
+      "by_length": {
+        "15\u201360 min": {
+          "n": 186,
+          "accuracy": 0.26881720430107525
+        },
+        "8\u201315 s": {
+          "n": 72,
+          "accuracy": 0.3888888888888889
+        },
+        "other": {
+          "n": 3,
+          "accuracy": 1.0
+        },
+        "15\u201360 s": {
+          "n": 55,
+          "accuracy": 0.45454545454545453
+        },
+        "3\u201310 min": {
+          "n": 124,
+          "accuracy": 0.29838709677419356
+        }
+      }
+    },
+    "uniform": {
+      "n": 440,
+      "videos": 252,
+      "accuracy": 0.3931818181818182,
+      "ci95": [
+        0.34651162790697676,
+        0.4396355353075171
+      ],
+      "frames_mean": 5.993181818181818,
+      "decoded_frames_mean": 428.23636363636365,
+      "scouted_frames_mean": 0.0,
+      "warm_ms_mean": 1419.071744545473,
+      "warm_ms_median": 1258.951549998983,
+      "no_option_rate": 0.0,
+      "by_length": {
+        "15\u201360 min": {
+          "n": 186,
+          "accuracy": 0.34408602150537637
+        },
+        "8\u201315 s": {
+          "n": 72,
+          "accuracy": 0.5416666666666666
+        },
+        "other": {
+          "n": 3,
+          "accuracy": 0.3333333333333333
+        },
+        "15\u201360 s": {
+          "n": 55,
+          "accuracy": 0.4
+        },
+        "3\u201310 min": {
+          "n": 124,
+          "accuracy": 0.3790322580645161
+        }
+      }
+    },
+    "retrieval": {
+      "n": 440,
+      "videos": 252,
+      "accuracy": 0.36363636363636365,
+      "ci95": [
+        0.3171647703863341,
+        0.4080752691666125
+      ],
+      "frames_mean": 4.1886363636363635,
+      "decoded_frames_mean": 289.32954545454544,
+      "scouted_frames_mean": 0.0,
+      "warm_ms_mean": 1198.8807677272523,
+      "warm_ms_median": 1112.5834499998746,
+      "no_option_rate": 0.0,
+      "by_length": {
+        "15\u201360 min": {
+          "n": 186,
+          "accuracy": 0.3118279569892473
+        },
+        "8\u201315 s": {
+          "n": 72,
+          "accuracy": 0.5
+        },
+        "other": {
+          "n": 3,
+          "accuracy": 0.3333333333333333
+        },
+        "15\u201360 s": {
+          "n": 55,
+          "accuracy": 0.41818181818181815
+        },
+        "3\u201310 min": {
+          "n": 124,
+          "accuracy": 0.3387096774193548
+        }
+      }
+    },
+    "scout_similarity": {
+      "n": 440,
+      "videos": 252,
+      "accuracy": 0.4159090909090909,
+      "ci95": [
+        0.3671039223678435,
+        0.4637027509616709
+      ],
+      "frames_mean": 5.993181818181818,
+      "decoded_frames_mean": 1266.6409090909092,
+      "scouted_frames_mean": 13.054545454545455,
+      "warm_ms_mean": 2387.0438911363044,
+      "warm_ms_median": 2247.978400000079,
+      "no_option_rate": 0.0,
+      "by_length": {
+        "15\u201360 min": {
+          "n": 186,
+          "accuracy": 0.3763440860215054
+        },
+        "8\u201315 s": {
+          "n": 72,
+          "accuracy": 0.5138888888888888
+        },
+        "other": {
+          "n": 3,
+          "accuracy": 0.6666666666666666
+        },
+        "15\u201360 s": {
+          "n": 55,
+          "accuracy": 0.43636363636363634
+        },
+        "3\u201310 min": {
+          "n": 124,
+          "accuracy": 0.4032258064516129
+        }
+      }
+    },
+    "heuristic": {
+      "n": 440,
+      "videos": 252,
+      "accuracy": 0.375,
+      "ci95": [
+        0.3294628714527932,
+        0.4204314059951006
+      ],
+      "frames_mean": 5.695454545454545,
+      "decoded_frames_mean": 521.0704545454546,
+      "scouted_frames_mean": 4.0,
+      "warm_ms_mean": 1613.822781818195,
+      "warm_ms_median": 1469.8460499994326,
+      "no_option_rate": 0.0,
+      "by_length": {
+        "15\u201360 min": {
+          "n": 186,
+          "accuracy": 0.3064516129032258
+        },
+        "8\u201315 s": {
+          "n": 72,
+          "accuracy": 0.5138888888888888
+        },
+        "other": {
+          "n": 3,
+          "accuracy": 0.3333333333333333
+        },
+        "15\u201360 s": {
+          "n": 55,
+          "accuracy": 0.43636363636363634
+        },
+        "3\u201310 min": {
+          "n": 124,
+          "accuracy": 0.3709677419354839
+        }
+      }
+    }
+  },
+  "best_policy": "scout_similarity",
+  "reference_leaderboard": [
+    [
+      "GPT-4o (0513)",
+      "proprietary",
+      256,
+      66.7
+    ],
+    [
+      "Gemini-1.5-Pro (0514)",
+      "proprietary",
+      256,
+      64.0
+    ],
+    [
+      "LLaVA-Video-7B-Qwen2",
+      "7B",
+      128,
+      61.1
+    ],
+    [
+      "GPT-4o-mini",
+      "proprietary",
+      250,
+      56.5
+    ],
+    [
+      "Idefics2",
+      "8B",
+      16,
+      49.7
+    ],
+    [
+      "Phi-3-Vision-Instruct",
+      "4.2B",
+      16,
+      49.6
+    ],
+    [
+      "LLaVA-Next-Mistral-7B",
+      "7B",
+      8,
+      49.1
+    ],
+    [
+      "LLaVA-1.5-7B",
+      "7B",
+      8,
+      40.3
+    ]
+  ],
+  "answers_with_clean_leading_letter": [
+    2200,
+    2200
+  ],
+  "paired": {
+    "scout_similarity - transcript_only": {
+      "diff": 0.09090909090909091,
+      "ci95": [
+        0.04597437519772225,
+        0.136160575789539
+      ],
+      "significant": true
+    },
+    "scout_similarity - uniform": {
+      "diff": 0.022727272727272728,
+      "ci95": [
+        -0.011628584593700869,
+        0.059496567505720827
+      ],
+      "significant": false
+    },
+    "scout_similarity - retrieval": {
+      "diff": 0.05227272727272727,
+      "ci95": [
+        0.016240359413938303,
+        0.08858966376089664
+      ],
+      "significant": true
+    },
+    "scout_similarity - heuristic": {
+      "diff": 0.04090909090909091,
+      "ci95": [
+        0.00697593669250646,
+        0.07400177257494205
+      ],
+      "significant": true
+    },
+    "uniform - transcript_only": {
+      "diff": 0.06818181818181818,
+      "ci95": [
+        0.022934467700963627,
+        0.11337868480725624
+      ],
+      "significant": true
+    },
+    "retrieval - transcript_only": {
+      "diff": 0.038636363636363635,
+      "ci95": [
+        -0.004672897196261682,
+        0.08168222176639513
+      ],
+      "significant": false
+    },
+    "uniform - retrieval": {
+      "diff": 0.029545454545454545,
+      "ci95": [
+        -0.00898927016904545,
+        0.07026328549763225
+      ],
+      "significant": false
+    }
+  }
+}

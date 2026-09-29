@@ -1,0 +1,25 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Install (CPU-only core + test deps)
+        run: uv sync --extra dev
+      - name: Unit and integration tests
+        run: uv run pytest -q
+      - name: CPU demo (synthetic lecture, no downloads, no GPU)
+        run: |
+          uv run videoqa make-synthetic --out data/synthetic --n 2
+          uv run videoqa ask --video data/synthetic/videos/synth_0000.mp4 \
+            --transcript data/synthetic/transcripts/synth_0000.json \
+            --question "What final accuracy is shown on the results slide?" \
+            --options "67%|77%|87%|97%" --config configs/cpu.yaml --out runs/ask/demo

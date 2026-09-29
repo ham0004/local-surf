@@ -5,10 +5,13 @@ research hypothesis was **not supported, and could not be tested, on the
 data available**. Follow-up work (lecture-video QA) builds on this code but
 is a separate study.
 
-- Git: the last commit of branch `QAframework`. New work continues on
-  branch `framework-2`, created from this commit. The revision work spans
-  32 commits from `1ba3c59` (the audited snapshot).
-- Tests: `195 passed` (`.venv/Scripts/python -m pytest -q`).
+- Git: study state = commit `9f72d7b` on branch `QAframework` (195 tests).
+  Commit `ca9e214` then removed the training stack to leave a working v1
+  QA framework; to run the training commands below, check out `9f72d7b`.
+  New research continues on branch `framework-2`.
+- **Benchmark of the v1 framework (after this study):** 440 LongVideoBench
+  questions, best strategy 41.6% (chance 21.4%). See
+  [reports/benchmark_v1/RESULTS.md](../reports/benchmark_v1/RESULTS.md).
 - Hardware: RTX 5060 Ti 16 GB, Windows 11, Python 3.12, torch 2.11 cu128,
   transformers 5.17.
 
@@ -37,8 +40,8 @@ makes it better than pointwise training (V0) at recovering answers when
 important speech fails, at equal measured cost.
 
 ## 3. What was implemented (by stage of the revision prompt)
-1. Audit, correction note, regression tests (`docs/corrections/`,
-   `scripts/audit_artifacts.py`).
+1. Audit, correction note, regression tests (`docs/history/corrections/`,
+   `scripts/audit_artifacts.py` at `9f72d7b`).
 2. Severity-matched damage with drop reasons, split provenance,
    answer traces with abstentions, and one CostModel everywhere.
 3. Feasibility pilot with a support audit (§4).
@@ -66,7 +69,7 @@ No variant looks more under targeted than under control damage. Even the
 oracle does not.
 
 Text-only screen for the "important-speech failure" stratum (right on the
-clean transcript, wrong after targeted damage; `scripts/speech_stratum_check.py`):
+clean transcript, wrong after targeted damage; `scripts/research/speech_stratum_check.py`):
 
 | dataset | stratum rate | reason |
 |---|---|---|
@@ -87,12 +90,13 @@ that sees only the transcript and five scout numbers, so it cannot read
 board or slide content. Its achievable gain over simple training-free rules
 (scout top-k, a score threshold, answer-confidence escalation) is therefore
 small. Closely related prior work: VideoAgent, VSI, VideoStir, 2607.05438,
-CARGO-VL (see `docs/related_work_2026-09-28.md`).
+CARGO-VL (see `docs/history/related_work_2026-09-28.md`).
 
 ## 6. Reproduce
+The training commands exist only at commit `9f72d7b` (`git checkout 9f72d7b`).
 ```
 .venv/Scripts/python -m pytest -q
-python scripts/speech_stratum_check.py --dataset lvb --n 50 --out runs/stratum/lvb50.json
+python scripts/research/speech_stratum_check.py --dataset lvb --n 50 --out runs/stratum/lvb50.json
 python -m videoqa.cli build-assay --data data/longvideobench_full --split train --config configs/gpu_12gb.yaml --relevance annotation --limit 40 --out runs/assay_v2/pilot_train
 python -m videoqa.cli build-assay --data data/longvideobench_full --split dev   --config configs/gpu_12gb.yaml --relevance annotation --limit 20 --out runs/assay_v2/pilot_dev
 python -m videoqa.cli train-assay --train-labels runs/assay_v2/pilot_train --dev-labels runs/assay_v2/pilot_dev --config configs/gpu_12gb.yaml --seeds 0,1,2 --out runs/assay_v2/mlp
@@ -111,5 +115,5 @@ locked test split was never evaluated.
 The lazy acquisition path, the measured cost model, the evaluation
 harness, the stratum screen, the paired-label machinery (reusable for
 utility labels on transcript windows), and the mined MIT OCW lecture data
-(`scripts/fetch_lectures.py`, `mine_moments.py`, `verify_moments.py`;
-pilot in `docs/mined_lectures_pilot_2026-09-28.md`).
+(`scripts/research/fetch_lectures.py`, `mine_moments.py`, `verify_moments.py`;
+pilot in `docs/history/mined_lectures_pilot_2026-09-28.md`).
