@@ -1,0 +1,124 @@
+{
+ "questions": 132,
+ "videos": [
+  "18.065_03",
+  "18.065_10",
+  "18.065_19",
+  "18.06SC_021",
+  "18.06SC_034"
+ ],
+ "k_frames": 4,
+ "accuracy": {
+  "transcript_only": 0.44696969696969696,
+  "ocr_transcript_no_image": 0.4318181818181818,
+  "A_mobileclip_topk": 0.5606060606060606,
+  "B_mobileclip_mmr": 0.5454545454545454,
+  "C_independent_utility": 0.5757575757575758,
+  "D_history_utility": 0.5681818181818182,
+  "D_head_unary": 0.5656565656565656
+ },
+ "paired": {
+  "D_history_utility - A_mobileclip_topk": {
+   "diff": 0.0075757575757575725,
+   "ci95_question_bootstrap": [
+    -0.05050505050505051,
+    0.06571969696969604
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.011261261261261266,
+    0.04461942257217846
+   ]
+  },
+  "D_history_utility - B_mobileclip_mmr": {
+   "diff": 0.02272727272727272,
+   "ci95_question_bootstrap": [
+    -0.03535353535353536,
+    0.08080808080808079
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.02542372881355933,
+    0.0765432098765432
+   ]
+  },
+  "D_history_utility - C_independent_utility": {
+   "diff": -0.007575757575757578,
+   "ci95_question_bootstrap": [
+    -0.05808080808080807,
+    0.0404040404040404
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.05555555555555555,
+    0.03896103896103896
+   ]
+  },
+  "D_history_utility - D_head_unary": {
+   "diff": 0.002525252525252522,
+   "ci95_question_bootstrap": [
+    -0.03282828282828283,
+    0.03787878787878788
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.03300330033003301,
+    0.026190476190476188
+   ]
+  },
+  "C_independent_utility - A_mobileclip_topk": {
+   "diff": 0.015151515151515152,
+   "ci95_question_bootstrap": [
+    -0.03787878787878789,
+    0.06818181818181818
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.012903225806451618,
+    0.050793650793650794
+   ]
+  },
+  "A_mobileclip_topk - transcript_only": {
+   "diff": 0.11363636363636363,
+   "ci95_question_bootstrap": [
+    0.05303030303030303,
+    0.18181818181818182
+   ],
+   "ci95_lecture_bootstrap": [
+    0.04411764705882353,
+    0.1958041958041958
+   ]
+  },
+  "A_mobileclip_topk - ocr_transcript_no_image": {
+   "diff": 0.12878787878787878,
+   "ci95_question_bootstrap": [
+    0.06060606060606061,
+    0.19696969696969696
+   ],
+   "ci95_lecture_bootstrap": [
+    0.07142857142857142,
+    0.19811320754716982
+   ]
+  }
+ },
+ "latency_s_median": {
+  "stage_medians": {
+   "retrieval": 0.0274615999951493,
+   "head_a": 0.06743905000621453,
+   "decode": 3.738815250020707,
+   "clip": 0.3330393499636557,
+   "ocr": 2.9370918000058737,
+   "text_emb": 0.02147824998246506
+  },
+  "answer_k_frames": 1.3641709000221454,
+  "A_mobileclip_topk": 5.530935650022002,
+  "B_mobileclip_mmr": 5.531072299985681,
+  "C_independent_utility": 8.490302499965765,
+  "D_history_utility": 8.492303950013593,
+  "D_head_unary": 8.49028199998429
+ },
+ "budget": {
+  "spent_s": 5984.438473899965,
+  "stages": {
+   "pools": 936.0851841999684,
+   "audit": 886.9488966999925,
+   "label": 2327.658081099973,
+   "eval": 1833.7463119000313
+  }
+ }
+}

@@ -1,0 +1,16 @@
+{
+ "rows": 300,
+ "questions": 50,
+ "lectures": 5,
+ "text": {
+  "positives": 13,
+  "auc_zero_shot_relevance": 0.6277137496649692,
+  "auc_trained_head_a": 0.4658268560707585
+ },
+ "visual": {
+  "positives": 37,
+  "auc_zero_shot_relevance": 0.5492755112526976,
+  "auc_trained_head_a": 0.3819751310245607
+ },
+ "note": "pooled over held-out lectures; small positive counts, so AUCs are noisy"
+}

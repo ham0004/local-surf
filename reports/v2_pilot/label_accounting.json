@@ -1,0 +1,12 @@
+{
+ "independent": {
+  "real_calls": 738,
+  "cache_hits": 447
+ },
+ "prefix": {
+  "real_calls": 839,
+  "cache_hits": 349
+ },
+ "budget_per_question_each_scheme": 9,
+ "note": "calls are attributed to the scheme that issued them first; the independent scheme runs first, so the prefix scheme gets the shared baseline as a cache hit"
+}

@@ -1,0 +1,28 @@
+{
+ "rows": 300,
+ "questions": 50,
+ "text_gain": {
+  "pos": 13,
+  "zero": 283,
+  "neg": 4
+ },
+ "visual_gain": {
+  "pos": 37,
+  "zero": 251,
+  "neg": 12
+ },
+ "text_and_visual_both_positive": 8,
+ "only_text_positive": 5,
+ "only_visual_positive": 29,
+ "teacher_calls": 650,
+ "budget": {
+  "spent_s": 6699.995531599969,
+  "stages": {
+   "pools": 936.0851841999684,
+   "audit": 886.9488966999925,
+   "label": 2327.658081099973,
+   "eval": 1833.7463119000313,
+   "head_a": 715.5570577000035
+  }
+ }
+}

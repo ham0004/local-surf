@@ -1,0 +1,15 @@
+{
+ "questions": 50,
+ "candidates": 539,
+ "baseline_correct": 23,
+ "any_positive": 13,
+ "any_negative": 5,
+ "positive_rows": 50,
+ "negative_rows": 24,
+ "zero_rows": 465,
+ "determinism_agree": "20/20",
+ "teacher_calls": 609,
+ "teacher_hits": 0,
+ "seconds_per_call": 1.456021483742983,
+ "budget_spent_s": 1823.0340808999608
+}
