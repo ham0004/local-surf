@@ -74,6 +74,10 @@ def main() -> None:
     ap.add_argument("--lectures", default="data/mit_lectures")
     ap.add_argument("--mined", required=True)
     ap.add_argument("--config", default="configs/gpu_12gb.yaml")
+    ap.add_argument("--qa-out", default=None, help="output qa file (default: <lectures>/qa.jsonl)")
+    ap.add_argument("--drop-prior", action="store_true",
+                    help="dataset rule: drop questions the answerer gets right with NO evidence (no transcript, "
+                         "no frames); they carry no evidence-utility signal. All items go to <qa-out>_all.jsonl")
     a = ap.parse_args()
     root, mined = Path(a.lectures), Path(a.mined)
     cfg = load_config(a.config)
@@ -143,9 +147,16 @@ def main() -> None:
             stats[f"correct_{k}:{p['relation']}"] += int(v)
         print(f"{qa.qa_id} {p['relation']:11s} {res}", flush=True)
 
-    with open(root / "qa.jsonl", "w", encoding="utf-8") as fh:
-        for qa in items:
-            fh.write(json.dumps(dataclasses.asdict(qa)) + "\n")
+    # Dataset rule (declared before results): optionally drop questions the answerer
+    # gets right with NO evidence; every item still goes to <qa-out>_all.jsonl.
+    qa_out = Path(a.qa_out) if a.qa_out else root / "qa.jsonl"
+    prior_ok = {r["qa_id"] for r in audit if r["correct_none"]}
+    kept_items = [qa for qa in items if not (a.drop_prior and qa.qa_id in prior_ok)]
+    stats["dropped_prior_answerable"] = len(items) - len(kept_items)
+    for path, rows in ((qa_out, kept_items), (qa_out.with_name(qa_out.stem + "_all.jsonl"), items)):
+        with open(path, "w", encoding="utf-8") as fh:
+            for qa in rows:
+                fh.write(json.dumps(dataclasses.asdict(qa)) + "\n")
     (mined / "audit.jsonl").write_text("\n".join(json.dumps(r) for r in audit), encoding="utf-8")
     (mined / "verify_stats.json").write_text(json.dumps(dict(sorted(stats.items())), indent=1), encoding="utf-8")
     print(json.dumps(dict(sorted(stats.items())), indent=1))

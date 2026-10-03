@@ -35,6 +35,7 @@ GENERATOR = "Qwen/Qwen3-VL-4B-Instruct"
 GENERATOR_REV = "ebb281ec70b05090aa6165b016eac8ec08e71b17"
 RELATIONS = ("both", "speech_only", "visual_only", "conflict", "none")
 
+PROMPT_VERSION = "mine-v2-lecture-specific"
 PROMPT = """You are building a quiz from a university lecture. Below are two frames from a {w:.0f}-second
 window of the lecture (at {t0:.0f}s and {t1:.0f}s) and what the lecturer SAID in that window
 (automatic captions, may contain recognition errors).
@@ -42,7 +43,9 @@ window of the lecture (at {t0:.0f}s and {t1:.0f}s) and what the lecturer SAID in
 SPEECH: "{speech}"
 
 Find ONE specific, checkable fact from this window (a number, formula, matrix entry, definition,
-named result, or step of a calculation). Then say where it appears:
+named result, or step of a calculation). The fact must be SPECIFIC TO THIS LECTURE (this example's
+numbers, this board's entries, a value or name introduced here), not general knowledge a student could
+answer without watching. Then say where it appears:
 - "both": the lecturer says it AND it is written/shown on the board or slide
 - "speech_only": said, but not visible in the frames
 - "visual_only": visible on the board/slide, but not said
@@ -180,7 +183,8 @@ def main() -> None:
                 checks["frame_only"] = check_answer(gen, [frames[-1].image], "Look at the board/slide in the image.",
                                                     parsed)
             rec = {"video_id": vid, "t0": t0, "t1": t1, "frame_pts": [f.decoded_pts_s for f in frames],
-                   "speech": speech, "raw": text, "parsed": parsed, "generator_checks": checks}
+                   "speech": speech, "raw": text, "parsed": parsed, "generator_checks": checks,
+                   "prompt_version": PROMPT_VERSION}
             with open(raw_p, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(rec) + "\n")
             n += 1
