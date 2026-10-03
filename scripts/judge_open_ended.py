@@ -64,10 +64,11 @@ class Judge:
     def __call__(self, question: str, reference: str, candidate: str) -> tuple[dict | None, str]:
         msgs = [{"role": "system", "content": SYSTEM},
                 {"role": "user", "content": USER.format(q=question, ref=reference, cand=candidate[:600])}]
-        ids = self.tok.apply_chat_template(msgs, add_generation_prompt=True, return_tensors="pt").to(self.model.device)
+        enc = self.tok.apply_chat_template(msgs, add_generation_prompt=True, return_tensors="pt",
+                                           return_dict=True).to(self.model.device)
         with self.torch.no_grad():
-            out = self.model.generate(ids, max_new_tokens=32, do_sample=False)
-        text = self.tok.decode(out[0, ids.shape[1]:], skip_special_tokens=True).strip()
+            out = self.model.generate(**enc, max_new_tokens=32, do_sample=False)
+        text = self.tok.decode(out[0, enc["input_ids"].shape[1]:], skip_special_tokens=True).strip()
         return parse_verdict(text), text
 
 
