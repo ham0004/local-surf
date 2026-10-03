@@ -1,0 +1,25 @@
+{
+ "matched_frames": 894,
+ "questions": 197,
+ "lectures": 20,
+ "useful_without_speech": 272,
+ "useful_with_speech": 155,
+ "table": {
+  "useful_both": 140,
+  "useful_only_without_speech": 132,
+  "useful_only_with_speech": 15,
+  "useful_neither": 607
+ },
+ "frames_where_speech_alone_already_answered": 126,
+ "rate_difference_without_minus_with": 0.1308724832214765,
+ "rate_difference_ci95_lecture_bootstrap": [
+  0.07795097989161752,
+  0.1877754217055744
+ ],
+ "cohen_kappa": 0.5581370327283485,
+ "kappa_ci95_lecture_bootstrap": [
+  0.4468308346252766,
+  0.6676198452358556
+ ],
+ "reading": "kappa near 1 = speech does not change which frames help; kappa near 0 = the useful frames under speech are largely different ones"
+}

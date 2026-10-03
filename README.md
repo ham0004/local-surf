@@ -1,6 +1,6 @@
 # Long-video QA on a single consumer GPU
 
-[![tests](https://github.com/ZentResearch/local-surf/actions/workflows/tests.yml/badge.svg?branch=QAframework)](https://github.com/ZentResearch/local-surf/actions/workflows/tests.yml)
+[![tests](https://github.com/ham0004/local-surf/actions/workflows/tests.yml/badge.svg?branch=framework-2)](https://github.com/ham0004/local-surf/actions/workflows/tests.yml)
 
 A **fully local** question-answering framework for long videos (seconds to an hour). Showing a
 whole video to a vision-language model is too slow and too expensive, so the framework
@@ -11,7 +11,7 @@ with timestamp citations and a per-stage time trace.
 
 - **Models:** Qwen3-VL-2B-Instruct (answers) · MobileCLIP-S2 (frame scoring) · BM25 (transcript search)
 - **Hardware:** one RTX 5060 Ti (16 GB) · about **1–2 s per question**
-- **Status:** v1, working and benchmarked. Ongoing project.
+- **Status:** v1 working and benchmarked; v2 (this branch) adds a research study of *learned* evidence selection. Ongoing project.
 
 ## Results: LongVideoBench (440 questions, 252 videos)
 
@@ -38,6 +38,26 @@ Same model, same questions, at most 8 frames per question. Chance level: 21.4%.
 Full tables, paired comparisons, per-length results, scoring method and every prediction:
 **[reports/benchmark_v1/RESULTS.md](reports/benchmark_v1/RESULTS.md)**.
 
+## Version 2: learned evidence selection (research, this branch)
+
+v2 keeps the v1 pipeline and asks whether small, cheap models can learn **which evidence actually
+helps** a frozen answerer. Candidate windows feed two parallel paths: transcript **hot moments**
+(Head A) and a **sparse visual scan** (MobileCLIP). The merged frames are scored by a small learned
+**Head B**. Labels are measured answer changes from the frozen Qwen3-VL-2B.
+
+Main experiment: 197 lecture questions, 20 MIT OCW lectures, each lecture evaluated by heads that
+never saw it, with 4 frames per question.
+
+- **Measured effect:** the retained transcript changes which frames help, mostly by making them
+  redundant. 132 frames are useful only without speech vs 15 only with it (Cohen's κ = 0.56).
+- **Negative results, with controls:** learned selectors did not beat MobileCLIP, diversity or
+  transcript-relevance baselines at equal cost. A frame-credit head learned from text was
+  significantly worse than zero-shot relevance (−8.1 points, 95% CI −13.2 to −3.6).
+
+Details: [docs/v2/README.md](docs/v2/README.md) (design and modules) ·
+[main_report.md](docs/v2/main_report.md) · [pilot_report.md](docs/v2/pilot_report.md) ·
+[novelty_check.md](docs/v2/novelty_check.md) (prior work; no novelty claimed).
+
 ## How it works
 
 ```mermaid
@@ -62,7 +82,7 @@ policies, the module map and the information-access rules are in
 Requires Python 3.12 and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-git clone -b QAframework https://github.com/ZentResearch/local-surf.git
+git clone -b framework-2 https://github.com/ham0004/local-surf.git
 cd local-surf
 uv sync --extra dev
 uv run pytest -q                 # 166 tests

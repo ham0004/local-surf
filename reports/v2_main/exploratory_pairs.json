@@ -1,0 +1,23 @@
+{
+ "F_relevance - A_mobileclip_topk": {
+  "diff": 0.04060913705583756,
+  "ci95_lecture_bootstrap": [
+   -0.013518141429100329,
+   0.09433962264150944
+  ]
+ },
+ "F_relevance - B_mobileclip_mmr": {
+  "diff": 0.025380710659898477,
+  "ci95_lecture_bootstrap": [
+   -0.018405614769161176,
+   0.06965174129353234
+  ]
+ },
+ "F_relevance - transcript_only": {
+  "diff": 0.233502538071066,
+  "ci95_lecture_bootstrap": [
+   0.16971662405374244,
+   0.303034332688588
+  ]
+ }
+}

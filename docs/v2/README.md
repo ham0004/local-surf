@@ -88,4 +88,4 @@ python -m videoqa.v2.experiment eval  --run runs/v2_main
 ## Reports
 - [pilot_report.md](pilot_report.md): pilot (history-conditioned selection). Not supported at pilot scale.
 - [novelty_check.md](novelty_check.md): closest prior work and what is not claimed.
-- `main_report.md`: main experiment (written when it completes).
+- [main_report.md](main_report.md): main experiment (speech changes frame usefulness; learned selectors not better than baselines).

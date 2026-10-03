@@ -1,0 +1,183 @@
+{
+ "questions": 197,
+ "videos": [
+  "18.065_03",
+  "18.065_10",
+  "18.065_15",
+  "18.065_18",
+  "18.065_19",
+  "18.065_22",
+  "18.065_23",
+  "18.065_30",
+  "18.065_36",
+  "18.06SC_006",
+  "18.06SC_021",
+  "18.06SC_027",
+  "18.06SC_034",
+  "18.06SC_041",
+  "18.06SC_054",
+  "18.06SC_055",
+  "18.06SC_065",
+  "18.06SC_069",
+  "18.06SC_070",
+  "18.06SC_074"
+ ],
+ "k_frames": 4,
+ "accuracy": {
+  "transcript_only": 0.15228426395939088,
+  "A_mobileclip_topk": 0.34517766497461927,
+  "B_mobileclip_mmr": 0.3604060913705584,
+  "E_headA_frame_credit": 0.30456852791878175,
+  "F_relevance": 0.38578680203045684,
+  "G_headA_text_credit": 0.37055837563451777,
+  "C_ocr": 0.34686971235194586,
+  "C_noocr": 0.3282571912013536,
+  "C_noocr_notext": 0.33164128595600684
+ },
+ "paired": {
+  "E_headA_frame_credit - F_relevance": {
+   "diff": -0.08121827411167512,
+   "ci95_question_bootstrap": [
+    -0.13705583756345177,
+    -0.025380710659898477
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.13227513227513227,
+    -0.036361281205840826
+   ]
+  },
+  "E_headA_frame_credit - G_headA_text_credit": {
+   "diff": -0.06598984771573604,
+   "ci95_question_bootstrap": [
+    -0.116751269035533,
+    -0.015228426395939087
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.13043921916592724,
+    -0.005713474025974038
+   ]
+  },
+  "E_headA_frame_credit - A_mobileclip_topk": {
+   "diff": -0.04060913705583756,
+   "ci95_question_bootstrap": [
+    -0.09644670050761421,
+    0.015228426395939087
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.10270522859307907,
+    0.014705882352941176
+   ]
+  },
+  "C_noocr - A_mobileclip_topk": {
+   "diff": -0.016920473773265658,
+   "ci95_question_bootstrap": [
+    -0.06937394247038918,
+    0.03553299492385786
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.0748663101604278,
+    0.037398373983739824
+   ]
+  },
+  "C_ocr - A_mobileclip_topk": {
+   "diff": 0.0016920473773265603,
+   "ci95_question_bootstrap": [
+    -0.05245346869712353,
+    0.05583756345177665
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.05691159047268866,
+    0.056837510771421046
+   ]
+  },
+  "C_noocr - B_mobileclip_mmr": {
+   "diff": -0.03214890016920475,
+   "ci95_question_bootstrap": [
+    -0.07952622673434857,
+    0.013536379018612515
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.09401815181518153,
+    0.019715102862473577
+   ]
+  },
+  "C_ocr - C_noocr": {
+   "diff": 0.018612521150592216,
+   "ci95_question_bootstrap": [
+    -0.013536379018612524,
+    0.05245346869712353
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.014948991031390127,
+    0.05299242424242424
+   ]
+  },
+  "C_noocr - C_noocr_notext": {
+   "diff": -0.003384094754653132,
+   "ci95_question_bootstrap": [
+    -0.03722504230118444,
+    0.030456852791878174
+   ],
+   "ci95_lecture_bootstrap": [
+    -0.03231318284889714,
+    0.02180882029012867
+   ]
+  },
+  "A_mobileclip_topk - transcript_only": {
+   "diff": 0.19289340101522842,
+   "ci95_question_bootstrap": [
+    0.12690355329949238,
+    0.2639593908629442
+   ],
+   "ci95_lecture_bootstrap": [
+    0.11891624297564893,
+    0.26976744186046514
+   ]
+  }
+ },
+ "latency_s_median": {
+  "stage_medians": {
+   "retrieval": 0.027068199997302145,
+   "head_a": 0.0962133000139147,
+   "decode": 2.1127740000374615,
+   "clip": 0.18859159998828545,
+   "ocr": 3.1544304999988526,
+   "text_emb": 0.024653100001160055
+  },
+  "answer_k_frames": 2.0529255000292324,
+  "A_mobileclip_topk": 4.477579200058244,
+  "B_mobileclip_mmr": 4.477761700109113,
+  "E_headA_frame_credit": 4.486284600105137,
+  "F_relevance": 4.477585300104693,
+  "G_headA_text_credit": 4.486079900118057,
+  "C_ocr": 7.657728600082919,
+  "C_noocr": 4.478591300081462,
+  "C_noocr_notext": 4.478555900102947
+ },
+ "head_a_out_of_fold_auc": {
+  "text_gain": {
+   "positives": 116,
+   "trained_small_head": 0.5367875396260594,
+   "zero_shot_relevance": 0.5335042375622695
+  },
+  "frame_gain": {
+   "positives": 367,
+   "trained_small_head": 0.5018104010297387,
+   "zero_shot_relevance": 0.45025994216077964
+  }
+ },
+ "head_a_label_counts": {
+  "moments": 1182,
+  "frame_only": 303,
+  "text_only": 52,
+  "both": 64
+ },
+ "budget": {
+  "spent_s": 12376.242176000087,
+  "stages": {
+   "pools": 1114.5243770000525,
+   "label": 7091.479439500021,
+   "eval": 4170.238359500014
+  }
+ }
+}
