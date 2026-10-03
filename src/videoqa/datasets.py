@@ -56,13 +56,18 @@ def _qa_from_json(d: dict) -> QAItem:
     return QAItem(**{k: v for k, v in d.items() if k in known})
 
 
-def load_local_dataset(root: str | Path, splits: tuple[str, ...] | None = None) -> tuple[list[LoadedItem], LoadReport]:
-    """Load items, assign hashed splits where none is given, and filter by split."""
+def load_local_dataset(root: str | Path, splits: tuple[str, ...] | None = None,
+                       qa_file: str = "qa.jsonl") -> tuple[list[LoadedItem], LoadReport]:
+    """Load items, assign hashed splits where none is given, and filter by split.
+
+    ``qa_file`` selects an alternative question file in ``root`` (e.g. a dataset
+    version such as ``qa_v2.jsonl``); videos and transcripts are shared.
+    """
     root = Path(root)
     report = LoadReport()
     items: list[LoadedItem] = []
     transcripts: dict[str, Transcript] = {}
-    for line in (root / "qa.jsonl").read_text(encoding="utf-8").splitlines():
+    for line in (root / qa_file).read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
         qa = _qa_from_json(json.loads(line))

@@ -57,11 +57,11 @@ class MMRSelector:
 class UnaryUtility:
     """Score each candidate once with an empty history; take the top k."""
 
-    def __init__(self, head, name: str = "C_independent_utility") -> None:
-        self.head, self.name = head, name
+    def __init__(self, head, name: str = "C_independent_utility", use_ocr: bool = True) -> None:
+        self.head, self.name, self.use_ocr = head, name, use_ocr
 
     def select(self, pool, k):
-        X = np.stack([featurize(pool, c, []) for c in pool.candidates])
+        X = np.stack([featurize(pool, c, [], self.use_ocr) for c in pool.candidates])
         order = np.argsort(-self.head.predict(X))
         return [pool.candidates[i] for i in order[:k]]
 
@@ -69,17 +69,31 @@ class UnaryUtility:
 class GreedyUtility:
     """Pick the best candidate, add it to the history, re-score the rest, repeat."""
 
-    def __init__(self, head, name: str = "D_history_utility") -> None:
-        self.head, self.name = head, name
+    def __init__(self, head, name: str = "D_history_utility", use_ocr: bool = True) -> None:
+        self.head, self.name, self.use_ocr = head, name, use_ocr
 
     def select(self, pool, k):
         chosen, rest = [], list(pool.candidates)
         while rest and len(chosen) < k:
-            X = np.stack([featurize(pool, c, chosen) for c in rest])
+            X = np.stack([featurize(pool, c, chosen, self.use_ocr) for c in rest])
             best = rest[int(np.argmax(self.head.predict(X)))]
             chosen.append(best)
             rest.remove(best)
         return chosen
+
+
+class ScoreTopK:
+    """Top-k by any precomputed per-candidate score (used for Head A credit arms).
+
+    ``score_fn(pool) -> {candidate_id: score}``.
+    """
+
+    def __init__(self, score_fn, name: str) -> None:
+        self.score_fn, self.name = score_fn, name
+
+    def select(self, pool, k):
+        scores = self.score_fn(pool)
+        return sorted(pool.candidates, key=lambda c: -scores[c.id])[:k]
 
 
 def timed_select(selector, pool, k) -> tuple[list[FrameCandidate], float]:

@@ -142,3 +142,24 @@ def test_summarize_groups_seeds_and_reports_paired_differences():
     assert out["paired"]["D_history_utility - A_mobileclip_topk"]["diff"] == 0.5
     lat = out["latency_s_median"]
     assert lat["D_history_utility"] > lat["A_mobileclip_topk"]        # D pays for OCR + text features
+
+
+def test_no_ocr_features_are_zeroed_and_score_topk_ranks_by_given_scores():
+    from videoqa.v2.selectors import ScoreTopK
+
+    pool, _ = _pool(n=5)
+    for c in pool.candidates:
+        c.ocr_text = "some board text 42"
+    with_ocr = featurize(pool, pool.candidates[0], [])
+    no_ocr = featurize(pool, pool.candidates[0], [], use_ocr=False)
+    assert not np.allclose(with_ocr[512:1024], 0) and np.allclose(no_ocr[512:1024], 0)   # OCR block zeroed
+    sel = ScoreTopK(lambda p: {c.id: -c.time_s for c in p.candidates}, "earliest")
+    assert [c.id for c in sel.select(pool, 2)] == ["f00", "f01"]
+
+
+def test_segment_matching_for_path_a_frames():
+    from videoqa.v2.experiment import _nearest_segment, _segment_ending_near
+
+    segs = [TranscriptSegment("a", 0.0, 10.0, "x"), TranscriptSegment("b", 10.0, 30.0, "y")]
+    assert _segment_ending_near(segs, 29.7).id == "b"        # frame taken 0.3 s before 'b' ends
+    assert _nearest_segment(segs, 9.0).id == "a"

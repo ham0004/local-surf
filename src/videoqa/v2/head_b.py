@@ -42,18 +42,26 @@ def _tokens(text: str) -> set[str]:
 # ---------------------------------------------------------------------------
 
 
-def featurize(pool: QuestionPool, cand: FrameCandidate, history: list[FrameCandidate]) -> np.ndarray:
-    """One feature vector for `cand` given the selected `history` (length 3*512 + N_SCALAR)."""
+def featurize(pool: QuestionPool, cand: FrameCandidate, history: list[FrameCandidate],
+              use_ocr: bool = True) -> np.ndarray:
+    """One feature vector for `cand` given the selected `history` (length 3*512 + N_SCALAR).
+
+    ``use_ocr=False`` zeroes every OCR-derived feature, so a selector trained and run
+    this way needs no OCR at inference (and pays no OCR time).
+    """
     q = pool.question_emb
     q_tok = _tokens(pool.question + " " + " ".join(pool.options))
     ocr_tok, near_tok = _tokens(cand.ocr_text), _tokens(cand.near_text)
     retained_t = [0.5 * (s.start_s + s.end_s) for s in pool.transcript] or [0.0]
     dur = max(pool.duration_s, 1.0)
 
-    content = np.concatenate([cand.emb * q, cand.ocr_emb * q, cand.near_emb * q])
+    ocr_emb = cand.ocr_emb if use_ocr else np.zeros_like(cand.ocr_emb)
+    if not use_ocr:
+        ocr_tok = set()
+    content = np.concatenate([cand.emb * q, ocr_emb * q, cand.near_emb * q])
     scalars = [
-        cand.clip_sim, float(cand.ocr_emb @ q), float(cand.near_emb @ q),
-        np.log1p(len(cand.ocr_text)) / 6.0,
+        cand.clip_sim, float(ocr_emb @ q), float(cand.near_emb @ q),
+        (np.log1p(len(cand.ocr_text)) / 6.0) if use_ocr else 0.0,
         len(ocr_tok & q_tok) / (len(q_tok) + 1), len(near_tok & q_tok) / (len(q_tok) + 1),
         cand.head_a_text / 10.0, cand.head_a_visual / 10.0,
         float("A" in cand.paths), float("B" in cand.paths), float(len(cand.paths) == 2),
@@ -63,7 +71,7 @@ def featurize(pool: QuestionPool, cand: FrameCandidate, history: list[FrameCandi
     # -- history features (zero when nothing is selected yet) -----------------
     if history:
         sims = [float(cand.emb @ h.emb) for h in history]
-        ocr_sims = [float(cand.ocr_emb @ h.ocr_emb) for h in history]
+        ocr_sims = [float(ocr_emb @ h.ocr_emb) if use_ocr else 0.0 for h in history]
         gaps = [abs(cand.time_s - h.time_s) for h in history]
         scalars += [len(history) / 8.0, max(sims), float(np.mean(sims)), min(gaps) / dur, max(ocr_sims),
                     max(h.clip_sim for h in history), float(any(set(h.paths) & set(cand.paths) for h in history))]

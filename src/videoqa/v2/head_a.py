@@ -11,13 +11,29 @@ and frame are never added together, so neither gets credit for the other.
 
 Backbone: cross-encoder/ms-marco-MiniLM-L6-v2 (22.7M, Apache-2.0), frozen. Before
 training, both outputs fall back to its pretrained query-passage RELEVANCE logit
-(zero-shot). Training fits a small linear head on frozen features
-[relevance logit, CLS embedding], so it is cheap and cannot overfit the backbone.
+(zero-shot). Training fits a small linear head on frozen features.
+
+Two feature modes:
+  "full"   [relevance logit, 384-d CLS embedding]  (overfit in the pilot: 300 rows)
+  "small"  six interpretable features: relevance logit, question-word overlap,
+           best option-word overlap, spread of option overlaps (does the line
+           separate the options?), contains a number, log length
 """
 
 from __future__ import annotations
 
+import re
+
 import numpy as np
+
+_WORD = re.compile(r"[a-z0-9]+")
+_STOP = set("the a an of to in is are was what which how does do and or for on at by with this that it as be".split())
+SMALL_FEATURE_NAMES = ("relevance", "question_overlap", "option_overlap_max", "option_overlap_spread",
+                       "has_number", "log_length")
+
+
+def _toks(text: str) -> set[str]:
+    return {w for w in _WORD.findall(text.lower()) if w not in _STOP and len(w) > 1}
 
 BACKBONE = "cross-encoder/ms-marco-MiniLM-L6-v2"
 BACKBONE_REV = "233902d25c440f23af6f7d6e94d2946bac0bee0a"
@@ -26,8 +42,8 @@ BACKBONE_REV = "233902d25c440f23af6f7d6e94d2946bac0bee0a"
 class HotMomentScorer:
     """score(question, segment_texts) -> (n, 2) array of [text utility, visual utility]."""
 
-    def __init__(self, device: str = "cuda", cache_dir: str | None = None) -> None:
-        self.device, self.cache_dir = device, cache_dir
+    def __init__(self, device: str = "cuda", cache_dir: str | None = None, feature_mode: str = "full") -> None:
+        self.device, self.cache_dir, self.feature_mode = device, cache_dir, feature_mode
         self._tok = self._model = None
         self.head_w: np.ndarray | None = None    # (F, 2) linear head; None = zero-shot relevance
         self.head_b: np.ndarray | None = None
@@ -59,9 +75,29 @@ class HotMomentScorer:
         cls = out.hidden_states[-1][:, 0].float().cpu().numpy()          # frozen sentence-pair embedding
         return np.concatenate([logit, cls], axis=1)
 
+    def small_features(self, question: str, options: list[str] | None, texts: list[str]) -> np.ndarray:
+        """(n, 6) interpretable features (see SMALL_FEATURE_NAMES)."""
+        if not texts:
+            return np.zeros((0, len(SMALL_FEATURE_NAMES)), dtype=np.float32)
+        logit = self.features(question, texts)[:, 0]
+        q, opts = _toks(question), [_toks(o) for o in (options or [])] or [set()]
+        rows = []
+        for lg, t in zip(logit, texts, strict=True):
+            w = _toks(t)
+            ov = [len(w & o) / (len(o) + 1) for o in opts]
+            rows.append([lg, len(w & q) / (len(q) + 1), max(ov), max(ov) - min(ov),
+                         float(bool(re.search(r"\d", t))), np.log1p(len(t.split()))])
+        return np.asarray(rows, dtype=np.float32)
+
+    def feats_for(self, question: str, texts: list[str], options: list[str] | None = None) -> np.ndarray:
+        """Features in this scorer's mode."""
+        if self.feature_mode == "small":
+            return self.small_features(question, options, texts)
+        return self.features(question, texts)
+
     # -- prediction ----------------------------------------------------------
-    def score(self, question: str, texts: list[str]) -> np.ndarray:
-        feats = self.features(question, texts)
+    def score(self, question: str, texts: list[str], options: list[str] | None = None) -> np.ndarray:
+        feats = self.feats_for(question, texts, options)
         if self.head_w is None:                                          # zero-shot: relevance for both
             return np.repeat(feats[:, :1], 2, axis=1)
         z = (feats - self.feat_mean) / self.feat_std

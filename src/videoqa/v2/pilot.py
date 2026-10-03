@@ -58,13 +58,16 @@ AUDIT_N = 50
 
 
 class Budget:
-    def __init__(self, run: Path) -> None:
+    """GPU wall-time budget persisted in <run>/budget.json (survives restarts)."""
+
+    def __init__(self, run: Path, limit_s: float = GPU_BUDGET_S) -> None:
+        self.limit_s = limit_s
         self.path = run / "budget.json"
         self.state = json.loads(self.path.read_text()) if self.path.exists() else {"spent_s": 0.0, "stages": {}}
 
     @property
     def remaining(self) -> float:
-        return GPU_BUDGET_S - self.state["spent_s"]
+        return self.limit_s - self.state["spent_s"]
 
     def charge(self, stage: str, seconds: float) -> None:
         self.state["spent_s"] += seconds
@@ -305,8 +308,18 @@ def stage_eval(a) -> None:
     print(json.dumps(summary, indent=1))
 
 
-def summarize(results, pools, sel_seconds, answer_seconds) -> dict:
-    """Accuracy per arm (seed-averaged for trained arms), paired bootstrap, composed latency."""
+PILOT_PAIRS = [("D_history_utility", "A_mobileclip_topk"), ("D_history_utility", "B_mobileclip_mmr"),
+               ("D_history_utility", "C_independent_utility"), ("D_history_utility", "D_head_unary"),
+               ("C_independent_utility", "A_mobileclip_topk"), ("A_mobileclip_topk", "transcript_only"),
+               ("A_mobileclip_topk", "ocr_transcript_no_image")]
+
+
+def summarize(results, pools, sel_seconds, answer_seconds, pairs=None, ocr_prefixes=("C_", "D_")) -> dict:
+    """Accuracy per arm (seed-averaged for trained arms), paired bootstrap, composed latency.
+
+    ``pairs``: (arm_a, arm_b) comparisons to bootstrap; ``ocr_prefixes``: arms whose
+    latency includes OCR + text embedding (the others do not run OCR at inference).
+    """
     if not results:
         return {"questions": 0}
     names = [k for k in results[0] if k not in ("qa_id", "video_id")]
@@ -318,10 +331,7 @@ def summarize(results, pools, sel_seconds, answer_seconds) -> dict:
     out = {"questions": len(results), "videos": sorted(set(vids)), "k_frames": K_FRAMES,
            "accuracy": {g: float(v.mean()) for g, v in per_q.items()}, "paired": {}}
     rng = np.random.default_rng(0)
-    for a_name, b_name in [("D_history_utility", "A_mobileclip_topk"), ("D_history_utility", "B_mobileclip_mmr"),
-                           ("D_history_utility", "C_independent_utility"), ("D_history_utility", "D_head_unary"),
-                           ("C_independent_utility", "A_mobileclip_topk"), ("A_mobileclip_topk", "transcript_only"),
-                           ("A_mobileclip_topk", "ocr_transcript_no_image")]:
+    for a_name, b_name in (pairs or PILOT_PAIRS):
         if a_name not in per_q or b_name not in per_q:
             continue
         d = per_q[a_name] - per_q[b_name]
@@ -343,7 +353,7 @@ def summarize(results, pools, sel_seconds, answer_seconds) -> dict:
     common = t["retrieval"] + t["head_a"] + t["decode"] + t["clip"]
     out["latency_s_median"] = {
         "stage_medians": t, "answer_k_frames": ans,
-        **{g: common + (t["ocr"] + t["text_emb"] if g.startswith(("C_", "D_")) else 0.0) + sel.get(g, 0.0) + ans
+        **{g: common + (t["ocr"] + t["text_emb"] if g.startswith(tuple(ocr_prefixes)) else 0.0) + sel.get(g, 0.0) + ans
            for g in sel}}
     return out
 
