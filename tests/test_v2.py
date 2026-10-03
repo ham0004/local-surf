@@ -1,6 +1,7 @@
 """Framework 2 units: teacher cache, label budgets, selectors and Head B, with fakes (no GPU)."""
 
 import numpy as np
+import pytest
 from PIL import Image
 
 from videoqa.schemas import Answer, TranscriptSegment
@@ -99,6 +100,7 @@ def test_selectors_return_k_distinct_candidates():
 
 
 def test_head_b_learns_and_greedy_rescoring_uses_history(tmp_path):
+    pytest.importorskip("torch")          # Head B trains with torch; CI installs only the CPU core
     pool, good = _pool(n=6, good=("f02",))
     t, _ = _teacher(tmp_path, pool, good)
     rows = independent_labels(pool, t, budget=7) + prefix_labels(pool, t, chains=2, length=3)
