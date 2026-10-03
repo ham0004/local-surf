@@ -59,3 +59,49 @@ algorithm**. At most it is a new *empirical* finding (does supervised
 context-dependent utility beat similarity, diversity and independent labels at
 equal cost?), plus items 1–4, which are narrow. Claims will follow the pilot's
 numbers, not this table.
+
+## Update after an adversarial audit (2026-10-03)
+
+A second, adversarial literature audit (by a separate assistant, primary-source
+sections cited there) looked for counterexamples. It adds prior art and
+corrections, and it **withdraws the broad claims**.
+
+Additional prior art:
+
+| Work | What it establishes |
+|---|---|
+| **FrameOracle** (arXiv 2510.03584) | A lightweight frame selector that also predicts *how many* frames are needed. Curriculum from similarity proxies to validated minimal-sufficient keyframe labels; the audit reports leave-one-out downstream-loss changes as contextual importance targets (§4.2). Contextual answer-utility supervision for frame selection exists. |
+| **Acquisition Conditioned Oracle**, ICML 2024 (2302.13960) | Learned acquisition policies imitating an expensive training-time oracle under acquisition cost. Replacing an expensive evaluator with a learned selector is not new. |
+| **Sampling Permutations for Shapley Value Estimation** (2104.12199) | Marginal contributions from adjacent permutation prefixes. Prefix reuse is established estimation arithmetic. |
+| ReaSon (2511.12530); multimodal moment-retrieval cascade (2512.12935) | Not exact matches (no per-prefix answer-gain head), but they strengthen the architecture precedent. |
+
+Corrections to the table above: VSI also reports **8-frame** QA, so its 31.7 s
+timing must not be used as an 8-frame comparison. R-VLM trains a visual
+projector as well as its retrieval MLP. SeViLA fine-tunes the answerer in its
+forward chain, and only its reverse chain uses a frozen answerer for labels.
+
+**Withdrawn as claims:** a new controller-training principle; history-conditioned
+selection; marginal-utility regression or ranking; prefix-label reuse; two-path
+fusion; OCR fusion; two regression outputs. All of these are established.
+
+**Exact method differences that remain (a combination, not an invention):**
+
+| Element | Closest work | Difference that remains |
+|---|---|---|
+| Separate measured gains for a timed transcript line vs its nearby frame, against the same context | 2607.05438 (keep vs escalate per question) | Per-moment, temporal, raw-frame granularity |
+| Conditioning on the transcript actually retained for the answerer | ReFoCUS / FrameOracle condition on query and frames | Retained speech as conditioning input |
+| Signed per-addition gains on a changing selected set | Ross 2013; ReFoCUS (trajectory RL); FrameOracle (deletion from the full pool) | Addition to a variable prefix, supervised |
+| A compact frozen-feature implementation on one 16 GB GPU with end-to-end latency | TSPO (3.5M agent, 8×A800), FrameOracle | Systems operating point, if measured |
+
+**The one bounded, falsifiable question this project now tests:** *does the
+retained speech change which additional frames are useful, and can a compact
+learned scorer exploit that change better than strong baselines at equal cost?*
+It is tested in two ways:
+1. Directly from labels (`scripts/v2_transcript_conditioning.py`): agreement
+   (Cohen's κ) between frame usefulness with and without the retained transcript.
+2. Through selection: Head B with vs without speech features (`C_noocr` vs
+   `C_noocr_notext`), with pixels, retained text, answerer, K, labels and
+   parameter count fixed.
+
+If the effect is absent, or explained by extra evidence or compute, that is the
+result that gets reported.

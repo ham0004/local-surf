@@ -57,11 +57,12 @@ class MMRSelector:
 class UnaryUtility:
     """Score each candidate once with an empty history; take the top k."""
 
-    def __init__(self, head, name: str = "C_independent_utility", use_ocr: bool = True) -> None:
-        self.head, self.name, self.use_ocr = head, name, use_ocr
+    def __init__(self, head, name: str = "C_independent_utility", use_ocr: bool = True,
+                 use_transcript: bool = True) -> None:
+        self.head, self.name, self.use_ocr, self.use_transcript = head, name, use_ocr, use_transcript
 
     def select(self, pool, k):
-        X = np.stack([featurize(pool, c, [], self.use_ocr) for c in pool.candidates])
+        X = np.stack([featurize(pool, c, [], self.use_ocr, self.use_transcript) for c in pool.candidates])
         order = np.argsort(-self.head.predict(X))
         return [pool.candidates[i] for i in order[:k]]
 

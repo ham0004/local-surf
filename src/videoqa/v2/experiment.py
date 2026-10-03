@@ -17,6 +17,7 @@ Arms (identical candidate pool, retained transcript, answerer and K frames):
     B_mobileclip_mmr             similarity + diversity
     C_ocr_s{seed}                Head B (single-frame utility labels), with OCR features
     C_noocr_s{seed}              Head B without OCR (same latency as A)
+    C_noocr_notext_s{seed}       ...and without any speech-derived feature (transcript-conditioning ablation)
     E_headA_frame_credit         top-K candidates by trained Head A FRAME credit
     F_relevance                  top-K by zero-shot transcript relevance (Head A untrained)
     G_headA_text_credit          top-K by trained Head A TEXT credit (wrong target, control)
@@ -57,7 +58,7 @@ HEAD_B_CFG = dict(proj_dim=4, weight_decay=1e-2)        # smaller and more regul
 PAIRS = [("E_headA_frame_credit", "F_relevance"), ("E_headA_frame_credit", "G_headA_text_credit"),
          ("E_headA_frame_credit", "A_mobileclip_topk"), ("C_noocr", "A_mobileclip_topk"),
          ("C_ocr", "A_mobileclip_topk"), ("C_noocr", "B_mobileclip_mmr"), ("C_ocr", "C_noocr"),
-         ("A_mobileclip_topk", "transcript_only")]
+         ("C_noocr", "C_noocr_notext"), ("A_mobileclip_topk", "transcript_only")]
 
 
 def _items(data: str, qa_file: str):
@@ -193,7 +194,8 @@ def stage_eval(a) -> None:
         head_a.fit(feat_a[tr], y_a[tr], grp_a[tr])
         pred_a[~tr] = ((feat_a[~tr] - head_a.feat_mean) / head_a.feat_std) @ head_a.head_w + head_a.head_b
         train_b = [r for r in rows_b if r.video_id != held]
-        heads = {(ocr, s): _train_head_b(train_b, pools, s, ocr) for ocr in (True, False) for s in SEEDS}
+        variants = [(True, True), (False, True), (False, False)]          # (use_ocr, use_transcript)
+        heads = {(o, t, s): _train_head_b(train_b, pools, s, o, t) for o, t in variants for s in SEEDS}
 
         def credit(pool, k, model=head_a):
             """Head A credit (k=0 text, k=1 frame) for each candidate's nearest segment."""
@@ -206,8 +208,10 @@ def stage_eval(a) -> None:
                 ScoreTopK(lambda p: credit(p, 1), "E_headA_frame_credit"),
                 ScoreTopK(lambda p: {c.id: c.head_a_visual for c in p.candidates}, "F_relevance"),
                 ScoreTopK(lambda p: credit(p, 0), "G_headA_text_credit")]
-        arms += [UnaryUtility(heads[(True, s)], f"C_ocr_s{s}", use_ocr=True) for s in SEEDS]
-        arms += [UnaryUtility(heads[(False, s)], f"C_noocr_s{s}", use_ocr=False) for s in SEEDS]
+        arms += [UnaryUtility(heads[(True, True, s)], f"C_ocr_s{s}", use_ocr=True) for s in SEEDS]
+        arms += [UnaryUtility(heads[(False, True, s)], f"C_noocr_s{s}", use_ocr=False) for s in SEEDS]
+        arms += [UnaryUtility(heads[(False, False, s)], f"C_noocr_notext_s{s}", use_ocr=False, use_transcript=False)
+                 for s in SEEDS]
 
         for q in (q for q in labelled if pools[q].video_id == held):
             if budget.remaining - (time.perf_counter() - t0) < 0:
@@ -244,9 +248,10 @@ def stage_eval(a) -> None:
     print(json.dumps(summary, indent=1))
 
 
-def _train_head_b(rows, pools, seed: int, use_ocr: bool) -> HeadB:
+def _train_head_b(rows, pools, seed: int, use_ocr: bool, use_transcript: bool = True) -> HeadB:
     by = {q: {c.id: c for c in p.candidates} for q, p in pools.items()}
-    X = np.stack([featurize(pools[r.qa_id], by[r.qa_id][r.candidate_id], [], use_ocr) for r in rows])
+    X = np.stack([featurize(pools[r.qa_id], by[r.qa_id][r.candidate_id], [], use_ocr, use_transcript)
+                  for r in rows])
     y = np.array([r.gain for r in rows], dtype=np.float32)
     ctx = np.array([r.qa_id for r in rows])
     head = HeadB(HeadBConfig(seed=seed, **HEAD_B_CFG))

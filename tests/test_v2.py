@@ -165,3 +165,26 @@ def test_segment_matching_for_path_a_frames():
     segs = [TranscriptSegment("a", 0.0, 10.0, "x"), TranscriptSegment("b", 10.0, 30.0, "y")]
     assert _segment_ending_near(segs, 29.7).id == "b"        # frame taken 0.3 s before 'b' ends
     assert _nearest_segment(segs, 9.0).id == "a"
+
+
+def test_no_transcript_features_are_zeroed():
+    pool, _ = _pool(n=3)
+    for c in pool.candidates:
+        c.near_text = "the lecturer says forty two"
+    full = featurize(pool, pool.candidates[0], [])
+    blind = featurize(pool, pool.candidates[0], [], use_ocr=True, use_transcript=False)
+    assert np.allclose(blind[1024:1536], 0) and not np.allclose(full[1024:1536], 0)   # speech block zeroed
+    assert np.allclose(full[:512], blind[:512])                                          # image block unchanged
+
+
+def test_transcript_conditioning_kappa():
+    import importlib.util
+    import sys
+
+    spec = importlib.util.spec_from_file_location("tc", "scripts/v2_transcript_conditioning.py")
+    tc = importlib.util.module_from_spec(spec)
+    sys.modules["tc"] = tc
+    spec.loader.exec_module(tc)
+    a = np.array([1, 1, 0, 0], dtype=bool)
+    assert tc.kappa(a, a) == 1.0
+    assert abs(tc.kappa(a, ~a) + 1.0) < 1e-9

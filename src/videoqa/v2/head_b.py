@@ -43,11 +43,14 @@ def _tokens(text: str) -> set[str]:
 
 
 def featurize(pool: QuestionPool, cand: FrameCandidate, history: list[FrameCandidate],
-              use_ocr: bool = True) -> np.ndarray:
+              use_ocr: bool = True, use_transcript: bool = True) -> np.ndarray:
     """One feature vector for `cand` given the selected `history` (length 3*512 + N_SCALAR).
 
     ``use_ocr=False`` zeroes every OCR-derived feature, so a selector trained and run
     this way needs no OCR at inference (and pays no OCR time).
+    ``use_transcript=False`` zeroes every speech-derived feature (nearby speech
+    embedding and overlap, distance to the retained transcript): the ablation that
+    tests whether conditioning on speech changes which frames the head prefers.
     """
     q = pool.question_emb
     q_tok = _tokens(pool.question + " " + " ".join(pool.options))
@@ -58,15 +61,18 @@ def featurize(pool: QuestionPool, cand: FrameCandidate, history: list[FrameCandi
     ocr_emb = cand.ocr_emb if use_ocr else np.zeros_like(cand.ocr_emb)
     if not use_ocr:
         ocr_tok = set()
-    content = np.concatenate([cand.emb * q, ocr_emb * q, cand.near_emb * q])
+    near_emb = cand.near_emb if use_transcript else np.zeros_like(cand.near_emb)
+    if not use_transcript:
+        near_tok = set()
+    content = np.concatenate([cand.emb * q, ocr_emb * q, near_emb * q])
     scalars = [
-        cand.clip_sim, float(ocr_emb @ q), float(cand.near_emb @ q),
+        cand.clip_sim, float(ocr_emb @ q), float(near_emb @ q),
         (np.log1p(len(cand.ocr_text)) / 6.0) if use_ocr else 0.0,
         len(ocr_tok & q_tok) / (len(q_tok) + 1), len(near_tok & q_tok) / (len(q_tok) + 1),
         cand.head_a_text / 10.0, cand.head_a_visual / 10.0,
         float("A" in cand.paths), float("B" in cand.paths), float(len(cand.paths) == 2),
         cand.time_s / dur,
-        min(abs(cand.time_s - t) for t in retained_t) / dur,
+        (min(abs(cand.time_s - t) for t in retained_t) / dur) if use_transcript else 0.0,
     ]
     # -- history features (zero when nothing is selected yet) -----------------
     if history:
