@@ -16,8 +16,8 @@ Arms (identical candidate pool, retained transcript, answerer and K frames):
     A_mobileclip_topk            similarity ranking
     B_mobileclip_mmr             similarity + diversity
     C_ocr_s{seed}                Head B (single-frame utility labels), with OCR features
-    C_noocr_s{seed}              Head B without OCR (same latency as A)
-    C_noocr_notext_s{seed}       ...and without any speech-derived feature (transcript-conditioning ablation)
+    C_noocr_s{seed}              Head B without OCR (still pays for nearby-speech embeddings)
+    C_noocr_notext_s{seed}       ...and without explicit speech features in the selector (pool still uses speech)
     E_headA_frame_credit         top-K candidates by trained Head A FRAME credit
     F_relevance                  top-K by zero-shot transcript relevance (Head A untrained)
     G_headA_text_credit          top-K by trained Head A TEXT credit (wrong target, control)
@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import dataclasses
 import json
 import time
 from pathlib import Path
@@ -98,6 +99,11 @@ def stage_pools(a) -> None:
     enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip")
     head_a = HotMomentScorer(device="cuda", cache_dir="cache/hf/hub")       # zero-shot relevance proposals
     meta = _cfg(run) if (run / "pools.json").exists() else {"data": a.data, "qa_file": a.qa_file, "qa_ids": []}
+    pool_cfg = dataclasses.replace(POOL_CFG, scan_policy=a.scan_policy)
+    previous = meta.get("pool_config", dataclasses.asdict(POOL_CFG))
+    if meta["qa_ids"] and previous != dataclasses.asdict(pool_cfg):
+        raise ValueError("pool configuration changed; use a new --run directory for a fair candidate-pool experiment")
+    meta["pool_config"] = dataclasses.asdict(pool_cfg)
     t0 = time.perf_counter()
     for n, it in enumerate(_items(a.data, a.qa_file)):
         if it.qa.qa_id in meta["qa_ids"]:
@@ -105,7 +111,7 @@ def stage_pools(a) -> None:
         if budget.remaining - (time.perf_counter() - t0) < 0:
             print("budget exhausted while building pools; progress saved")
             break
-        pool = build_pool(it.qa, it.transcript, it.video_path, enc, head_a, POOL_CFG)
+        pool = build_pool(it.qa, it.transcript, it.video_path, enc, head_a, pool_cfg)
         save_pool(pool, run / "pools")
         meta["qa_ids"].append(it.qa.qa_id)
         (run / "pools.json").write_text(json.dumps(meta, indent=1))
@@ -198,9 +204,10 @@ def stage_eval(a) -> None:
         heads = {(o, t, s): _train_head_b(train_b, pools, s, o, t) for o, t in variants for s in SEEDS}
 
         def credit(pool, k, model=head_a):
-            """Head A credit (k=0 text, k=1 frame) for each candidate's nearest segment."""
+            """Match Path A's label-generation segment convention at inference."""
             segs = items[pool.qa_id].transcript.segments
-            ctx = [_with_neighbours(segs, _nearest_segment(segs, c.time_s)) for c in pool.candidates]
+            ctx = [_with_neighbours(segs, (_segment_ending_near if "A" in c.paths else _nearest_segment)(segs, c.time_s))
+                   for c in pool.candidates]
             sc = model.score(pool.question, ctx, pool.options)
             return {c.id: float(sc[i, k]) for i, c in enumerate(pool.candidates)}
 
@@ -266,6 +273,8 @@ def main() -> None:
     p.add_argument("--qa-file", default="qa_v2.jsonl")
     p.add_argument("--run", default="runs/v2_main")
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
+    p.add_argument("--scan-policy", choices=("legacy", "balanced"), default="legacy",
+                   help="candidate-pool experiment only; balanced needs a new --run directory")
     a = p.parse_args()
     {"pools": stage_pools, "label": stage_label, "eval": stage_eval}[a.stage](a)
 

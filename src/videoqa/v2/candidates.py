@@ -52,6 +52,7 @@ class PoolConfig:
     dup_hamming: int = 3         # near-identical pixels -> same candidate
     dup_seconds: float = 1.0     # same moment -> same candidate
     max_side: int = 640          # frame size (the answerer's size, so pixels are shared)
+    scan_policy: str = "legacy"  # opt-in "balanced" for a new candidate-pool experiment
 
 
 # ---------------------------------------------------------------------------
@@ -85,12 +86,7 @@ def build_pool(qa, transcript, video_path: str, encoders, head_a, cfg: PoolConfi
     t["head_a"] = time.perf_counter() - tic
 
     # -- Path B: sparse scan inside the windows -------------------------------
-    scan_times = []
-    for w in windows:
-        x = w.start_s
-        while x < w.end_s and len(scan_times) < cfg.scan_cap:
-            scan_times.append(min(x, duration - 0.05))
-            x += cfg.scan_step_s
+    scan_times = scan_timestamps(windows, duration, cfg.scan_step_s, cfg.scan_cap, cfg.scan_policy)
     tic = time.perf_counter()
     decoded = decode_at(video_path, sorted(set(a_times + scan_times)), max_side=cfg.max_side,
                         video_id=qa.video_id).frames
@@ -135,10 +131,13 @@ def build_pool(qa, transcript, video_path: str, encoders, head_a, cfg: PoolConfi
     tic = time.perf_counter()
     if cands:
         ocr_e = encoders.embed_texts([c.ocr_text for c in cands])
+        t["ocr_text_emb"] = time.perf_counter() - tic
+        tic = time.perf_counter()
         near_e = encoders.embed_texts([c.near_text for c in cands])
+        t["near_text_emb"] = time.perf_counter() - tic
         for c, o, n in zip(cands, ocr_e, near_e, strict=True):
             c.ocr_emb, c.near_emb = o, n
-    t["text_emb"] = time.perf_counter() - tic
+    t["text_emb"] = t.get("ocr_text_emb", 0.0) + t.get("near_text_emb", 0.0)
 
     return QuestionPool(qa_id=qa.qa_id, video_id=qa.video_id, question=qa.question, options=list(qa.options),
                         gold_option_index=qa.gold_option_index, transcript=retained, candidates=cands,
@@ -149,6 +148,59 @@ def _with_neighbours(segs, s) -> str:
     """Segment text with one neighbouring line on each side (Head A's input context)."""
     i = segs.index(s)
     return " ".join(x.text for x in segs[max(0, i - 1): i + 2])
+
+
+def scan_timestamps(windows, duration: float, step: float, cap: int,
+                    policy: str = "legacy") -> list[float]:
+    """Capped scan of the retrieved windows, without decoding images.
+
+    ``legacy`` reproduces the published experiment: earlier windows consume the
+    budget first. ``balanced`` allocates slots round-robin across windows (higher
+    retrieval score first), then spreads each window's slots over its full grid.
+    This changes the candidate pool, so evaluate it in a NEW run directory and
+    keep all reranking arms on that same new pool. It is a coverage heuristic,
+    not a learned method or a novelty claim.
+    """
+    if step <= 0 or cap < 0:
+        raise ValueError("scan step must be positive and cap nonnegative")
+    if policy not in ("legacy", "balanced"):
+        raise ValueError(f"unknown scan policy: {policy}")
+    if not windows or not cap or duration <= 0:
+        return []
+    last = max(0.0, duration - 0.05)
+    if policy == "legacy":
+        out = []
+        for w in windows:
+            x = w.start_s
+            while x < w.end_s and len(out) < cap:
+                out.append(min(x, last))
+                x += step
+        return out
+
+    grids, seen = [], set()
+    for w in sorted(windows, key=lambda w: (-w.score, w.start_s)):
+        grid = []
+        for x in np.arange(max(0.0, w.start_s), min(w.end_s, duration), step):
+            t = round(min(float(x), last), 6)
+            if t not in seen:
+                grid.append(t)
+                seen.add(t)
+        if grid:
+            grids.append(grid)
+    allocations = [0] * len(grids)
+    left = min(cap, sum(map(len, grids)))
+    while left:
+        for i, grid in enumerate(grids):
+            if left and allocations[i] < len(grid):
+                allocations[i] += 1
+                left -= 1
+    out = []
+    for grid, n in zip(grids, allocations, strict=True):
+        if n == 1:
+            out.append(grid[len(grid) // 2])
+        elif n > 1:
+            out.extend(grid[i] for i in np.linspace(0, len(grid) - 1, n).round().astype(int))
+    return sorted(out)
 
 
 def _stable_representatives(frames, threshold: int):
