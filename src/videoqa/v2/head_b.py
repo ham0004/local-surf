@@ -48,9 +48,10 @@ def featurize(pool: QuestionPool, cand: FrameCandidate, history: list[FrameCandi
 
     ``use_ocr=False`` zeroes every OCR-derived feature, so a selector trained and run
     this way needs no OCR at inference (and pays no OCR time).
-    ``use_transcript=False`` zeroes every speech-derived feature (nearby speech
-    embedding and overlap, distance to the retained transcript): the ablation that
-    tests whether conditioning on speech changes which frames the head prefers.
+    ``use_transcript=False`` zeroes nearby speech, retained-transcript distance,
+    Head A speech scores, and proposal-path flags (including history overlap).
+    This makes the selector speech-feature blind on the SAME fixed pool; the
+    upstream candidate retrieval/proposals still use the transcript.
     """
     q = pool.question_emb
     q_tok = _tokens(pool.question + " " + " ".join(pool.options))
@@ -69,8 +70,11 @@ def featurize(pool: QuestionPool, cand: FrameCandidate, history: list[FrameCandi
         cand.clip_sim, float(ocr_emb @ q), float(near_emb @ q),
         (np.log1p(len(cand.ocr_text)) / 6.0) if use_ocr else 0.0,
         len(ocr_tok & q_tok) / (len(q_tok) + 1), len(near_tok & q_tok) / (len(q_tok) + 1),
-        cand.head_a_text / 10.0, cand.head_a_visual / 10.0,
-        float("A" in cand.paths), float("B" in cand.paths), float(len(cand.paths) == 2),
+        cand.head_a_text / 10.0 if use_transcript else 0.0,
+        cand.head_a_visual / 10.0 if use_transcript else 0.0,
+        float("A" in cand.paths) if use_transcript else 0.0,
+        float("B" in cand.paths) if use_transcript else 0.0,
+        float(len(cand.paths) == 2) if use_transcript else 0.0,
         cand.time_s / dur,
         (min(abs(cand.time_s - t) for t in retained_t) / dur) if use_transcript else 0.0,
     ]
@@ -80,7 +84,8 @@ def featurize(pool: QuestionPool, cand: FrameCandidate, history: list[FrameCandi
         ocr_sims = [float(ocr_emb @ h.ocr_emb) if use_ocr else 0.0 for h in history]
         gaps = [abs(cand.time_s - h.time_s) for h in history]
         scalars += [len(history) / 8.0, max(sims), float(np.mean(sims)), min(gaps) / dur, max(ocr_sims),
-                    max(h.clip_sim for h in history), float(any(set(h.paths) & set(cand.paths) for h in history))]
+                    max(h.clip_sim for h in history),
+                    float(any(set(h.paths) & set(cand.paths) for h in history)) if use_transcript else 0.0]
     else:
         scalars += [0.0] * 7
     assert len(scalars) == N_SCALAR

@@ -66,6 +66,10 @@ class CachedTeacher:
         ``transcript`` overrides the pool's retained transcript (Head A's text
         interventions); by default the fixed retained transcript is used.
         """
+        if (not pool.options or pool.gold_option_index is None or
+                not 0 <= pool.gold_option_index < len(pool.options)):
+            raise ValueError("Framework 2 CachedTeacher requires multiple-choice options and a valid gold index; "
+                             "open-ended datasets need an explicit answer-quality scorer")
         key = evidence_key(pool, frames, self.teacher_id, transcript)
         if key in self.cache:
             self.hits += 1

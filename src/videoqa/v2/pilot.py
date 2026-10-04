@@ -314,11 +314,15 @@ PILOT_PAIRS = [("D_history_utility", "A_mobileclip_topk"), ("D_history_utility",
                ("A_mobileclip_topk", "ocr_transcript_no_image")]
 
 
-def summarize(results, pools, sel_seconds, answer_seconds, pairs=None, ocr_prefixes=("C_", "D_")) -> dict:
+def summarize(results, pools, sel_seconds, answer_seconds, pairs=None, ocr_prefixes=("C_", "D_"),
+              speech_prefixes=("C_", "D_")) -> dict:
     """Accuracy per arm (seed-averaged for trained arms), paired bootstrap, composed latency.
 
     ``pairs``: (arm_a, arm_b) comparisons to bootstrap; ``ocr_prefixes``: arms whose
-    latency includes OCR + text embedding (the others do not run OCR at inference).
+    latency includes OCR + its text embedding. ``speech_prefixes`` additionally
+    charge nearby-speech embeddings. Legacy caches only measured both embedding
+    batches together: charge that entire batch conservatively, never invent an
+    exact split or silently make the no-OCR text encoder free.
     """
     if not results:
         return {"questions": 0}
@@ -351,9 +355,23 @@ def summarize(results, pools, sel_seconds, answer_seconds, pairs=None, ocr_prefi
     sel = {g: float(np.median(sum((sel_seconds.get(n, []) for n in members), []))) for g, members in groups.items()
            if any(n in sel_seconds for n in members)}
     common = t["retrieval"] + t["head_a"] + t["decode"] + t["clip"]
+    split_text_times = all("near_text_emb" in p.timings and "ocr_text_emb" in p.timings for p in pools.values())
+    near = float(np.median([p.timings["near_text_emb"] for p in pools.values()])) if split_text_times else None
+    ocr_text = float(np.median([p.timings["ocr_text_emb"] for p in pools.values()])) if split_text_times else None
+
+    def feature_cost(name):
+        uses_ocr = name.startswith(tuple(ocr_prefixes))
+        uses_speech = name.startswith(tuple(speech_prefixes)) and "notext" not in name
+        if split_text_times:
+            return (t["ocr"] + ocr_text if uses_ocr else 0.0) + (near if uses_speech else 0.0)
+        return (t["ocr"] if uses_ocr else 0.0) + (t["text_emb"] if uses_ocr or uses_speech else 0.0)
+
+    out["latency_note"] = ("composed sum of stage medians, not measured end-to-end query latency; "
+                           + ("text embedding batches measured separately" if split_text_times else
+                              "legacy combined text-embedding time charged in full for any text-feature arm"))
     out["latency_s_median"] = {
         "stage_medians": t, "answer_k_frames": ans,
-        **{g: common + (t["ocr"] + t["text_emb"] if g.startswith(tuple(ocr_prefixes)) else 0.0) + sel.get(g, 0.0) + ans
+        **{g: common + feature_cost(g) + sel.get(g, 0.0) + ans
            for g in sel}}
     return out
 
