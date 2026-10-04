@@ -93,3 +93,7 @@ python -m videoqa.v2.experiment eval  --run runs/v2_main
 - [pilot_report.md](pilot_report.md): pilot (history-conditioned selection). Not supported at pilot scale.
 - [novelty_check.md](novelty_check.md): closest prior work and what is not claimed.
 - [main_report.md](main_report.md): main experiment (speech changes frame usefulness; learned selectors not better than baselines).
+- [review_20261004.md](review_20261004.md): code corrections; residual scorers (37.6%, no gain over relevance 38.6%).
+- [completion_report.md](completion_report.md): deployment-matched fourth-frame labels. Learned completion is not better (−1.0); oracle headroom +6.6 points.
+- [balanced_scan_report.md](balanced_scan_report.md): balanced visual scan lifts MobileCLIP to 39.1% (+4.6, CI includes zero) at equal cost.
+- [benchmark_readiness.md](benchmark_readiness.md): what EduVidQA, LongVideoBench and NExT-GQA still need before labelling.

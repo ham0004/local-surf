@@ -1,0 +1,107 @@
+{
+ "legacy": {
+  "questions": 197,
+  "accuracy": {
+   "A_mobileclip_topk": 0.34517766497461927,
+   "B_mobileclip_mmr": 0.3604060913705584,
+   "F_relevance": 0.38578680203045684
+  },
+  "pool_evidence_recall": 0.7461928934010152,
+  "selection_evidence_recall": {
+   "A_mobileclip_topk": 0.43147208121827413,
+   "B_mobileclip_mmr": 0.5329949238578681,
+   "F_relevance": 0.6395939086294417
+  },
+  "pool_size_median": 11.0,
+  "stage_seconds_median": {
+   "retrieval": 0.027068199997302145,
+   "head_a": 0.0962133000139147,
+   "decode": 2.1127740000374615,
+   "clip": 0.18859159998828545
+  },
+  "label_free_selector_cost_s": 2.424647100036964,
+  "source_run": "runs\\v2_main",
+  "fresh_calls": 0,
+  "answer_seconds": 0.0
+ },
+ "balanced": {
+  "questions": 197,
+  "accuracy": {
+   "A_mobileclip_topk": 0.39086294416243655,
+   "B_mobileclip_mmr": 0.3756345177664975,
+   "F_relevance": 0.39086294416243655
+  },
+  "pool_evidence_recall": 0.7766497461928934,
+  "selection_evidence_recall": {
+   "A_mobileclip_topk": 0.39086294416243655,
+   "B_mobileclip_mmr": 0.4416243654822335,
+   "F_relevance": 0.6345177664974619
+  },
+  "pool_size_median": 11.0,
+  "stage_seconds_median": {
+   "retrieval": 0.023139400000218302,
+   "head_a": 0.07962779997615144,
+   "decode": 2.1145642999908887,
+   "clip": 0.2363840999896638
+  },
+  "label_free_selector_cost_s": 2.4537155999569222,
+  "source_run": "runs\\v2_balanced",
+  "fresh_calls": 579,
+  "answer_seconds": 1122.8082110000541
+ },
+ "balanced_minus_legacy": {
+  "A_mobileclip_topk": {
+   "difference": 0.04568527918781726,
+   "ci95_lecture_bootstrap": [
+    -0.004739336492890996,
+    0.10448005072675833
+   ]
+  },
+  "B_mobileclip_mmr": {
+   "difference": 0.015228426395939087,
+   "ci95_lecture_bootstrap": [
+    -0.043010752688172046,
+    0.07955149903288192
+   ]
+  },
+  "F_relevance": {
+   "difference": 0.005076142131979695,
+   "ci95_lecture_bootstrap": [
+    0.0,
+    0.016762130437511735
+   ]
+  },
+  "pool_evidence_recall": {
+   "difference": 0.030456852791878174,
+   "ci95_lecture_bootstrap": [
+    0.0,
+    0.06335007173601145
+   ]
+  }
+ },
+ "pool_configs": {
+  "legacy": "legacy (pre-flag run)",
+  "balanced": {
+   "unit_seconds": 20.0,
+   "max_windows": 4,
+   "neighbour_expansion": 1,
+   "excerpt_words": 120,
+   "n_path_a": 6,
+   "n_path_b": 6,
+   "scan_step_s": 5.0,
+   "scan_cap": 24,
+   "stable_hamming": 6,
+   "dup_hamming": 3,
+   "dup_seconds": 1.0,
+   "max_side": 640,
+   "scan_policy": "balanced"
+  }
+ },
+ "total_fresh_calls": 579,
+ "wall_seconds": 1123.3415475999936,
+ "notes": [
+  "Pool stage costs are medians of per-question stage timings, summed: a composed estimate.",
+  "Evidence intervals are the generator's 30 s mining windows, a coarse proxy for evidence.",
+  "Development data (197 synthetic MIT questions), not an external benchmark."
+ ]
+}
