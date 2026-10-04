@@ -48,11 +48,18 @@ helps** a frozen answerer. Candidate windows feed two parallel paths: transcript
 Main experiment: 197 lecture questions, 20 MIT OCW lectures, each lecture evaluated by heads that
 never saw it, with 4 frames per question.
 
-- **Measured effect:** the retained transcript changes which frames help, mostly by making them
-  redundant. 132 frames are useful only without speech vs 15 only with it (Cohen's κ = 0.56).
-- **Negative results, with controls:** learned selectors did not beat MobileCLIP, diversity or
-  transcript-relevance baselines at equal cost. A frame-credit head learned from text was
-  significantly worse than zero-shot relevance (−8.1 points, 95% CI −13.2 to −3.6).
+- **Negative results, with controls:** no learned or feature-based selector (Head B, residual
+  scorers, a head trained on deployment-matched fourth-frame labels, local board features) beat
+  zero-shot transcript relevance. An exhaustive oracle shows +6.6 points of headroom in the last
+  frame slot that none of them captures.
+- **No transfer:** a balanced visual scan that helped on the lectures did not improve
+  LongVideoBench (−0.5 points, 95% CI −3.2 to +2.3).
+- **Dataset correction:** answerer-conditioned filtering left the lecture questions with the gold
+  answer at A/B in 171/197 cases; circular (option-rotation) evaluation corrects all lecture
+  accuracies upward by about 15 points.
+
+**Full report (PDF):** [docs/report/framework_report.pdf](docs/report/framework_report.pdf):
+design, dataset construction, labels, every comparison, corrections and limitations.
 
 Details: [docs/v2/README.md](docs/v2/README.md) (design and modules) ·
 [main_report.md](docs/v2/main_report.md) · [pilot_report.md](docs/v2/pilot_report.md) ·
