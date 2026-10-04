@@ -96,9 +96,11 @@ def stage_pools(a) -> None:
     run = Path(a.run)
     run.mkdir(parents=True, exist_ok=True)
     budget = Budget(run, GPU_BUDGET_S)
-    enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip")
+    enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=not a.no_ocr)
     head_a = HotMomentScorer(device="cuda", cache_dir="cache/hf/hub")       # zero-shot relevance proposals
     meta = _cfg(run) if (run / "pools.json").exists() else {"data": a.data, "qa_file": a.qa_file, "qa_ids": []}
+    if meta.setdefault("ocr", not a.no_ocr) != (not a.no_ocr):
+        raise ValueError("OCR setting changed; use a new --run directory")
     pool_cfg = dataclasses.replace(POOL_CFG, scan_policy=a.scan_policy)
     previous = meta.get("pool_config", dataclasses.asdict(POOL_CFG))
     if meta["qa_ids"] and previous != dataclasses.asdict(pool_cfg):
@@ -275,6 +277,8 @@ def main() -> None:
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
     p.add_argument("--scan-policy", choices=("legacy", "balanced"), default="legacy",
                    help="candidate-pool experiment only; balanced needs a new --run directory")
+    p.add_argument("--no-ocr", action="store_true",
+                   help="pools without OCR text (for label-free selectors only; e.g. transfer tests)")
     a = p.parse_args()
     {"pools": stage_pools, "label": stage_label, "eval": stage_eval}[a.stage](a)
 
