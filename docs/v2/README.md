@@ -1,5 +1,9 @@
 # Framework 2 (v2): learned evidence selection for long-video QA
 
+**2026-10-04 review:** see [code corrections, benchmark plan and new reranker results](review_20261004.md).
+The new residual selectors remain experimental; neither beat zero-shot relevance
+on the completed 197-question four-frame QA check. Balanced scanning is opt-in.
+
 v1 searched the transcript and then *chose frames by rule*. v2 asks a research
 question on top of the same pipeline: **can small, cheap models learn which
 evidence actually helps a frozen answerer, and is the speech or the frame at a
