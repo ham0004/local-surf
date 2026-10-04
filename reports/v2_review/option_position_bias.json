@@ -1,0 +1,16 @@
+{
+ "finding": "Gold option position is concentrated at A/B and anti-aligned with the answerer's letter preference after filtering.",
+ "gold_index_counts": {
+  "qa_v2_all (349, before prior filter)": [133, 149, 60, 7],
+  "qa_v2 (197, used in all v2 main/completion/scan results)": [79, 92, 24, 2],
+  "qa_pilot_v1 (132)": [38, 78, 15, 1],
+  "dropped_by_prior_filter (152)": [54, 57, 36, 5]
+ },
+ "prior_filter_drop_rate": {"gold_A_or_B": 0.394, "gold_C_or_D": 0.612},
+ "transcript_only_predicted_index_counts_qa_v2": [38, 17, 60, 82],
+ "transcript_only_accuracy": 0.152,
+ "always_B_baseline_accuracy_qa_v2": 0.467,
+ "gold_option_rank_by_transcript_word_overlap (0=most)": [91, 66, 29, 11],
+ "cause": "scripts/research/mine_moments.py asks the generator for options and answer_index without shuffling (its JSON example uses answer_index 0); verify_moments.py --drop-prior then removes questions the model answers without evidence, which it does more often when the gold sits at its preferred positions (C/D).",
+ "consequence": "Absolute accuracies on the MIT set are distorted; paired selector comparisons on identical questions remain valid but noisier. Debiased numbers: reports/v2_circular/."
+}
