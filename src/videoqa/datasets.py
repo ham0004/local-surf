@@ -67,6 +67,7 @@ def load_local_dataset(root: str | Path, splits: tuple[str, ...] | None = None,
     report = LoadReport()
     items: list[LoadedItem] = []
     transcripts: dict[str, Transcript] = {}
+    every: list[QAItem] = []
     for line in (root / qa_file).read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
@@ -79,6 +80,14 @@ def load_local_dataset(root: str | Path, splits: tuple[str, ...] | None = None,
             exp = qa.source_split if qa.source_split not in ("", "unknown", "unassigned") else split_of(qa.video_id)
             qa = dataclasses.replace(qa, experiment_split=exp)
         qa = dataclasses.replace(qa, source_split=qa.experiment_split)   # legacy alias
+        every.append(qa)
+    # Leakage is checked on the WHOLE manifest before any split filter: loading
+    # "train" and "test" in two separate calls must not hide a shared video.
+    by_split: dict[str, list[QAItem]] = {}
+    for qa in every:
+        by_split.setdefault(qa.source_split, []).append(qa)
+    check_no_leakage(by_split)
+    for qa in every:
         if splits and qa.source_split not in splits:
             continue
         video = _find(root / "videos", qa.video_id, VIDEO_EXTS)
@@ -93,9 +102,4 @@ def load_local_dataset(root: str | Path, splits: tuple[str, ...] | None = None,
             transcripts[qa.video_id] = load_transcript(tpath, qa.video_id)
         items.append(LoadedItem(qa, str(video), transcripts[qa.video_id]))
     report.loaded = len(items)
-    # Defensive: official splits could still leak a video across splits.
-    by_split: dict[str, list[QAItem]] = {}
-    for it in items:
-        by_split.setdefault(it.qa.source_split, []).append(it.qa)
-    check_no_leakage(by_split)
     return items, report

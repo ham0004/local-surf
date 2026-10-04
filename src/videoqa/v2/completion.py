@@ -154,22 +154,38 @@ def build_questions(pools: dict, rows: list[dict]) -> list[CompletionQuestion]:
     """Join completion labels to label-free designs, checking the labels are complete."""
     by: dict[str, dict] = {}
     for r in rows:
-        by.setdefault(r["qa_id"], {})[r["candidate_id"]] = r
+        labels = by.setdefault(r["qa_id"], {})
+        if r["candidate_id"] in labels:
+            raise ValueError(f"{r['qa_id']}: duplicate label for {r['candidate_id']}")
+        if r["before"] not in (0.0, 1.0) or r["after"] not in (0.0, 1.0):
+            raise ValueError(f"{r['qa_id']}: labels must be binary correctness")
+        labels[r["candidate_id"]] = r
     out = []
     for q in sorted(by):
         pool = pools[q]
         anchor, rest = anchor_and_rest(pool)
         ids = [pool.candidates[i].id for i in rest]
         labels = by[q]
-        if set(labels) != set(ids):
-            raise ValueError(f"{q}: completion labels do not cover exactly the non-anchor candidates")
-        if any(labels[i]["anchor_ids"] != [pool.candidates[j].id for j in anchor] for i in ids):
-            raise ValueError(f"{q}: labels were produced with a different anchor")
+        validate_question_rows(pool, list(labels.values()))
         z, base = completion_design(pool, anchor, rest)
         out.append(CompletionQuestion(q, pool.video_id, ids, z, base,
                                       np.array([labels[i]["after"] for i in ids], dtype=float),
                                       float(labels[ids[0]]["before"])))
     return out
+
+
+def validate_question_rows(pool: QuestionPool, rows: list[dict]) -> None:
+    """One question's completion rows: exact coverage, one anchor, one context, one video."""
+    anchor, rest = anchor_and_rest(pool)
+    ids = [pool.candidates[i].id for i in rest]
+    if sorted(r["candidate_id"] for r in rows) != sorted(ids):
+        raise ValueError(f"{pool.qa_id}: completion labels do not cover exactly the non-anchor candidates")
+    if any(r["anchor_ids"] != [pool.candidates[j].id for j in anchor] for r in rows):
+        raise ValueError(f"{pool.qa_id}: labels were produced with a different anchor")
+    if len({r["before"] for r in rows}) != 1:
+        raise ValueError(f"{pool.qa_id}: rows disagree on the three-frame outcome of the shared anchor")
+    if any(r["video_id"] != pool.video_id for r in rows):
+        raise ValueError(f"{pool.qa_id}: video id does not match the pool")
 
 
 def fit_ridge(questions: list[CompletionQuestion], ridge: float | None) -> np.ndarray:

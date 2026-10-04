@@ -36,10 +36,10 @@ import numpy as np
 
 from videoqa.config import load_config
 from videoqa.v2.candidates import load_pool
-from videoqa.v2.completion import (ANCHOR_SIZE, build_questions, completion_feature_names,
-                                   anchor_and_rest, nested_cv)
+from videoqa.v2.completion import (ANCHOR_SIZE, anchor_and_rest, build_questions, completion_feature_names,
+                                   nested_cv, validate_question_rows)
 from videoqa.v2.pilot import Budget
-from videoqa.v2.teacher import CachedTeacher
+from videoqa.v2.teacher import CachedTeacher, answerer_identity
 
 SOURCE_RUN = Path("runs/v2_main")
 GPU_BUDGET_S = 2 * 3600
@@ -49,6 +49,17 @@ K_FRAMES = ANCHOR_SIZE + 1
 def _pools(run: Path) -> dict:
     meta = json.loads((run / "pools.json").read_text(encoding="utf-8"))
     return {q: load_pool(run / "pools", q) for q in meta["qa_ids"]}
+
+
+def _group(rows: list[dict]) -> dict[str, list[dict]]:
+    by: dict[str, list[dict]] = {}
+    for r in rows:
+        by.setdefault(r["qa_id"], []).append(r)
+    return by
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _read_jsonl(path: Path) -> list[dict]:
@@ -78,13 +89,23 @@ def stage_label(a) -> None:
     cfg = load_config(a.config)
     ans = cfg["answerer"]
     teacher_id = f"{ans['model_id']}@{ans.get('revision')}"
-    old = CachedTeacher(None, teacher_id, SOURCE_RUN / "teacher_cache.jsonl")
-    teacher = CachedTeacher(make_answerer(cfg), teacher_id, run / "teacher_cache.jsonl")
-    teacher.cache = old.cache | teacher.cache        # reuse exact evidence; write only to this run
+    # Same pools as the source run: its cache is attached read-only; new records go to this run.
+    teacher = CachedTeacher(make_answerer(cfg), teacher_id, run / "teacher_cache.jsonl",
+                            identity=answerer_identity(cfg), legacy_paths=(SOURCE_RUN / "teacher_cache.jsonl",))
 
     pools, budget = _pools(SOURCE_RUN), Budget(run, GPU_BUDGET_S)
+    # Resolved identities (not just a config path), appended once per labelling session.
+    with open(run / "resolved_sessions.jsonl", "a", encoding="utf-8") as fh:
+        fh.write(json.dumps({"started": time.strftime("%Y-%m-%d %H:%M:%S"), "answerer": answerer_identity(cfg),
+                             "source_pools_json_sha256": _sha256(SOURCE_RUN / "pools.json"),
+                             "source_cache_sha256": _sha256(SOURCE_RUN / "teacher_cache.jsonl")}) + "\n")
     out = run / "rows_completion.jsonl"
-    done = {r["qa_id"] for r in _read_jsonl(out)}
+    # A question counts as done only if its rows are complete and consistent;
+    # a partial question (interrupted write) stops the run instead of being skipped.
+    done = set()
+    for q, rows in _group(_read_jsonl(out)).items():
+        validate_question_rows(pools[q], rows)
+        done.add(q)
     t0 = time.perf_counter()
     for n, q in enumerate(sorted(pools)):
         if q in done:

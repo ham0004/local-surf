@@ -17,7 +17,7 @@ import numpy as np
 
 from videoqa.config import load_config
 from videoqa.v2.candidates import load_pool
-from videoqa.v2.teacher import CachedTeacher, evidence_key
+from videoqa.v2.teacher import CachedTeacher, answerer_identity
 
 
 ARMS = ("clip", "mmr", "relevance", "residual_base", "residual_context")
@@ -66,10 +66,12 @@ def main():
     if manifest_path.exists() and json.loads(manifest_path.read_text(encoding="utf-8")) != canonical:
         raise ValueError("Output belongs to a different experiment; use a new --output")
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    old = CachedTeacher(None, teacher_id, a.run / "teacher_cache.jsonl")
-    new = CachedTeacher(None, teacher_id, a.output / "new_teacher_cache.jsonl")
-    previous_new_calls = len(new.cache)
-    new.cache = old.cache | new.cache
+    new = CachedTeacher(None, teacher_id, a.output / "new_teacher_cache.jsonl", identity=answerer_identity(cfg),
+                        legacy_paths=(a.run / "teacher_cache.jsonl",))
+    own_cache = a.output / "new_teacher_cache.jsonl"
+    # Every line in this output's own cache is a fresh call made by an earlier resume of this run.
+    previous_new_calls = (sum(1 for line in own_cache.read_text(encoding="utf-8").splitlines() if line.strip())
+                          if own_cache.exists() else 0)
     records = [json.loads(s) for s in predictions_bytes.decode("utf-8").splitlines() if s.strip()]
     if len({r["qa_id"] for r in records}) != len(records):
         raise ValueError("Duplicate question predictions")
@@ -91,8 +93,8 @@ def main():
                 if len(ids) != min(4, len(candidates)) or len(set(ids)) != len(ids):
                     raise ValueError("Invalid selected frame set")
                 chosen = [candidates[i] for i in ids]
-                key = evidence_key(pool, chosen, teacher_id)
-                if key not in new.cache:
+                key = f"{pool.qa_id}|{','.join(sorted(ids))}"
+                if new.cached_prediction(pool, chosen) is None:
                     if (new.calls + previous_new_calls >= a.max_new_calls or
                             new.seconds + prior_seconds >= a.max_seconds):
                         row[arm] = None

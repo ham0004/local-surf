@@ -1,0 +1,27 @@
+{
+ "runs/v2_main": {
+  "questions": 197,
+  "cache_records": 6592,
+  "same_pixels_different_time_in_one_pool": 0,
+  "transcript_lines_differing_only_in_id_or_end": 0,
+  "records_whose_stored_correctness_disagrees_with_current_gold": 0,
+  "examples": []
+ },
+ "runs/v2_balanced": {
+  "questions": 197,
+  "cache_records": 0,
+  "same_pixels_different_time_in_one_pool": 0,
+  "transcript_lines_differing_only_in_id_or_end": 0,
+  "records_whose_stored_correctness_disagrees_with_current_gold": 0,
+  "examples": []
+ },
+ "runs/v2_pilot": {
+  "questions": 132,
+  "cache_records": 4017,
+  "same_pixels_different_time_in_one_pool": 0,
+  "transcript_lines_differing_only_in_id_or_end": 0,
+  "records_whose_stored_correctness_disagrees_with_current_gold": 0,
+  "examples": []
+ },
+ "conclusion": "no possible v1 collision in these runs"
+}

@@ -81,3 +81,17 @@ def test_incomplete_or_wrong_anchor_labels_are_rejected():
         r["anchor_ids"] = ["x", "y", "z"]
     with pytest.raises(ValueError, match="different anchor"):
         build_questions(pools, bad)
+
+
+def test_duplicate_and_inconsistent_rows_are_rejected():
+    pools, rows = fixture()
+    with pytest.raises(ValueError, match="duplicate"):
+        build_questions(pools, rows + [dict(rows[0])])
+    bad = copy.deepcopy(rows)
+    bad[0]["before"] = 1.0                                  # one row disagrees on the shared anchor outcome
+    with pytest.raises(ValueError, match="three-frame outcome"):
+        build_questions(pools, bad)
+    bad = copy.deepcopy(rows)
+    bad[0]["video_id"] = "elsewhere"
+    with pytest.raises(ValueError, match="video id"):
+        build_questions(pools, bad)

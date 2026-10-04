@@ -32,7 +32,7 @@ import numpy as np
 from videoqa.config import load_config
 from videoqa.v2.candidates import load_pool
 from videoqa.v2.selectors import MMRSelector, ScoreTopK, SimilarityTopK
-from videoqa.v2.teacher import CachedTeacher, evidence_key
+from videoqa.v2.teacher import CachedTeacher, answerer_identity
 
 K = 4
 SELECTORS = [SimilarityTopK(), MMRSelector(),
@@ -65,6 +65,28 @@ def _bootstrap(diffs: dict, videos: dict, repeats: int = 5000) -> dict:
     boot = sums[ids].sum(axis=1) / counts[ids].sum(axis=1)
     return {"difference": float(sums.sum() / counts.sum()),
             "ci95_lecture_bootstrap": np.percentile(boot, [2.5, 97.5]).tolist()}
+
+
+def check_controlled(legacy: dict, balanced: dict) -> dict:
+    """Prove that only the visual scan differs between the two pools of each question.
+
+    Raises if a non-experimental factor differs. Path A frames are expected to
+    be identical (they do not depend on the scan); that is checked and reported.
+    """
+    path_a_identical = 0
+    for q in legacy:
+        a, b = legacy[q], balanced[q]
+        fixed = ("video_id", "question", "options", "gold_option_index", "duration_s")
+        for f in fixed:
+            if getattr(a, f) != getattr(b, f):
+                raise ValueError(f"{q}: {f} differs between pools; the comparison would be confounded")
+        if [(s.id, s.start_s, s.end_s, s.text) for s in a.transcript] !=                 [(s.id, s.start_s, s.end_s, s.text) for s in b.transcript]:
+            raise ValueError(f"{q}: retained transcript differs between pools")
+        pa = lambda p: sorted((c.digest, c.time_s) for c in p.candidates if "A" in c.paths)  # noqa: E731
+        path_a_identical += pa(a) == pa(b)
+    return {"questions": len(legacy), "fixed_fields_identical": True,
+            "path_a_frames_identical_questions": path_a_identical,
+            "changed_factor": "Path B scan policy (and therefore the merged pool)"}
 
 
 def evaluate(run: Path, teacher: CachedTeacher, evidence: dict, pools: dict) -> tuple[dict, dict]:
@@ -118,17 +140,18 @@ def main() -> None:
     if len(common) < len(legacy_pools):
         print(f"WARNING: {len(common)}/{len(legacy_pools)} questions have both pools; comparing those only")
     evidence = _evidence(legacy_meta)
+    controls = check_controlled({q: legacy_pools[q] for q in common}, {q: balanced_pools[q] for q in common})
 
     results, per_policy = {}, {}
     t0 = time.perf_counter()
     calls = 0
     for name, run, pools in (("legacy", Path(a.legacy), legacy_pools), ("balanced", Path(a.balanced), balanced_pools)):
         # Read the run's own cache; new calls go to a cache in the report's work area only.
-        old = CachedTeacher(None, teacher_id, run / "teacher_cache.jsonl")
-        teacher = CachedTeacher(None, teacher_id, out / f"teacher_cache_{name}.jsonl")
-        teacher.cache = old.cache | teacher.cache
+        # The run's own cache was built from these exact pools, so it is attached read-only.
+        teacher = CachedTeacher(None, teacher_id, out / f"teacher_cache_{name}.jsonl",
+                                identity=answerer_identity(cfg), legacy_paths=(run / "teacher_cache.jsonl",))
         pools = {q: pools[q] for q in common}
-        missing = any(evidence_key(pl, s.select(pl, K), teacher_id) not in teacher.cache
+        missing = any(teacher.cached_prediction(pl, s.select(pl, K)) is None
                       for pl in pools.values() for s in SELECTORS)
         if missing and teacher.answerer is None:
             teacher.answerer = make_answerer(cfg)
@@ -146,6 +169,8 @@ def main() -> None:
          for q in common}, videos)
     results["pool_configs"] = {"legacy": legacy_meta.get("pool_config", "legacy (pre-flag run)"),
                                "balanced": balanced_meta.get("pool_config")}
+    results["controls"] = controls
+    results["answerer_identity"] = answerer_identity(cfg)
     results["total_fresh_calls"] = calls
     results["wall_seconds"] = time.perf_counter() - t0
     results["notes"] = ["Pool stage costs are medians of per-question stage timings, summed: a composed estimate.",

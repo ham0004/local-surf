@@ -103,5 +103,12 @@
   "Pool stage costs are medians of per-question stage timings, summed: a composed estimate.",
   "Evidence intervals are the generator's 30 s mining windows, a coarse proxy for evidence.",
   "Development data (197 synthetic MIT questions), not an external benchmark."
- ]
+ ],
+ "controls": {
+  "questions": 197,
+  "fixed_fields_identical": true,
+  "path_a_frames_identical_questions": 197,
+  "changed_factor": "Path B scan policy (and therefore the merged pool)",
+  "checked_by": "scripts/v2_pool_compare.py:check_controlled (added after the run, on the same pools)"
+ }
 }

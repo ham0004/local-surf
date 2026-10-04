@@ -92,12 +92,13 @@ def _items(data: str):
 
 def _teacher(run: Path, cfg_path: str):
     from ..answerer import make_answerer  # noqa: PLC0415
-    from .teacher import CachedTeacher  # noqa: PLC0415
+    from .teacher import CachedTeacher, answerer_identity  # noqa: PLC0415
 
     cfg = load_config(cfg_path)
     ans = make_answerer(cfg)
     a = cfg["answerer"]
-    return CachedTeacher(ans, f"{a['model_id']}@{a.get('revision')}", run / "teacher_cache.jsonl")
+    return CachedTeacher(ans, f"{a['model_id']}@{a.get('revision')}", run / "teacher_cache.jsonl",
+                         identity=answerer_identity(cfg))
 
 
 def _pools(run: Path) -> dict:
@@ -178,17 +179,18 @@ def stage_audit(a) -> None:
         stats["negative_rows"] += sum(g < 0 for g in gains)
         stats["zero_rows"] += sum(g == 0 for g in gains)
     # Determinism: re-ask 20 cached evaluations directly (bypassing the cache).
+    from ..answerer import AnswerRequest  # noqa: PLC0415
+    from .teacher import _as_frame  # noqa: PLC0415
+
     agree = 0
-    recs = random.Random(0).sample(list(teacher.cache.values()), min(20, len(teacher.cache)))
+    stored = list(teacher.cache.values()) + list(teacher.legacy.values())
+    recs = random.Random(0).sample(stored, min(20, len(stored)))
     for rec in recs:
         pool = pools[rec["qa_id"]]
-        frames = [c for c in pool.candidates if c.id in rec["frames"]]
-        key_before = len(teacher.cache)
-        from .teacher import evidence_key  # noqa: PLC0415
-
-        teacher.cache.pop(evidence_key(pool, frames, teacher.teacher_id))
-        agree += int(teacher.quality(pool, frames) == rec["quality"])
-        assert len(teacher.cache) == key_before
+        frames = sorted((c for c in pool.candidates if c.id in rec["frames"]), key=lambda c: c.time_s)
+        answer, _ = teacher.answerer.answer(AnswerRequest(pool.question, pool.options, pool.transcript,
+                                                          [_as_frame(c) for c in frames]))
+        agree += int(answer.option_index == rec["option"])
     spent = time.perf_counter() - t0
     budget.charge("audit", spent)
     out = {**stats, "determinism_agree": f"{agree}/{len(recs)}", "teacher_calls": teacher.calls,
