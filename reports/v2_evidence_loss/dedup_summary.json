@@ -1,0 +1,32 @@
+{
+ "questions": 197,
+ "scan_frames": 4728,
+ "kept_representatives": 3833,
+ "dropped_frames": 895,
+ "dropped_with_any_changed_tile": 894,
+ "dropped_small_local_edit_1to3_tiles": 4,
+ "dropped_with_lost_ink": 884,
+ "dropped_small_edit_with_lost_ink": 1,
+ "questions_with_small_edit_lost_ink": 1,
+ "hash_distance_of_small_edits": [
+  2,
+  1,
+  0,
+  1
+ ],
+ "thresholds": {
+  "tile_px": 40,
+  "changed_mad": 12.0,
+  "ink_delta": 35.0,
+  "ink_lost": 0.02
+ },
+ "scan_policy": "balanced",
+ "cpu_seconds": 310.6910653000232,
+ "examples": [
+  "examples/00_mit_18.06SC_065_2280_585s.jpg"
+ ],
+ "notes": [
+  "Pixel evidence of lost content, not evidence that it answers the question.",
+  "Merge-step drops (within 1 s or hash <= 3 of a Path A frame) are not replayed here."
+ ]
+}
