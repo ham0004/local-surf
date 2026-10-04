@@ -1,0 +1,135 @@
+{
+ "questions": 197,
+ "lectures": 20,
+ "label_rows": 1500,
+ "k_frames": 4,
+ "accuracy": {
+  "relevance_rank4": 0.38578680203045684,
+  "clip_best": 0.3350253807106599,
+  "mmr_next": 0.3401015228426396,
+  "expected_random": 0.351089759084683,
+  "single_frame_residual": 0.3604060913705584,
+  "completion_head": 0.3756345177664975,
+  "oracle": 0.4517766497461929,
+  "three_frame_reference": 0.3350253807106599
+ },
+ "correct": {
+  "relevance_rank4": 76.0,
+  "clip_best": 66.0,
+  "mmr_next": 67.0,
+  "expected_random": 69.16468253968254,
+  "single_frame_residual": 71.0,
+  "completion_head": 74.0,
+  "oracle": 89.0,
+  "three_frame_reference": 66.0
+ },
+ "paired": {
+  "completion_head_minus_relevance_rank4": {
+   "difference": -0.01015228426395939,
+   "ci95_lecture_bootstrap": [
+    -0.025252525252525252,
+    0.0
+   ]
+  },
+  "completion_head_minus_single_frame_residual": {
+   "difference": 0.015228426395939087,
+   "ci95_lecture_bootstrap": [
+    -0.026882323159265153,
+    0.0695212549922155
+   ]
+  },
+  "single_frame_residual_minus_relevance_rank4": {
+   "difference": -0.025380710659898477,
+   "ci95_lecture_bootstrap": [
+    -0.08021390374331551,
+    0.01970687216504898
+   ]
+  },
+  "oracle_minus_relevance_rank4": {
+   "difference": 0.06598984771573604,
+   "ci95_lecture_bootstrap": [
+    0.03550295857988166,
+    0.0987672265288544
+   ]
+  },
+  "mmr_next_minus_relevance_rank4": {
+   "difference": -0.04568527918781726,
+   "ci95_lecture_bootstrap": [
+    -0.08121827411167512,
+    -0.014776514053897447
+   ]
+  },
+  "clip_best_minus_relevance_rank4": {
+   "difference": -0.050761421319796954,
+   "ci95_lecture_bootstrap": [
+    -0.09523809523809523,
+    -0.010101010101010102
+   ]
+  }
+ },
+ "fourth_frame_effects": {
+  "anchor_correct": 66,
+  "anchor_correct_and_some_fourth_frame_breaks_it": 13,
+  "anchor_correct_and_every_fourth_frame_breaks_it": 0,
+  "anchor_wrong": 131,
+  "anchor_wrong_and_some_fourth_frame_rescues_it": 23,
+  "questions_where_the_choice_matters": 36
+ },
+ "ridge_selected_per_fold": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  10.0,
+  null,
+  10.0,
+  null
+ ],
+ "features": [
+  "clip",
+  "head_a_relevance",
+  "time_fraction",
+  "path_a",
+  "path_b",
+  "path_both",
+  "ocr_log_length",
+  "ocr_question_overlap",
+  "near_question_overlap",
+  "ocr_option_max",
+  "near_option_max",
+  "ocr_question_cosine",
+  "near_question_cosine",
+  "image_ocr_cosine",
+  "ocr_near_cosine",
+  "ocr_log_tokens",
+  "near_log_tokens",
+  "max_image_cos_to_anchor",
+  "mean_image_cos_to_anchor",
+  "min_time_gap_to_anchor",
+  "ocr_novel_vs_anchor",
+  "ocr_novel_vs_anchor_and_speech",
+  "near_novel_vs_speech",
+  "question_words_newly_covered",
+  "max_ocr_cos_to_anchor",
+  "shares_path_with_all_anchor"
+ ],
+ "label_rows_sha256": "2825303757e849fa62446f6679a2b115dec069b0addc0bd79e1a581018d9c19c",
+ "notes": [
+  "expected_random is the exact mean over completions, not a sampled run.",
+  "three_frame_reference uses only 3 frames; it is not a K=4 arm.",
+  "single_frame_residual was trained on 1,770 single-frame calls; the completion head on 1,697.",
+  "Development data: 197 synthetic MIT questions already studied; not an external test."
+ ]
+}
