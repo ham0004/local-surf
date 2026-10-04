@@ -1,8 +1,40 @@
 # Framework 2 (v2): learned evidence selection for long-video QA
 
-**2026-10-04 review:** see [code corrections, benchmark plan and new reranker results](review_20261004.md).
-The new residual selectors remain experimental; neither beat zero-shot relevance
-on the completed 197-question four-frame QA check. Balanced scanning is opt-in.
+## Current status (2026-10-04)
+
+**No learned or local-feature selector beats the simple baselines, and no
+improvement has transferred to an external benchmark.** What is established:
+
+| Finding | Evidence | Status |
+|---|---|---|
+| Frames add a lot over subtitles alone (MIT, debiased) | +15.5 points (CI +11.4 to +19.6) | robust on development data |
+| Fourth-frame oracle headroom over relevance | +6.6 points (CI +3.6 to +9.9), 36/197 questions | measured, not captured |
+| Learned heads (Head B, residual, completion, local features) | all ≤ relevance; fallback in 18–19/20 folds | refuted |
+| Balanced scan for MobileCLIP | MIT +3.6 (CI +0.4 to +6.9); LongVideoBench −0.5 (CI −3.2 to +2.3) | does not transfer; opt-in |
+| Option-position bias in the MIT questions | gold A/B in 171/197; absolute accuracies understated by ~15 points | found and corrected by circular evaluation |
+| Teacher cache identity gap | no collision possible in any historical run | fixed (schema v2) |
+
+```
+                      FROZEN (never trained)                    TRAINED (small)
+question + subtitles ─► BM25 windows ─► retained excerpt (≤120 words) ──────────────┐
+                           │                                                        │
+                           ├─► Path A: MiniLM cross-encoder relevance ─┐            │
+                           │   (zero-shot; frames at line ends)        │            │
+                           └─► Path B: scan in windows ─► MobileCLIP ──┤            │
+                               (legacy | balanced*)    (centre crop)   ▼            │
+                                                     candidate pool (~10-11)        │
+                                                               │                    │
+                    selector: relevance | MobileCLIP | MMR ◄───┤                    │
+                    [Head B / residual / completion head:      │  ◄── trained only  │
+                     ~14 to 8,333 parameters; experimental]    │      on labels     │
+                                                               ▼                    ▼
+                                         4 frames ─────► frozen Qwen3-VL-2B ◄── excerpt
+                                                               │
+                                                               ▼  answer
+TRAINING-ONLY: labels R(T, S+c) - R(T, S) from the same frozen answerer vs gold.
+* balanced scan: opt-in. Hypotheses tested and refuted this round: deployment-
+  matched completion labels; local board features; balanced scan transfer.
+```
 
 v1 searched the transcript and then *chose frames by rule*. v2 asks a research
 question on top of the same pipeline: **can small, cheap models learn which
@@ -97,3 +129,7 @@ python -m videoqa.v2.experiment eval  --run runs/v2_main
 - [completion_report.md](completion_report.md): deployment-matched fourth-frame labels. Learned completion is not better (−1.0); oracle headroom +6.6 points.
 - [balanced_scan_report.md](balanced_scan_report.md): balanced visual scan lifts MobileCLIP to 39.1% (+4.6, CI includes zero) at equal cost.
 - [benchmark_readiness.md](benchmark_readiness.md): what EduVidQA, LongVideoBench and NExT-GQA still need before labelling.
+- [option_bias_report.md](option_bias_report.md): gold-position bias in the MIT set and debiased (circular) results.
+- [lvb_transfer.md](lvb_transfer.md): declared LongVideoBench transfer test; balanced scan and relevance do not transfer.
+- Evidence-loss audits: `reports/v2_evidence_loss/` (stable-run dedup: not a measurable loss) and
+  `reports/v2_scout_crop/` (padding hurts, tiles do not help).
