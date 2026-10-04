@@ -1,0 +1,21 @@
+{
+  "predictions_sha256": "2bbaaf3adb6dd792f5073b39e9329bb8e566c240cf5afdc80728d2b9818cfaab",
+  "answerer_config": {
+    "backend": "hf_vlm",
+    "max_new_tokens": 64,
+    "frame_max_side": 640,
+    "model_id": "Qwen/Qwen3-VL-2B-Instruct",
+    "revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+    "dtype": "bfloat16"
+  },
+  "run": "D:\\local-surf\\runs\\v2_main",
+  "k": 4,
+  "arms": [
+    "clip",
+    "mmr",
+    "relevance",
+    "residual_base",
+    "residual_context"
+  ],
+  "protocol": "frozen original pools and transcripts; nested OOF selections"
+}

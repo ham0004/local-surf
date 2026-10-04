@@ -1,0 +1,238 @@
+{
+  "status": "exploratory engineering prototype; no novelty or performance guarantee",
+  "protocol": "nested leave-one-video-out; fixed ridge grid and CLIP fallback",
+  "metric_warning": "Random labeled subset only. Mean correctness of separately evaluated single frames, NOT four-frame QA accuracy.",
+  "k": 4,
+  "questions": 197,
+  "videos": 20,
+  "label_rows": 1573,
+  "unlabeled_pool_questions_not_scored": [],
+  "random_subset_provenance": "runs rows_independent.jsonl; original independent_labels shuffles candidates per question with seed 0",
+  "features": {
+    "base": [
+      "clip",
+      "head_a_relevance",
+      "time_fraction",
+      "path_a",
+      "path_b",
+      "path_both",
+      "ocr_log_length",
+      "ocr_question_overlap",
+      "near_question_overlap",
+      "ocr_option_max",
+      "near_option_max",
+      "ocr_question_cosine",
+      "near_question_cosine",
+      "image_ocr_cosine",
+      "ocr_near_cosine",
+      "ocr_log_tokens",
+      "near_log_tokens"
+    ],
+    "context": [
+      "clip",
+      "head_a_relevance",
+      "time_fraction",
+      "path_a",
+      "path_b",
+      "path_both",
+      "ocr_log_length",
+      "ocr_question_overlap",
+      "near_question_overlap",
+      "ocr_option_max",
+      "near_option_max",
+      "ocr_question_cosine",
+      "near_question_cosine",
+      "image_ocr_cosine",
+      "ocr_near_cosine",
+      "ocr_log_tokens",
+      "near_log_tokens",
+      "ocr_question_not_retained",
+      "ocr_retained_overlap",
+      "near_retained_overlap",
+      "ocr_question_retained_overlap",
+      "ocr_numerals_retained",
+      "ocr_numerals_not_retained",
+      "question_ocr_numerals_not_retained",
+      "clip_x_question_missing",
+      "ocr_cosine_x_question_missing",
+      "near_cosine_x_question_missing"
+    ]
+  },
+  "pair_weighting": "all unordered pairs; mean within question then mean across questions; L2 residual norm",
+  "oracle_topk_single_frame_mean": 0.350253807106599,
+  "metrics": {
+    "clip": {
+      "topk_single_frame_mean": {
+        "mean": 0.2512690355329949,
+        "questions": 197
+      },
+      "pairwise_concordance": {
+        "mean": 0.5061224489795919,
+        "questions": 84
+      }
+    },
+    "mmr": {
+      "topk_single_frame_mean": {
+        "mean": 0.25380710659898476,
+        "questions": 197
+      },
+      "pairwise_concordance": {
+        "mean": 0.5149447278911565,
+        "questions": 84
+      }
+    },
+    "relevance": {
+      "topk_single_frame_mean": {
+        "mean": 0.2715736040609137,
+        "questions": 197
+      },
+      "pairwise_concordance": {
+        "mean": 0.5903202947845805,
+        "questions": 84
+      }
+    },
+    "residual_base": {
+      "topk_single_frame_mean": {
+        "mean": 0.27918781725888325,
+        "questions": 197
+      },
+      "pairwise_concordance": {
+        "mean": 0.6409438775510204,
+        "questions": 84
+      }
+    },
+    "residual_context": {
+      "topk_single_frame_mean": {
+        "mean": 0.2652284263959391,
+        "questions": 197
+      },
+      "pairwise_concordance": {
+        "mean": 0.595670351473923,
+        "questions": 84
+      }
+    }
+  },
+  "paired_differences": {
+    "mmr_minus_clip": {
+      "topk_single_frame_mean": {
+        "difference": 0.0025380710659898475,
+        "ci95_video_bootstrap": [
+          -0.023869523177686182,
+          0.029417996011964074
+        ],
+        "questions": 197,
+        "videos": 20,
+        "replicates": 2000
+      },
+      "pairwise_concordance": {
+        "difference": 0.008822278911564627,
+        "ci95_video_bootstrap": [
+          -0.08921002776110444,
+          0.0891860065647072
+        ],
+        "questions": 84,
+        "videos": 20,
+        "replicates": 2000
+      }
+    },
+    "relevance_minus_clip": {
+      "topk_single_frame_mean": {
+        "difference": 0.02030456852791878,
+        "ci95_video_bootstrap": [
+          -0.011251235875706214,
+          0.05000698324022343
+        ],
+        "questions": 197,
+        "videos": 20,
+        "replicates": 2000
+      },
+      "pairwise_concordance": {
+        "difference": 0.08419784580498865,
+        "ci95_video_bootstrap": [
+          -0.02738782051282051,
+          0.17391907596371875
+        ],
+        "questions": 84,
+        "videos": 20,
+        "replicates": 2000
+      }
+    },
+    "residual_base_minus_clip": {
+      "topk_single_frame_mean": {
+        "difference": 0.027918781725888325,
+        "ci95_video_bootstrap": [
+          0.0094932959385686,
+          0.04695902828136328
+        ],
+        "questions": 197,
+        "videos": 20,
+        "replicates": 2000
+      },
+      "pairwise_concordance": {
+        "difference": 0.13482142857142856,
+        "ci95_video_bootstrap": [
+          0.08252356813937696,
+          0.17491296278126628
+        ],
+        "questions": 84,
+        "videos": 20,
+        "replicates": 2000
+      }
+    },
+    "residual_context_minus_clip": {
+      "topk_single_frame_mean": {
+        "difference": 0.013959390862944163,
+        "ci95_video_bootstrap": [
+          -0.005405405405405406,
+          0.0315687686726419
+        ],
+        "questions": 197,
+        "videos": 20,
+        "replicates": 2000
+      },
+      "pairwise_concordance": {
+        "difference": 0.08954790249433106,
+        "ci95_video_bootstrap": [
+          0.018985987103174614,
+          0.1457957326608804
+        ],
+        "questions": 84,
+        "videos": 20,
+        "replicates": 2000
+      }
+    },
+    "residual_context_minus_residual_base": {
+      "topk_single_frame_mean": {
+        "difference": -0.013959390862944163,
+        "ci95_video_bootstrap": [
+          -0.027781302876480538,
+          -0.0013367206166799417
+        ],
+        "questions": 197,
+        "videos": 20,
+        "replicates": 2000
+      },
+      "pairwise_concordance": {
+        "difference": -0.04527352607709752,
+        "ci95_video_bootstrap": [
+          -0.0802332702020202,
+          -0.01178326406853829
+        ],
+        "questions": 84,
+        "videos": 20,
+        "replicates": 2000
+      }
+    }
+  },
+  "teacher_calls": 0,
+  "fresh_encoder_calls": 0,
+  "limitations": [
+    "Cached synthetic MIT questions; prior exploration means nested CV is not a new external test.",
+    "Single-frame utility does not measure four-frame interactions.",
+    "Lexical/numeral differences are coverage signals, not verified contradictions.",
+    "Bootstrap intervals describe clustered out-of-fold differences and do not refit nested models."
+  ],
+  "elapsed_cpu_wall_seconds": 10.098699599970132,
+  "input_run": "D:\\local-surf\\runs\\v2_main",
+  "input_labels_sha256": "9196fbc27925f32a85123f94022b6bd0c2d440d5720be3ee4c808f942be6bf4f"
+}

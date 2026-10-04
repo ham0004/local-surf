@@ -1,0 +1,85 @@
+{
+  "complete": true,
+  "questions": 197,
+  "videos": 20,
+  "accuracy": {
+    "clip": {
+      "correct": 68,
+      "evaluated": 197,
+      "accuracy": 0.34517766497461927
+    },
+    "mmr": {
+      "correct": 71,
+      "evaluated": 197,
+      "accuracy": 0.3604060913705584
+    },
+    "relevance": {
+      "correct": 76,
+      "evaluated": 197,
+      "accuracy": 0.38578680203045684
+    },
+    "residual_base": {
+      "correct": 74,
+      "evaluated": 197,
+      "accuracy": 0.3756345177664975
+    },
+    "residual_context": {
+      "correct": 74,
+      "evaluated": 197,
+      "accuracy": 0.3756345177664975
+    }
+  },
+  "paired": {
+    "residual_base_minus_clip": {
+      "difference": 0.030456852791878174,
+      "ci95_video_bootstrap": [
+        -0.010104895104895104,
+        0.0730371334612222
+      ],
+      "paired_questions": 197,
+      "videos": 20
+    },
+    "residual_base_minus_relevance": {
+      "difference": -0.01015228426395939,
+      "ci95_video_bootstrap": [
+        -0.05851063829787234,
+        0.03535802184279335
+      ],
+      "paired_questions": 197,
+      "videos": 20
+    },
+    "residual_base_minus_mmr": {
+      "difference": 0.015228426395939087,
+      "ci95_video_bootstrap": [
+        -0.03296703296703297,
+        0.05978804347826079
+      ],
+      "paired_questions": 197,
+      "videos": 20
+    },
+    "residual_context_minus_clip": {
+      "difference": 0.030456852791878174,
+      "ci95_video_bootstrap": [
+        -0.015,
+        0.07936507936507936
+      ],
+      "paired_questions": 197,
+      "videos": 20
+    },
+    "residual_context_minus_residual_base": {
+      "difference": 0.0,
+      "ci95_video_bootstrap": [
+        -0.026741561727330228,
+        0.03015075376884422
+      ],
+      "paired_questions": 197,
+      "videos": 20
+    }
+  },
+  "fresh_calls_this_run": 225,
+  "fresh_calls_total": 225,
+  "answer_seconds_total": 434.79759759962326,
+  "wall_seconds_this_run": 444.4407710999949,
+  "missing_evaluations": 0,
+  "warning": "Exploratory on reused synthetic MIT development data; not an independent benchmark or novelty claim."
+}
