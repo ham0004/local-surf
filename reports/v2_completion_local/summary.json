@@ -1,0 +1,70 @@
+{
+ "questions": 197,
+ "accuracy": {
+  "global": 0.3756345177664975,
+  "global_local": 0.38071065989847713,
+  "local_only": 0.38071065989847713,
+  "relevance_rank4": 0.38578680203045684,
+  "oracle": 0.4517766497461929,
+  "rule_tile_rel_max": 0.3553299492385787,
+  "rule_tile_rel_top2_mean": 0.3350253807106599,
+  "rule_tile_rel_spread": 0.3197969543147208,
+  "rule_novel_ink_area": 0.3350253807106599,
+  "rule_novel_ink_relevant": 0.350253807106599,
+  "rule_novel_ink_in_best_tile": 0.3604060913705584
+ },
+ "paired": {
+  "global_local_minus_relevance_rank4": {
+   "difference": -0.005076142131979695,
+   "ci95_lecture_bootstrap": [
+    -0.015873015873015872,
+    0.0
+   ]
+  },
+  "global_local_minus_global": {
+   "difference": 0.005076142131979695,
+   "ci95_lecture_bootstrap": [
+    0.0,
+    0.017045454545454544
+   ]
+  },
+  "local_only_minus_relevance_rank4": {
+   "difference": -0.005076142131979695,
+   "ci95_lecture_bootstrap": [
+    -0.017045454545454544,
+    0.0
+   ]
+  },
+  "global_minus_relevance_rank4": {
+   "difference": -0.01015228426395939,
+   "ci95_lecture_bootstrap": [
+    -0.025252525252525252,
+    0.0
+   ]
+  }
+ },
+ "fallback_folds": {
+  "global": 18,
+  "global_local": 19,
+  "local_only": 19
+ },
+ "local_features": [
+  "tile_rel_max",
+  "tile_rel_top2_mean",
+  "tile_rel_spread",
+  "novel_ink_area",
+  "novel_ink_relevant",
+  "novel_ink_in_best_tile",
+  "tile_redundancy_max",
+  "camera_misalignment"
+ ],
+ "local_feature_cost_s_median_per_question": {
+  "tile_encoding": 0.5750903000007384,
+  "ink_maps": 0.0774478999665007
+ },
+ "teacher_calls": 0,
+ "notes": [
+  "Exact four-frame accuracy from the exhaustive completion table (no new answerer calls).",
+  "Development data: 197 synthetic MIT questions already used for several decisions."
+ ]
+}

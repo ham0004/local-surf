@@ -85,3 +85,25 @@ python scripts/v2_completion.py analyze --run runs/v2_completion --out reports/v
 Outputs: `reports/v2_completion/summary.json`, `folds.json`, and
 `per_question.jsonl`, the full completion table that any new fourth-frame
 policy can be scored against without answerer calls.
+
+## Follow-up: local board features (declared in `novelty_check.md` first)
+
+The same completion table, labels, loss and nested cross-validation, with 8
+local features added: question relevance of 8 full-coverage tiles (frozen
+MobileCLIP, no centre crop) and chalk-ink novelty relative to the anchor frames.
+No new answerer calls; 0.58 s of extra tile encoding per question.
+
+| Fourth-frame policy | Accuracy | − relevance rank-4 (95% CI) | Fallback folds |
+|---|---|---|---|
+| Relevance rank-4 (baseline) | 38.6% | — | — |
+| Global head | 37.6% | −1.0 (−2.5 to 0.0) | 18/20 |
+| Global + local head (**primary**) | 38.1% | −0.5 (−1.6 to 0.0) | 19/20 |
+| Local-only head | 38.1% | −0.5 (−1.7 to 0.0) | 19/20 |
+| Zero-shot rules (best tile relevance / novel ink / novel ink in best tile) | 32.0–36.0% | all below baseline | — |
+| Oracle | 45.2% | +6.6 | — |
+
+**Refuted.** Local features do not let a small head beat transcript relevance
+for the fourth frame (attribution global+local − global: +0.5, CI 0.0 to
++1.7). With only 36 questions where the choice matters, there is not enough
+signal to learn from. No pixel or tile rule finds the oracle's frames either.
+Report: `reports/v2_completion_local/`.
