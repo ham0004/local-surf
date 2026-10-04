@@ -62,8 +62,8 @@ numbers, not this table.
 
 ## Update after an adversarial audit (2026-10-03)
 
-A second, adversarial literature audit (by a separate assistant, primary-source
-sections cited there) looked for counterexamples. It adds prior art and
+A second, adversarial literature audit (primary-source sections cited there)
+looked for counterexamples. It adds prior art and
 corrections, and it **withdraws the broad claims**.
 
 Additional prior art:
@@ -105,3 +105,34 @@ It is tested in two ways:
 
 If the effect is absent, or explained by extra evidence or compute, that is the
 result that gets reported.
+
+## Fourth-frame completion (declared 2026-10-04, before its labels were collected)
+
+Single-frame labels R(T, {c}) − R(T, {}) did not produce a better four-frame
+selector (Head B, and the residual scorers in `review_20261004.md`). The next
+test changes the **label target**, not the model size:
+
+- The strongest simple baseline (zero-shot transcript relevance) fixes three
+  frames. Every other pool candidate *c* is labelled with R(T, top-3 + {c}):
+  four frames plus the retained transcript, exactly as deployed.
+- Labels are exhaustive per question, so every fourth-frame policy (learned,
+  CLIP, MMR, random, oracle) is scored **exactly offline** from one table.
+- Budget: 1,697 answerer calls, vs 1,770 for the single-frame labels.
+- Primary test: completion head − relevance rank-4 (lecture-bootstrap CI).
+
+Closest prior work and what remains different:
+
+| Work | Overlap | Difference that remains |
+|---|---|---|
+| Ross et al. 2013 | learn the marginal benefit of the next item given the list | not video; no retained-speech context |
+| FrameOracle (2510.03584) | contextual importance from leave-one-out loss on the full pool | removal from the full pool vs addition to a fixed, deployed 3-frame set under the retained transcript |
+| ReFoCUS (2506.01274) | history-conditioned selection | RL reward from a reference model vs exhaustive supervised completion labels |
+| MarKey / FORTE / GIFT (2603.25072) | relevance + coverage + redundancy for the next frame | training-free surrogates; no measured answer outcome |
+| Question-aware keyframes with synthetic supervision (2603.14953) | LMM-derived keyframe labels | labels from LMM rationales (cited timestamps), not measured answer change |
+
+Specific, testable distinction: *measured, exhaustive, deployment-matched
+completion utility for one slot, including negative effects of the retained
+transcript and redundancy with chosen frames, plus an exact headroom (oracle)
+for that slot.* This is an adaptation of contextual utility learning, not a
+new algorithm. It counts as a contribution only if the completion head beats
+both the baseline and single-frame-trained scorers on held-out lectures.
