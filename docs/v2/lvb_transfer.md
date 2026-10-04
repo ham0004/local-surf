@@ -29,3 +29,25 @@ apply.
 **Decision rule.** Balanced scanning becomes the default only if H-T1's
 interval excludes zero on this set. Otherwise it stays opt-in and the MIT
 result is reported as not transferring.
+
+## Results (440 questions, 252 videos; 2,375 fresh answerer calls)
+
+| Arm (K = 4) | Legacy scan | Balanced scan | Balanced − legacy (95% CI) |
+|---|---|---|---|
+| MobileCLIP top-4 (A) | 43.0% | 42.5% | −0.5 (−3.2 to +2.3) |
+| MMR (B) | 43.2% | 42.3% | −0.9 (−3.8 to +2.0) |
+| Zero-shot relevance (F) | 40.7% | 40.5% | −0.2 (−1.1 to +0.5) |
+
+- **H-T1 refuted.** Balanced scanning does not improve MobileCLIP on
+  LongVideoBench. Following the declared rule, it stays opt-in. The MIT gain
+  (+3.6 after debiasing) is specific to that development set.
+- **H-T2: relevance does not transfer either.** F − A = −2.3 (−5.5 to +0.9)
+  on legacy pools. On general long videos the subtitles are a weaker pointer
+  to the right frame than on chalkboard lectures.
+- Controls: all 440 question pairs share question, options, gold, duration,
+  retained subtitles and Path A frames; only the scan differs. Pools have a
+  median of 10 candidates; the label-free selector cost is about 1.3 s
+  (composed stage medians, measured while another GPU job was running).
+- For reference, v1 scored 41.6% on the same 440 questions with its own
+  pipeline; v2's MobileCLIP top-4 scores 43.0%. These are different pipelines
+  and frame budgets, so the gap is not a controlled comparison.

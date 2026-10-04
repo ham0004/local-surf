@@ -1,0 +1,137 @@
+{
+ "legacy": {
+  "questions": 440,
+  "accuracy": {
+   "A_mobileclip_topk": 0.42954545454545456,
+   "B_mobileclip_mmr": 0.4318181818181818,
+   "F_relevance": 0.4068181818181818
+  },
+  "pool_evidence_recall": 0.21363636363636362,
+  "selection_evidence_recall": {
+   "A_mobileclip_topk": 0.18863636363636363,
+   "B_mobileclip_mmr": 0.15454545454545454,
+   "F_relevance": 0.18863636363636363
+  },
+  "pool_size_median": 10.0,
+  "stage_seconds_median": {
+   "retrieval": 0.01099500001873821,
+   "head_a": 0.0901084500073921,
+   "decode": 1.0387837000016589,
+   "clip": 0.15805640001781285
+  },
+  "label_free_selector_cost_s": 1.297943550045602,
+  "source_run": "runs\\lvb_legacy",
+  "fresh_calls": 1184,
+  "answer_seconds": 1319.588314200344
+ },
+ "balanced": {
+  "questions": 440,
+  "accuracy": {
+   "A_mobileclip_topk": 0.425,
+   "B_mobileclip_mmr": 0.42272727272727273,
+   "F_relevance": 0.40454545454545454
+  },
+  "pool_evidence_recall": 0.2159090909090909,
+  "selection_evidence_recall": {
+   "A_mobileclip_topk": 0.175,
+   "B_mobileclip_mmr": 0.15681818181818183,
+   "F_relevance": 0.18863636363636363
+  },
+  "pool_size_median": 10.0,
+  "stage_seconds_median": {
+   "retrieval": 0.007725400006165728,
+   "head_a": 0.08578029999625869,
+   "decode": 1.0152381999942008,
+   "clip": 0.18498799999360926
+  },
+  "label_free_selector_cost_s": 1.2937318999902345,
+  "source_run": "runs\\lvb_balanced",
+  "fresh_calls": 1191,
+  "answer_seconds": 1321.3931170007563
+ },
+ "balanced_minus_legacy": {
+  "A_mobileclip_topk": {
+   "difference": -0.004545454545454545,
+   "ci95_lecture_bootstrap": [
+    -0.03225806451612903,
+    0.023420578113489663
+   ]
+  },
+  "B_mobileclip_mmr": {
+   "difference": -0.00909090909090909,
+   "ci95_lecture_bootstrap": [
+    -0.038204128810279014,
+    0.020224719101123594
+   ]
+  },
+  "F_relevance": {
+   "difference": -0.0022727272727272726,
+   "ci95_lecture_bootstrap": [
+    -0.010989616110761486,
+    0.004651162790697674
+   ]
+  },
+  "pool_evidence_recall": {
+   "difference": 0.0022727272727272726,
+   "ci95_lecture_bootstrap": [
+    -0.004651433837480349,
+    0.009569951694147066
+   ]
+  }
+ },
+ "pool_configs": {
+  "legacy": {
+   "unit_seconds": 20.0,
+   "max_windows": 4,
+   "neighbour_expansion": 1,
+   "excerpt_words": 120,
+   "n_path_a": 6,
+   "n_path_b": 6,
+   "scan_step_s": 5.0,
+   "scan_cap": 24,
+   "stable_hamming": 6,
+   "dup_hamming": 3,
+   "dup_seconds": 1.0,
+   "max_side": 640,
+   "scan_policy": "legacy"
+  },
+  "balanced": {
+   "unit_seconds": 20.0,
+   "max_windows": 4,
+   "neighbour_expansion": 1,
+   "excerpt_words": 120,
+   "n_path_a": 6,
+   "n_path_b": 6,
+   "scan_step_s": 5.0,
+   "scan_cap": 24,
+   "stable_hamming": 6,
+   "dup_hamming": 3,
+   "dup_seconds": 1.0,
+   "max_side": 640,
+   "scan_policy": "balanced"
+  }
+ },
+ "controls": {
+  "questions": 440,
+  "fixed_fields_identical": true,
+  "path_a_frames_identical_questions": 440,
+  "changed_factor": "Path B scan policy (and therefore the merged pool)"
+ },
+ "answerer_identity": {
+  "backend": "hf_vlm",
+  "model_id": "Qwen/Qwen3-VL-2B-Instruct",
+  "revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+  "dtype": "bfloat16",
+  "max_new_tokens": 64,
+  "decoding": "greedy",
+  "frame_max_side": 640,
+  "system_prompt_sha256": "5f18bb16e8bc0677b501e62c9eb4186168b61b38e986b90cea448478004d5334"
+ },
+ "total_fresh_calls": 2375,
+ "wall_seconds": 2643.013444799988,
+ "notes": [
+  "Pool stage costs are medians of per-question stage timings, summed: a composed estimate.",
+  "Evidence intervals are the generator's 30 s mining windows, a coarse proxy for evidence.",
+  "Development data (197 synthetic MIT questions), not an external benchmark."
+ ]
+}
