@@ -115,14 +115,19 @@ def raw_completion_features(pool: QuestionPool, anchor: list[int], rest: list[in
     return x
 
 
-def completion_design(pool: QuestionPool, anchor: list[int], rest: list[int]):
+def completion_design(pool: QuestionPool, anchor: list[int], rest: list[int], extra: np.ndarray | None = None):
     """Standardise within the question's completion set (label-free).
+
+    ``extra``: optional additional label-free feature columns, one row per
+    ``rest`` candidate (e.g. local board features); appended before scaling.
 
     Returns (z, anchor_score): the residual's anchor score is the baseline's own
     preference, a strictly decreasing function of its rank, so zero weights pick
     ``rest[0]``, the baseline's fourth frame.
     """
     x = raw_completion_features(pool, anchor, rest)
+    if extra is not None:
+        x = np.hstack([x, np.asarray(extra, dtype=float).reshape(len(rest), -1)])
     if not len(x):
         return x, np.zeros(0)
     scale = x.std(axis=0)
@@ -150,8 +155,11 @@ class CompletionQuestion:
     three_frame: float           # R(T, S3): reference only, never a feature
 
 
-def build_questions(pools: dict, rows: list[dict]) -> list[CompletionQuestion]:
-    """Join completion labels to label-free designs, checking the labels are complete."""
+def build_questions(pools: dict, rows: list[dict], extra: dict | None = None) -> list[CompletionQuestion]:
+    """Join completion labels to label-free designs, checking the labels are complete.
+
+    ``extra[qa_id]``: optional extra feature rows aligned with the baseline's rest order.
+    """
     by: dict[str, dict] = {}
     for r in rows:
         labels = by.setdefault(r["qa_id"], {})
@@ -167,7 +175,7 @@ def build_questions(pools: dict, rows: list[dict]) -> list[CompletionQuestion]:
         ids = [pool.candidates[i].id for i in rest]
         labels = by[q]
         validate_question_rows(pool, list(labels.values()))
-        z, base = completion_design(pool, anchor, rest)
+        z, base = completion_design(pool, anchor, rest, None if extra is None else extra[q])
         out.append(CompletionQuestion(q, pool.video_id, ids, z, base,
                                       np.array([labels[i]["after"] for i in ids], dtype=float),
                                       float(labels[ids[0]]["before"])))
@@ -191,11 +199,13 @@ def validate_question_rows(pool: QuestionPool, rows: list[dict]) -> None:
 def fit_ridge(questions: list[CompletionQuestion], ridge: float | None) -> np.ndarray:
     """Pairwise residual ridge; each question has equal weight; None = baseline fallback.
 
-    Target for a pair (a, b): (y_a - y_b) - (base_a - base_b). All within-question
-    pairs, including ties, so the residual is only pushed where labels disagree
-    with the baseline's ordering.
+    Target for a pair (a, b): (y_a - y_b) - (base_a - base_b), over ALL
+    within-question pairs. For a correctness tie the target is -(base_a - base_b),
+    so tied pairs pull the residual toward flattening the baseline order; the
+    ridge and the fallback limit this. (A variant trained only on unequal pairs
+    was checked on the same data: 73/197 vs 74/197, so ties are not the bottleneck.)
     """
-    d = len(completion_feature_names())
+    d = questions[0].z.shape[1] if questions else len(completion_feature_names())
     if ridge is None:
         return np.zeros(d)
     gram, rhs, n = np.zeros((d, d)), np.zeros(d), 0

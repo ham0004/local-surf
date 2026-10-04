@@ -136,3 +136,30 @@ transcript and redundancy with chosen frames, plus an exact headroom (oracle)
 for that slot.* This is an adaptation of contextual utility learning, not a
 new algorithm. It counts as a contribution only if the completion head beats
 both the baseline and single-frame-trained scorers on held-out lectures.
+
+## Local board features for the fourth frame (declared 2026-10-04, before analysis)
+
+The global completion head (26 scalar features) fell back to the baseline in
+18/20 folds. Hypothesis: global features cannot see *where* question-relevant
+content is on the board, or whether a candidate shows board content absent
+from the chosen frames. Test, with zero new answerer calls, on the exhaustive
+completion table:
+
+- Representation only: 8 local features from frozen MobileCLIP on 8 square
+  tiles covering the whole frame (no centre crop) plus chalk-ink maps against
+  the three anchor frames (novel ink, novel ink in relevant tiles, local tile
+  redundancy, camera misalignment). `src/videoqa/v2/local_features.py`.
+- Same labels, loss, ridge grid, nested leave-one-lecture-out and fallback as
+  the global head.
+- **Primary:** global+local head − relevance rank-4. **Attribution:**
+  global+local − global. Local-only head and single-feature zero-shot rules
+  are reported as exploratory.
+- Cost charged: 8 extra image encodings per candidate plus ink maps.
+
+Closest work: TranSTR (ICCV 2023) learns spatio-temporal rationales end to
+end; Visual Transcripts (SIGGRAPH Asia 2015) extracts board entities and aligns
+them with speech; GIFT / MarKey score global irreplaceability and redundancy.
+Difference under test: training-free local novelty relative to the frames
+already chosen, conditioned on the question, used to pick the final frame for a
+frozen answerer. If it does not beat relevance, the hypothesis is reported as
+refuted, not renamed.
