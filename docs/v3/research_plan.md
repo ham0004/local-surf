@@ -43,6 +43,13 @@ videos (never the real test), compare transcript-only vs transcript + frames wit
 scorer. If frames add nothing measurable, EduVidQA cannot support frame-selection claims; it stays
 an answer-quality benchmark and selection is studied on a benchmark where frames matter.
 
+**Test-set decision (user, 2026-10-05).** All 269 expert-verified real-world questions are the
+held-out final test. They are not used for gates, judge selection, tuning or any development
+decision, and their 99 videos are not downloaded until the final comparison. Development uses
+only the official (synthetic) training split, split by video. Results are reported on all 269.
+Caveat: synthetic and real questions may differ in frame dependence (the paper reports similar
+visual-cue wording, 46% vs 44%, but not measured dependence).
+
 **Protocol.** Two named protocols, never mixed: *timestamp-given* (official; retrieval near-trivial)
 and *timestamp-hidden* (whole lecture; our system must find the moment). Head A only matters in the
 second.
