@@ -223,8 +223,7 @@ def stage_score(a) -> None:
                        "answer_words": len(r["answer"].split())})
         if (n + 1) % 20 == 0:
             print(f"{n + 1}/{len(rows)} scored; Gemini calls {budget.calls}/{budget.max_calls}", flush=True)
-    (RUN / "scores.jsonl").write_text("".join(json.dumps(x) + "
-" for x in scored), encoding="utf-8")
+    (RUN / "scores.jsonl").write_text("".join(json.dumps(x) + "\n" for x in scored), encoding="utf-8")
 
     metrics = ("factqa_precision", "factqa_recall", "bleu1", "rouge_l", "meteor", "entailment", "answer_words")
     by = {}
