@@ -93,8 +93,9 @@ class CachedTeacher:
     """
 
     def __init__(self, answerer, teacher_id: str, cache_path: str | Path, identity: dict | None = None,
-                 legacy_paths: tuple = ()) -> None:
+                 legacy_paths: tuple = (), budget=None) -> None:
         self.answerer, self.teacher_id = answerer, teacher_id
+        self.budget = budget      # optional CallBudget: enforces call AND time limits on real calls
         self.identity = identity or {"teacher_id": teacher_id}
         self.cache_path = Path(cache_path)
         self.cache: dict[str, dict] = {}      # v2 key -> record
@@ -141,13 +142,18 @@ class CachedTeacher:
             return 1.0 if rec["option"] == pool.gold_option_index else 0.0
         if self.answerer is None:
             raise LookupError(f"{pool.qa_id}: request not cached and no answerer loaded")
+        if self.budget is not None:
+            self.budget.check_one()
         excerpt = pool.transcript if transcript is None else transcript
         ordered = _ordered(frames)
         t0 = time.perf_counter()
         answer, _ = self.answerer.answer(AnswerRequest(pool.question, pool.options, excerpt,
                                                        [_as_frame(f) for f in ordered]))
-        self.seconds += time.perf_counter() - t0
+        spent = time.perf_counter() - t0
+        self.seconds += spent
         self.calls += 1
+        if self.budget is not None:
+            self.budget.charge(spent)
         rec = {"schema": KEY_SCHEMA, "key": request_key(pool, frames, self.identity, transcript),
                "qa_id": pool.qa_id, "frames": [f.id for f in ordered], "frame_times": [f.time_s for f in ordered],
                "option": answer.option_index, "text": answer.text[:200]}

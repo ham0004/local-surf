@@ -229,7 +229,9 @@ to beat zero-shot transcript relevance, although an exhaustive oracle shows
 <b>{pts(cp["oracle_minus_relevance_rank4"]["difference"])} points</b> of headroom in the last frame slot. A visual-scan
 change that helped on lectures did not transfer to LongVideoBench. We also found and corrected a dataset flaw:
 answerer-conditioned filtering amplified option-position bias, so that "always answer B" would have outscored every
-system; circular evaluation raises all lecture accuracies by about 15 points while preserving selector rankings.
+system. Rotating the answer options (circular evaluation) raises all lecture accuracies by about 15 points
+while preserving selector rankings; this partially corrects the evaluation but not the training labels or the
+filtered question population.
 We report these results, the corrected numbers, and the remaining open questions without claiming a new method.</p></section>
 
 <section><h2>1. What this report claims</h2>
@@ -238,7 +240,7 @@ We report these results, the corrected numbers, and the remaining open questions
 <tr><td>Frames add substantially over transcript alone</td><td>v1 LVB {pts(v1["scout_similarity"]["accuracy"] - v1["transcript_only"]["accuracy"])} pts; MIT (debiased) {pts(circ_m["paired_circular_mean"]["A_minus_transcript_only"]["difference"])} pts</td><td>robust (CIs exclude 0)</td></tr>
 <tr><td>Small learned selectors do not beat transcript relevance on this lecture data</td><td>Head B, residual scorers, completion head, local-feature head</td><td>negative result, controlled</td></tr>
 <tr><td>The last frame slot has measurable headroom that no tested selector captures</td><td>exhaustive fourth-frame table: oracle {pct(ca["oracle"])} vs {pct(ca["relevance_rank4"])}</td><td>measured on development data</td></tr>
-<tr><td>Answerer-conditioned question filtering amplifies option-position bias</td><td>gold A/B 171/197; C/D-gold dropped 61% vs 39%</td><td>methodological finding</td></tr>
+<tr><td>Answerer-conditioned question filtering amplified option-position bias in our lecture set</td><td>gold A/B 171/197; C/D-gold dropped 61% vs 39%</td><td>a new instance of a known effect (Section 8)</td></tr>
 <tr><td>A new frame-selection method that beats baselines</td><td>—</td><td><b>not claimed</b></td></tr>
 </tbody></table></section>
 
@@ -439,12 +441,15 @@ while the transcript-only model picks {bias["transcript_only_predicted_index_cou
 <p>Debiasing raises transcript-only from {pct(cm["transcript_only"]["original_rotation0"])} to {pct(cm["transcript_only"]["circular_mean"])} and every frame arm by about
 15 points. Rankings keep their direction; relevance − MobileCLIP becomes {pts(-circ_m["paired_circular_mean"]["A_minus_F"]["difference"])}
 (n.s.); balanced − legacy for MobileCLIP becomes significant on MIT ({pts(circ_bal_A[0])}, CI {ci(circ_bal_A[1])}) but, as shown in
-5.5, did not transfer. Label-based analyses (5.3, 5.4) used the original order and carry this caveat.</p>
+5.5, did not transfer. Rotation corrects the <i>evaluation</i> only partially: it does not restore the questions the
+filter removed, verify the synthetic answers, or rebuild the training labels and the fourth-frame table, which used the
+original order (5.3, 5.4 carry this caveat). Strict all-four correctness (e.g. 25.9% for balanced MobileCLIP) and the
+rotation average (53.3%) are different metrics and both are reported in <code>reports/v2_circular/</code>.</p>
 <h3>7.2 Other corrections</h3>
 <ul>
 <li><b>Interpretation:</b> an early claim that speech "mostly makes frames redundant" was wrong; about half the cases are failures of the combined input (5.3).</li>
 <li><b>Speech ablation:</b> the first "no speech features" Head B still received speech-derived scores; corrected and rerun: {pct(fix["accuracy"]["C_noocr_notext"])} vs {pct(fix["accuracy"]["C_noocr"])}.</li>
-<li><b>Cache identity:</b> answer-cache keys omitted frame time labels, transcript ids/end times and decoding settings. The key now hashes the full rendered request and stores predictions, not correctness. An audit of {sum(v["cache_records"] for k, v in cache.items() if isinstance(v, dict)):,} historical records found no possible collision; historical results replay exactly.</li>
+<li><b>Cache identity:</b> answer-cache keys omitted frame time labels, transcript ids/end times and decoding settings. The key now hashes the full rendered request and stores predictions, not correctness. An audit of {sum(v["cache_records"] for k, v in cache.items() if isinstance(v, dict)):,} historical records found no collision of the checked kinds and no corrupted result; the residual QA and completion results replay exactly. The audit does not re-render every historical request, so this is evidence, not proof.</li>
 <li><b>Data checks:</b> completion labels reject duplicates and inconsistent anchors; video leakage is checked on the whole manifest before split filtering; pool comparisons assert that only the scan differs.</li>
 </ul></section>""")
 
@@ -456,11 +461,12 @@ MarKey, FORTE, GIFT), dual subtitle and visual streams (VSI, Q-Gate) and spatio-
 established. Learning the marginal benefit of the next item given the current list goes back to Ross et al. (ICML 2013).
 Our MMR completion rule is not an implementation of MarKey or FORTE, and its failure here does not refute them.</p>
 <p>What this project adds is narrower: (1) an exhaustive, deployment-matched fourth-frame table for one frozen
-answerer, which gives exact offline scores for any policy and an exact oracle; (2) controlled negative results for four
-families of small selectors trained on such labels; (3) a concrete, reproducible case in which answerer-conditioned
-filtering of synthetic questions amplifies option-position bias enough to invert conclusions about absolute accuracy.
-Option-position bias itself is well known (circular evaluation was introduced for it); the amplification mechanism
-and its size in a video-QA construction pipeline are the specific observation.</p></section>
+answerer, which gives exact offline scores for any policy and an exact (original-order) oracle; (2) controlled negative
+results for four families of small selectors trained on such labels; (3) a reproducible video-QA instance of a known
+problem. Positional sensitivity of language models is established (PriDe, arXiv 2309.03882; MMBench's CircularEval),
+and Ovcharov (arXiv 2608.15428) shows that filtering a benchmark against one model leaves position habits and
+model-specific artefacts that do not transfer. Our case adds only its size in a synthetic video-QA pipeline. Whether such
+filtering distorts the frame-utility <i>labels</i> used to train selectors is an open question we have not tested.</p></section>
 
 <section><h2>9. Limitations</h2>
 <ul>

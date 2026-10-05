@@ -9,8 +9,10 @@ run, a collision needs two DIFFERENT prompts with the same v1 key:
      but different id/end (Head A's single-line interventions), or
   3. a gold index that changed after labelling (records stored correctness).
 
-This script counts each case for the given runs. Zero for all three means the
-historical results cannot have been affected by the v1 identity gap.
+This script counts each case for the given runs. Zero for all three means no
+collision of THESE kinds was found in the audited caches. It does not
+re-render every historical request or configuration, so it is evidence, not
+proof, that no historical result was affected.
 
     python scripts/v2_cache_audit.py --runs runs/v2_main runs/v2_balanced runs/v2_pilot \
         --out reports/v2_review/cache_identity_audit.json
@@ -61,7 +63,7 @@ def main() -> None:
     p.add_argument("--out", default="reports/v2_review/cache_identity_audit.json")
     a = p.parse_args()
     out = {r: audit_run(Path(r)) for r in a.runs if (Path(r) / "pools.json").exists()}
-    out["conclusion"] = ("no possible v1 collision in these runs" if all(
+    out["conclusion"] = ("no collision of the checked kinds found in these runs" if all(
         v["same_pixels_different_time_in_one_pool"] == v["transcript_lines_differing_only_in_id_or_end"]
         == v["records_whose_stored_correctness_disagrees_with_current_gold"] == 0 for v in out.values())
         else "possible v1 collisions found; see counts")

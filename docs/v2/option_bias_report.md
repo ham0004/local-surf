@@ -1,4 +1,4 @@
-# Option-position bias in the MIT question set, and debiased results
+# Option-position bias in the MIT question set, and partially corrected results
 
 ## The problem
 - The generator (Qwen3-VL-4B) was never asked to shuffle options, and its
@@ -55,6 +55,15 @@ Paired differences on circular means (lecture bootstrap):
   order only. Their counts include position-bias effects; in particular the
   "transcript interferes with a correct frame" cases may partly reflect
   letter preference. They are kept as recorded, with this caveat.
+
+## What rotation does not fix
+Rotation corrects how the 197 questions are scored. It does not restore the 152
+questions removed by the filter, verify the synthetic answers, rebuild the
+single-order training labels, retrain the heads, or rebuild the fourth-frame
+table. Four cyclic orders also cover 4 of the 24 possible permutations.
+Close prior work: PriDe (arXiv 2309.03882) on positional bias and Ovcharov
+(arXiv 2608.15428) on model-dependent filtering; this is a new instance of a
+known effect, not a new mechanism.
 
 ## Prevention
 New question generators must shuffle options with a recorded seed, and any

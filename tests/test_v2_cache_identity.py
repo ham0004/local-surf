@@ -78,3 +78,26 @@ def test_cache_only_reader_raises_instead_of_guessing(tmp_path):
     except LookupError:
         return
     raise AssertionError("an uncached request must not return a value")
+
+
+def test_call_budget_enforces_both_limits_and_persists(tmp_path):
+    import pytest
+
+    from videoqa.v2.budget import BudgetExceeded, CallBudget
+
+    p, fake = _pool(), Fake()
+    b = CallBudget(tmp_path / "b.json", max_calls=2, max_seconds=3600)
+    t = CachedTeacher(fake, "fake", tmp_path / "c.jsonl", identity=IDENTITY, budget=b)
+    assert b.reserve(2) and not b.reserve(3)
+    t.quality(p, p.candidates[:1])
+    t.quality(p, p.candidates[:1])                          # cache hit: not charged
+    t.quality(p, p.candidates[1:2])
+    assert b.calls == 2 and fake.n == 2
+    with pytest.raises(BudgetExceeded):
+        t.quality(p, p.candidates[2:3])
+    assert CallBudget(tmp_path / "b.json", 2, 3600).calls == 2      # persisted across processes
+    with pytest.raises(ValueError, match="different limits"):
+        CallBudget(tmp_path / "b.json", 5, 3600)                     # raising a limit needs a new ledger
+    tb = CallBudget(tmp_path / "t.json", max_calls=100, max_seconds=1e-9)
+    tb.charge(1.0)
+    assert not tb.reserve(1)                                         # time limit alone also stops the run

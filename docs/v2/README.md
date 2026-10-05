@@ -12,7 +12,7 @@ improvement has transferred to an external benchmark.** What is established:
 | Learned heads (Head B, residual, completion, local features) | all ≤ relevance; fallback in 18–19/20 folds | refuted |
 | Balanced scan for MobileCLIP | MIT +3.6 (CI +0.4 to +6.9); LongVideoBench −0.5 (CI −3.2 to +2.3) | does not transfer; opt-in |
 | Option-position bias in the MIT questions | gold A/B in 171/197; absolute accuracies understated by ~15 points | found and corrected by circular evaluation |
-| Teacher cache identity gap | no collision possible in any historical run | fixed (schema v2) |
+| Teacher cache identity gap | no collision of the checked kinds in the audited caches; no corrupted result identified | fixed (schema v2) |
 
 ```
                       FROZEN (never trained)                    TRAINED (small)

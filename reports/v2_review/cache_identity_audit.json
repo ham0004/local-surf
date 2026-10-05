@@ -23,5 +23,5 @@
   "records_whose_stored_correctness_disagrees_with_current_gold": 0,
   "examples": []
  },
- "conclusion": "no possible v1 collision in these runs"
+ "conclusion": "no collision of the checked kinds found in these runs"
 }

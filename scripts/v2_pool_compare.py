@@ -67,11 +67,12 @@ def _bootstrap(diffs: dict, videos: dict, repeats: int = 5000) -> dict:
             "ci95_lecture_bootstrap": np.percentile(boot, [2.5, 97.5]).tolist()}
 
 
-def check_controlled(legacy: dict, balanced: dict) -> dict:
+def check_controlled(legacy: dict, balanced: dict, allow_path_a_change: bool = False) -> dict:
     """Prove that only the visual scan differs between the two pools of each question.
 
-    Raises if a non-experimental factor differs. Path A frames are expected to
-    be identical (they do not depend on the scan); that is checked and reported.
+    Raises if a non-experimental factor differs. Path A frames do not depend on
+    the scan, so a Path A difference is also an error unless explicitly allowed
+    (it would mean a second factor changed).
     """
     path_a_identical = 0
     for q in legacy:
@@ -83,7 +84,10 @@ def check_controlled(legacy: dict, balanced: dict) -> dict:
         if [(s.id, s.start_s, s.end_s, s.text) for s in a.transcript] !=                 [(s.id, s.start_s, s.end_s, s.text) for s in b.transcript]:
             raise ValueError(f"{q}: retained transcript differs between pools")
         pa = lambda p: sorted((c.digest, c.time_s) for c in p.candidates if "A" in c.paths)  # noqa: E731
-        path_a_identical += pa(a) == pa(b)
+        same = pa(a) == pa(b)
+        if not same and not allow_path_a_change:
+            raise ValueError(f"{q}: Path A frames differ between pools; a second factor changed")
+        path_a_identical += same
     return {"questions": len(legacy), "fixed_fields_identical": True,
             "path_a_frames_identical_questions": path_a_identical,
             "changed_factor": "Path B scan policy (and therefore the merged pool)"}
