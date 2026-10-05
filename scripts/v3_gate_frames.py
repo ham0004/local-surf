@@ -201,12 +201,14 @@ def _video_bootstrap(diffs: dict, videos: dict, repeats: int = 5000) -> dict:
 def stage_score(a) -> None:
     """FactQA (Gemini) + BLEU-1/ROUGE-L/METEOR/entailment for every answer; G1 paired differences."""
     from videoqa.v2.budget import CallBudget  # noqa: PLC0415
-    from videoqa.v3.factqa import GeminiFactQA, verdict_key  # noqa: PLC0415
+    from videoqa.v3.factqa import CostCapReached, GeminiFactQA, verdict_key  # noqa: PLC0415
     from videoqa.v3.metrics import NLI_MODEL, Entailment, bleu1, meteor, rouge_l  # noqa: PLC0415
 
     rows = _answer_rows(a)
     budget = CallBudget(RUN / "budget_gemini.json", *GEMINI_LIMITS)
-    fq = GeminiFactQA(GEMINI_MODEL, RUN / "factqa_gemini.jsonl", budget)
+    if a.max_usd is None:
+        raise SystemExit("--max-usd is required: the paid Gemini tier needs an explicit dollar cap")
+    fq = GeminiFactQA(GEMINI_MODEL, RUN / "factqa_gemini.jsonl", budget, max_usd=a.max_usd)
     ent = Entailment()(([(r["reference"], r["answer"]) for r in rows]))
     scored = []
     for n, (r, e) in enumerate(zip(rows, ent, strict=True)):
@@ -215,7 +217,11 @@ def stage_score(a) -> None:
         if not budget.reserve(need):                    # both calls of an answer, or none
             print("Gemini budget reached; stopping cleanly")
             break
-        f = fq.score(r["qa_id"], r["question"], r["reference"], r["answer"])
+        try:
+            f = fq.score(r["qa_id"], r["question"], r["reference"], r["answer"])
+        except CostCapReached as e:
+            print(f"cost cap reached ({e}); stopping cleanly")
+            break
         scored.append({"qa_id": r["qa_id"], "video_id": r["video_id"], "condition": r["condition"],
                        "factqa_precision": f["precision"], "factqa_recall": f["recall"],
                        "bleu1": bleu1(r["reference"], r["answer"]), "rouge_l": rouge_l(r["reference"], r["answer"]),
@@ -234,7 +240,7 @@ def stage_score(a) -> None:
     out = {"gate": "G1: do frames help open-ended EduVidQA answers? (official training videos only)",
            "questions": len(pairs), "videos": len(set(videos.values())), "judge": GEMINI_MODEL,
            "judge_versions": sorted({v.get("model_version") for v in fq.records.values()}),
-           "nli_model": list(NLI_MODEL), "gemini_calls": budget.calls,
+           "nli_model": list(NLI_MODEL), "gemini_calls": budget.calls, "gemini_usd_measured": round(fq.spent_usd, 4),
            "unparsed_factqa": sum(v.get("score") is None for v in fq.records.values()), "metrics": {}}
     for m in metrics:
         ok = {q: d for q, d in pairs.items() if d["T"][m] is not None and d["TF"][m] is not None}
@@ -253,6 +259,7 @@ def main() -> None:
     p.add_argument("stage", choices=("answer", "judge-audit", "audit-sheet", "judge-rest", "score"))
     p.add_argument("--n", type=int, default=100)
     p.add_argument("--judge", choices=("phi4mini", "qwen3vl4b"), default="phi4mini")
+    p.add_argument("--max-usd", type=float, default=None, help="hard dollar cap for paid Gemini calls (score stage)")
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")

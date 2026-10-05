@@ -1,0 +1,62 @@
+{
+ "questions": 92,
+ "videos": 20,
+ "metrics": {
+  "bleu1": {
+   "transcript_only": 0.41553764015081923,
+   "transcript_plus_frames": 0.3722805319717221,
+   "frames_minus_transcript": {
+    "difference": -0.04325710817909722,
+    "ci95_video_bootstrap": [
+     -0.07244962184760645,
+     -0.019942947871514426
+    ]
+   }
+  },
+  "rouge_l": {
+   "transcript_only": 0.27321731231156277,
+   "transcript_plus_frames": 0.2635119300005883,
+   "frames_minus_transcript": {
+    "difference": -0.009705382310974522,
+    "ci95_video_bootstrap": [
+     -0.021697368912636867,
+     0.0025517628856677904
+    ]
+   }
+  },
+  "meteor": {
+   "transcript_only": 0.31674031638480016,
+   "transcript_plus_frames": 0.28431720764803226,
+   "frames_minus_transcript": {
+    "difference": -0.032423108736767826,
+    "ci95_video_bootstrap": [
+     -0.05006820106627414,
+     -0.016233635448143647
+    ]
+   }
+  },
+  "entailment": {
+   "transcript_only": 0.147165255388245,
+   "transcript_plus_frames": 0.22250915432042626,
+   "frames_minus_transcript": {
+    "difference": 0.07534389893218126,
+    "ci95_video_bootstrap": [
+     -0.00965723399307791,
+     0.1627086406845036
+    ]
+   }
+  },
+  "words": {
+   "transcript_only": 111.53260869565217,
+   "transcript_plus_frames": 104.5,
+   "frames_minus_transcript": {
+    "difference": -7.032608695652174,
+    "ci95_video_bootstrap": [
+     -13.064178486997637,
+     -0.8205812608444256
+    ]
+   }
+  }
+ },
+ "note": "judge-free metrics only; FactQA pending (Gemini free tier is 20 requests/day)"
+}
