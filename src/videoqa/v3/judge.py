@@ -26,9 +26,9 @@ import time
 from pathlib import Path
 
 JUDGE_PROMPT_VERSION = "v3-judge-1"
-JUDGES = {
-    "phi4mini": "microsoft/Phi-4-mini-instruct",
-    "qwen3vl4b": "Qwen/Qwen3-VL-4B-Instruct",
+JUDGES = {                                   # name -> (model id, pinned revision)
+    "phi4mini": ("microsoft/Phi-4-mini-instruct", "cfbefacb99257ffa30c83adab238a50856ac3083"),
+    "qwen3vl4b": ("Qwen/Qwen3-VL-4B-Instruct", "ebb281ec70b05090aa6165b016eac8ec08e71b17"),
 }
 
 PROMPT = """You grade a student-facing answer to a lecture question against a reference answer.
@@ -70,7 +70,7 @@ def parse_verdict(text: str) -> dict | None:
 
 
 def verdict_key(judge: str, question: str, reference: str, candidate: str) -> str:
-    payload = {"judge": JUDGES[judge], "prompt": JUDGE_PROMPT_VERSION, "q": question, "ref": reference,
+    payload = {"judge": list(JUDGES[judge]), "prompt": JUDGE_PROMPT_VERSION, "q": question, "ref": reference,
                "cand": candidate}
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
@@ -81,7 +81,8 @@ class LocalJudge:
     def __init__(self, name: str, cache_path: str | Path, cache_dir: str = "cache/hf/hub", budget=None) -> None:
         if name not in JUDGES:
             raise ValueError(f"unknown judge {name!r}; choose from {sorted(JUDGES)}")
-        self.name, self.model_id, self.cache_dir, self.budget = name, JUDGES[name], cache_dir, budget
+        self.name, self.cache_dir, self.budget = name, cache_dir, budget
+        self.model_id, self.revision = JUDGES[name]
         self.path = Path(cache_path)
         self.records: dict[str, dict] = {}
         if self.path.exists():
@@ -97,13 +98,15 @@ class LocalJudge:
         from transformers import AutoModelForCausalLM, AutoModelForImageTextToText, AutoProcessor, AutoTokenizer  # noqa: PLC0415
 
         if self.name == "qwen3vl4b":
-            self._tok = AutoProcessor.from_pretrained(self.model_id, cache_dir=self.cache_dir)
+            self._tok = AutoProcessor.from_pretrained(self.model_id, revision=self.revision, cache_dir=self.cache_dir)
             self._model = AutoModelForImageTextToText.from_pretrained(
-                self.model_id, dtype=torch.bfloat16, device_map="cuda", cache_dir=self.cache_dir).eval()
+                self.model_id, revision=self.revision, dtype=torch.bfloat16, device_map="cuda",
+                cache_dir=self.cache_dir).eval()
         else:
-            self._tok = AutoTokenizer.from_pretrained(self.model_id, cache_dir=self.cache_dir)
+            self._tok = AutoTokenizer.from_pretrained(self.model_id, revision=self.revision, cache_dir=self.cache_dir)
             self._model = AutoModelForCausalLM.from_pretrained(
-                self.model_id, dtype=torch.bfloat16, device_map="cuda", cache_dir=self.cache_dir).eval()
+                self.model_id, revision=self.revision, dtype=torch.bfloat16, device_map="cuda",
+                cache_dir=self.cache_dir).eval()
         self._torch = torch
 
     def _generate(self, prompt: str) -> str:

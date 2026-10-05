@@ -169,7 +169,9 @@ def stage_judge(a, which: str) -> None:
 
 
 def stage_audit_sheet(a) -> None:
-    rows = [r for r in _answer_rows(a) if r["qa_id"] in _audit_ids(_answer_rows(a))]
+    every = _answer_rows(a)
+    audit = _audit_ids(every)
+    rows = [r for r in every if r["qa_id"] in audit]
     # Shuffle conditions so the labeller cannot tell which answer had frames.
     rows.sort(key=lambda r: hashlib.sha256(("sheet:" + r["qa_id"] + r["condition"]).encode()).hexdigest())
     items = [{"item": i, "question": r["question"].strip(), "reference": r["reference"], "answer": r["answer"]}
