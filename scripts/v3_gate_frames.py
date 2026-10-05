@@ -183,16 +183,83 @@ def stage_audit_sheet(a) -> None:
     print(f"{len(items)} audit items written (conditions hidden)")
 
 
+GEMINI_MODEL = "gemini-3.8-flash"            # strongest model the free tier serves (Pro returns quota 0)
+GEMINI_LIMITS = (400, 3600.0)                 # approved by the user for the gate: calls, API seconds
+
+
+def _video_bootstrap(diffs: dict, videos: dict, repeats: int = 5000) -> dict:
+    by: dict[str, list[float]] = {}
+    for q, d in diffs.items():
+        by.setdefault(videos[q], []).append(d)
+    s = np.array([sum(v) for v in by.values()])
+    c = np.array([len(v) for v in by.values()])
+    ids = np.random.default_rng(0).integers(0, len(s), (repeats, len(s)))
+    b = s[ids].sum(1) / c[ids].sum(1)
+    return {"difference": float(s.sum() / c.sum()), "ci95_video_bootstrap": np.percentile(b, [2.5, 97.5]).tolist()}
+
+
+def stage_score(a) -> None:
+    """FactQA (Gemini) + BLEU-1/ROUGE-L/METEOR/entailment for every answer; G1 paired differences."""
+    from videoqa.v2.budget import CallBudget  # noqa: PLC0415
+    from videoqa.v3.factqa import GeminiFactQA, verdict_key  # noqa: PLC0415
+    from videoqa.v3.metrics import NLI_MODEL, Entailment, bleu1, meteor, rouge_l  # noqa: PLC0415
+
+    rows = _answer_rows(a)
+    budget = CallBudget(RUN / "budget_gemini.json", *GEMINI_LIMITS)
+    fq = GeminiFactQA(GEMINI_MODEL, RUN / "factqa_gemini.jsonl", budget)
+    ent = Entailment()(([(r["reference"], r["answer"]) for r in rows]))
+    scored = []
+    for n, (r, e) in enumerate(zip(rows, ent, strict=True)):
+        need = sum(verdict_key(GEMINI_MODEL, d, r["question"], a1, a2) not in fq.records
+                   for d, a1, a2 in (("precision", r["answer"], r["reference"]), ("recall", r["reference"], r["answer"])))
+        if not budget.reserve(need):                    # both calls of an answer, or none
+            print("Gemini budget reached; stopping cleanly")
+            break
+        f = fq.score(r["qa_id"], r["question"], r["reference"], r["answer"])
+        scored.append({"qa_id": r["qa_id"], "video_id": r["video_id"], "condition": r["condition"],
+                       "factqa_precision": f["precision"], "factqa_recall": f["recall"],
+                       "bleu1": bleu1(r["reference"], r["answer"]), "rouge_l": rouge_l(r["reference"], r["answer"]),
+                       "meteor": meteor(r["reference"], r["answer"]), "entailment": e,
+                       "answer_words": len(r["answer"].split())})
+        if (n + 1) % 20 == 0:
+            print(f"{n + 1}/{len(rows)} scored; Gemini calls {budget.calls}/{budget.max_calls}", flush=True)
+    (RUN / "scores.jsonl").write_text("".join(json.dumps(x) + "
+" for x in scored), encoding="utf-8")
+
+    metrics = ("factqa_precision", "factqa_recall", "bleu1", "rouge_l", "meteor", "entailment", "answer_words")
+    by = {}
+    for x in scored:
+        by.setdefault(x["qa_id"], {})[x["condition"]] = x
+    pairs = {q: d for q, d in by.items() if "T" in d and "TF" in d}
+    videos = {q: d["T"]["video_id"] for q, d in pairs.items()}
+    out = {"gate": "G1: do frames help open-ended EduVidQA answers? (official training videos only)",
+           "questions": len(pairs), "videos": len(set(videos.values())), "judge": GEMINI_MODEL,
+           "judge_versions": sorted({v.get("model_version") for v in fq.records.values()}),
+           "nli_model": list(NLI_MODEL), "gemini_calls": budget.calls,
+           "unparsed_factqa": sum(v.get("score") is None for v in fq.records.values()), "metrics": {}}
+    for m in metrics:
+        ok = {q: d for q, d in pairs.items() if d["T"][m] is not None and d["TF"][m] is not None}
+        out["metrics"][m] = {"transcript_only": float(np.mean([d["T"][m] for d in ok.values()])),
+                             "transcript_plus_frames": float(np.mean([d["TF"][m] for d in ok.values()])),
+                             "frames_minus_transcript": _video_bootstrap({q: d["TF"][m] - d["T"][m] for q, d in ok.items()},
+                                                                         videos),
+                             "paired_questions": len(ok)}
+    Path("reports/v3_gate").mkdir(parents=True, exist_ok=True)
+    Path("reports/v3_gate/g1_summary.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
+    print(json.dumps(out, indent=1))
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("stage", choices=("answer", "judge-audit", "audit-sheet", "judge-rest"))
+    p.add_argument("stage", choices=("answer", "judge-audit", "audit-sheet", "judge-rest", "score"))
     p.add_argument("--n", type=int, default=100)
     p.add_argument("--judge", choices=("phi4mini", "qwen3vl4b"), default="phi4mini")
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     {"answer": stage_answer, "judge-audit": lambda x: stage_judge(x, "audit"),
-     "audit-sheet": stage_audit_sheet, "judge-rest": lambda x: stage_judge(x, "rest")}[a.stage](a)
+     "audit-sheet": stage_audit_sheet, "judge-rest": lambda x: stage_judge(x, "rest"),
+     "score": stage_score}[a.stage](a)
 
 
 if __name__ == "__main__":
