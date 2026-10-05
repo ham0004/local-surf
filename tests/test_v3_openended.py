@@ -68,3 +68,13 @@ def test_verdict_key_depends_on_judge_and_candidate():
     a = verdict_key("phi4mini", "q", "r", "c")
     assert a != verdict_key("qwen3vl4b", "q", "r", "c") and a != verdict_key("phi4mini", "q", "r", "c2")
     json.dumps(a)
+
+
+def test_factqa_score_parsing_and_key():
+    from videoqa.v3.factqa import FACTQA_PROMPT, parse_score, verdict_key
+
+    assert parse_score("claims...\nScore: 3/5") == (3, 5)
+    assert parse_score("Score: 1/4 ... final **Score: 2/4**") == (2, 4)
+    assert parse_score("Score: 5/3") is None and parse_score("no score") is None
+    assert verdict_key("m", "precision", "q", "a", "b") != verdict_key("m", "recall", "q", "b", "a")
+    assert "{answer_1}" in FACTQA_PROMPT and "Score: <num supported claims>/<num total claims>" in FACTQA_PROMPT
