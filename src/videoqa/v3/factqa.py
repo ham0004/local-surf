@@ -98,6 +98,9 @@ class GeminiFactQA:
         self._lock = threading.Lock()
         self._next_start = 0.0
         self.calls, self.hits = 0, 0
+        # Share of each call's latency charged to the time budget: 1/workers when calls run in
+        # parallel, so the time limit tracks elapsed wall time rather than summed latency.
+        self.time_share = 1.0
         self.spent_usd = sum(r.get("usd", 0.0) or 0.0 for r in self.records.values())
 
     def _pace(self) -> None:
@@ -164,7 +167,7 @@ class GeminiFactQA:
             self.calls += 1
             self.spent_usd += usd
             if self.budget is not None:
-                self.budget.charge(spent)
+                self.budget.charge(spent * self.time_share)
             self.records[k] = rec
             with open(self.path, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(rec) + "\n")

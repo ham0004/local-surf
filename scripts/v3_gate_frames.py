@@ -211,7 +211,10 @@ def stage_score(a) -> None:
 
     provider, model, pace = JUDGES[a.factqa_judge]
     rows = _answer_rows(a)
-    budget = CallBudget(RUN / f"budget_{a.factqa_judge}.json", *JUDGE_LIMITS)
+    # Ledger 1 summed parallel latencies against its time cap and stopped early (125 calls); the
+    # remaining calls run under ledger 2, whose calls cap keeps the total within the approved 400.
+    used = json.loads((RUN / f"budget_{a.factqa_judge}.json").read_text())["calls"]         if (RUN / f"budget_{a.factqa_judge}.json").exists() else 0
+    budget = CallBudget(RUN / f"budget_{a.factqa_judge}_2.json", JUDGE_LIMITS[0] - used, 3600.0) if used else         CallBudget(RUN / f"budget_{a.factqa_judge}.json", *JUDGE_LIMITS)
     cache = RUN / f"factqa_{a.factqa_judge}.jsonl"
     if provider == "gemini":
         if a.max_usd is None:
@@ -219,6 +222,7 @@ def stage_score(a) -> None:
         fq = GeminiFactQA(model, cache, budget, min_interval_s=pace, max_usd=a.max_usd)
     else:
         fq = OpenAICompatFactQA(model, cache, budget=budget, min_interval_s=pace)
+    fq.time_share = 1.0 / a.workers
 
     # Reserve whole answers (both directions) in a fixed order before any call is made.
     todo, need_total = [], 0
