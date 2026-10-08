@@ -308,7 +308,12 @@ def stage_score(a) -> None:
         budget = (CallBudget(RUN / f"budget_{a.factqa_judge}_2.json", JUDGE_LIMITS[0] - used, 3600.0) if used
                   else CallBudget(RUN / f"budget_{a.factqa_judge}.json", *JUDGE_LIMITS))
     else:                                             # gate G1b: its own approved ledger (300 judge calls)
-        budget = CallBudget(RUN / f"budget_{a.factqa_judge}_g1b.json", 300, 3600.0)
+        g1 = RUN / f"budget_{a.factqa_judge}_g1b.json"
+        used = json.loads(g1.read_text())["calls"] if g1.exists() else 0
+        # The first G1b ledger hit its wall-time cap (provider retries) after 195 calls; the rest
+        # runs under a second ledger whose call cap keeps the G1b total within the approved 300.
+        budget = (CallBudget(RUN / f"budget_{a.factqa_judge}_g1b_2.json", 300 - used, 3600.0) if used
+                  else CallBudget(g1, 300, 3600.0))
     tag = "" if conditions == ("T", "TF") else "_" + "-".join(conditions)
     cache = RUN / f"factqa_{a.factqa_judge}.jsonl"
     if provider == "gemini":
