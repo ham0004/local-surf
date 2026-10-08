@@ -1,0 +1,103 @@
+{
+ "gate": "G1: do frames help open-ended EduVidQA answers? (official training videos only)",
+ "questions": 74,
+ "videos": 20,
+ "judge": "nvidia/nemotron-3-ultra-550b-a55b",
+ "provider": "nvidia",
+ "judge_versions": [
+  "nvidia/nemotron-3-ultra-550b-a55b"
+ ],
+ "nli_model": [
+  "cross-encoder/nli-roberta-base",
+  "1be0567456f0543475805e758725f151f283705a"
+ ],
+ "judge_calls": 213,
+ "judge_usd_measured": 0.0,
+ "unparsed_factqa": 0,
+ "metrics": {
+  "factqa_precision": {
+   "transcript_only": 0.5868806868806868,
+   "transcript_plus_frames": 0.4932164307164306,
+   "frames_minus_transcript": {
+    "difference": -0.09366425616425615,
+    "ci95_video_bootstrap": [
+     -0.1821682347693377,
+     -0.0008986873977242568
+    ]
+   },
+   "paired_questions": 74
+  },
+  "factqa_recall": {
+   "transcript_only": 0.501130326130326,
+   "transcript_plus_frames": 0.403006078006078,
+   "frames_minus_transcript": {
+    "difference": -0.09812424812424814,
+    "ci95_video_bootstrap": [
+     -0.1856904293623044,
+     -0.008575925522052332
+    ]
+   },
+   "paired_questions": 74
+  },
+  "bleu1": {
+   "transcript_only": 0.40736101904651584,
+   "transcript_plus_frames": 0.36627866343430265,
+   "frames_minus_transcript": {
+    "difference": -0.041082355612213226,
+    "ci95_video_bootstrap": [
+     -0.0761989261920017,
+     -0.013670855575144043
+    ]
+   },
+   "paired_questions": 74
+  },
+  "rouge_l": {
+   "transcript_only": 0.2697710278443075,
+   "transcript_plus_frames": 0.25983001320374566,
+   "frames_minus_transcript": {
+    "difference": -0.00994101464056189,
+    "ci95_video_bootstrap": [
+     -0.023605005953587277,
+     0.0036409434907193395
+    ]
+   },
+   "paired_questions": 74
+  },
+  "meteor": {
+   "transcript_only": 0.31096067591427223,
+   "transcript_plus_frames": 0.2834833617703266,
+   "frames_minus_transcript": {
+    "difference": -0.027477314143945573,
+    "ci95_video_bootstrap": [
+     -0.0479756532791603,
+     -0.008753880747307487
+    ]
+   },
+   "paired_questions": 74
+  },
+  "entailment": {
+   "transcript_only": 0.15312840674399725,
+   "transcript_plus_frames": 0.22992626556141832,
+   "frames_minus_transcript": {
+    "difference": 0.07679785881742104,
+    "ci95_video_bootstrap": [
+     -0.007481344317624666,
+     0.16381277167331137
+    ]
+   },
+   "paired_questions": 74
+  },
+  "answer_words": {
+   "transcript_only": 110.9054054054054,
+   "transcript_plus_frames": 105.45945945945945,
+   "frames_minus_transcript": {
+    "difference": -5.445945945945946,
+    "ci95_video_bootstrap": [
+     -12.513176169590643,
+     1.787761059959565
+    ]
+   },
+   "paired_questions": 74
+  }
+ }
+}
