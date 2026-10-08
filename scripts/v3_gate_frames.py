@@ -241,6 +241,9 @@ def stage_score(a) -> None:
         except CostCapReached as e:
             print(f"cost cap reached ({e})")
             return None
+        except (RuntimeError, OSError) as e:     # provider overloaded after retries: skip, retry on the next run
+            print(f"{r['qa_id']} {r['condition']}: judge failed ({str(e)[:80]}); left unscored", flush=True)
+            return None
 
     with ThreadPoolExecutor(max_workers=a.workers) as pool:
         verdicts = list(pool.map(judge, todo))
