@@ -1,0 +1,192 @@
+{
+ "gate": "G1/G1b: do (selected) frames help open-ended EduVidQA answers? (official training videos only)",
+ "questions": 72,
+ "videos": 20,
+ "judge": "nvidia/nemotron-3-ultra-550b-a55b",
+ "provider": "nvidia",
+ "judge_versions": [
+  "nvidia/nemotron-3-ultra-550b-a55b"
+ ],
+ "nli_model": [
+  "cross-encoder/nli-roberta-base",
+  "1be0567456f0543475805e758725f151f283705a"
+ ],
+ "judge_calls": 96,
+ "judge_usd_measured": 0.0,
+ "unparsed_factqa": 0,
+ "metrics": {
+  "factqa_precision": {
+   "mean": {
+    "T": 0.5846644096644097,
+    "R1": 0.48826609347442684,
+    "C4": 0.49814814814814823
+   },
+   "minus_transcript_only": {
+    "R1": {
+     "difference": -0.09639831618998287,
+     "ci95_video_bootstrap": [
+      -0.20759714407930505,
+      -0.0009459054731710742
+     ]
+    },
+    "C4": {
+     "difference": -0.08651626151626152,
+     "ci95_video_bootstrap": [
+      -0.18888751295001294,
+      0.010102151324977281
+     ]
+    }
+   },
+   "paired_questions": 72
+  },
+  "factqa_recall": {
+   "mean": {
+    "T": 0.5087675441842108,
+    "R1": 0.3855105519933951,
+    "C4": 0.38042821376154706
+   },
+   "minus_transcript_only": {
+    "R1": {
+     "difference": -0.1232569921908157,
+     "ci95_video_bootstrap": [
+      -0.2026880618427173,
+      -0.054169424904307505
+     ]
+    },
+    "C4": {
+     "difference": -0.12833933042266377,
+     "ci95_video_bootstrap": [
+      -0.20640912873757075,
+      -0.05446894134394137
+     ]
+    }
+   },
+   "paired_questions": 72
+  },
+  "bleu1": {
+   "mean": {
+    "T": 0.40902214032952416,
+    "R1": 0.37698078537071134,
+    "C4": 0.3744423692468909
+   },
+   "minus_transcript_only": {
+    "R1": {
+     "difference": -0.03204135495881286,
+     "ci95_video_bootstrap": [
+      -0.06857545234923926,
+      -0.00442479336596353
+     ]
+    },
+    "C4": {
+     "difference": -0.03457977108263325,
+     "ci95_video_bootstrap": [
+      -0.061714953890248704,
+      -0.009279228896698742
+     ]
+    }
+   },
+   "paired_questions": 72
+  },
+  "rouge_l": {
+   "mean": {
+    "T": 0.2713587726557693,
+    "R1": 0.2561362069390895,
+    "C4": 0.2580543348862214
+   },
+   "minus_transcript_only": {
+    "R1": {
+     "difference": -0.0152225657166798,
+     "ci95_video_bootstrap": [
+      -0.03163647270965225,
+      0.00026962769185440985
+     ]
+    },
+    "C4": {
+     "difference": -0.01330443776954788,
+     "ci95_video_bootstrap": [
+      -0.026974306900520825,
+      -0.00026433546104371924
+     ]
+    }
+   },
+   "paired_questions": 72
+  },
+  "meteor": {
+   "mean": {
+    "T": 0.312399283534926,
+    "R1": 0.2871800939639668,
+    "C4": 0.28242046828716155
+   },
+   "minus_transcript_only": {
+    "R1": {
+     "difference": -0.0252191895709592,
+     "ci95_video_bootstrap": [
+      -0.0467405333138937,
+      -0.007478811666361648
+     ]
+    },
+    "C4": {
+     "difference": -0.029978815247764506,
+     "ci95_video_bootstrap": [
+      -0.0449934056453412,
+      -0.015536410252516593
+     ]
+    }
+   },
+   "paired_questions": 72
+  },
+  "entailment": {
+   "mean": {
+    "T": 0.15703999744598857,
+    "R1": 0.25087426062075086,
+    "C4": 0.2393713646581293
+   },
+   "minus_transcript_only": {
+    "R1": {
+     "difference": 0.09383426317476228,
+     "ci95_video_bootstrap": [
+      0.005250537473651042,
+      0.1788477155819189
+     ]
+    },
+    "C4": {
+     "difference": 0.08233136721214072,
+     "ci95_video_bootstrap": [
+      0.011052273534125157,
+      0.14968828416215563
+     ]
+    }
+   },
+   "paired_questions": 72
+  },
+  "answer_words": {
+   "mean": {
+    "T": 110.93055555555556,
+    "R1": 105.41666666666667,
+    "C4": 102.95833333333333
+   },
+   "minus_transcript_only": {
+    "R1": {
+     "difference": -5.513888888888889,
+     "ci95_video_bootstrap": [
+      -12.987658227848101,
+      2.2180171277997274
+     ]
+    },
+    "C4": {
+     "difference": -7.972222222222222,
+     "ci95_video_bootstrap": [
+      -14.776986688180717,
+      -0.4458552631578991
+     ]
+    }
+   },
+   "paired_questions": 72
+  }
+ },
+ "conditions": [
+  "T",
+  "R1",
+  "C4"
+ ]
+}

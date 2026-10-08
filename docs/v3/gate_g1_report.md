@@ -43,3 +43,28 @@ picks the larger of two noisy measurements.
 - Judge caveat: one judge model; a Gemini 3.8 Flash cross-check on a sample is still pending.
 
 Data: `reports/v3_gate/g1_summary_nemotron-ultra.json`; verdicts in `runs/v3_gate/` (not in git).
+
+# Gate G1b: do *selected* frames help?
+
+**Answer: no, on these questions.** Same 72 questions (20 videos), same answerer and transcript, same judge
+(Nemotron-3 Ultra 550B, FactQA). New conditions: **R1** = one frame at the question timestamp (the
+EduVidQA paper's protocol); **C4** = the 4 frames MobileCLIP matches best to the question, from a 2 s
+scan of [t − 60 s, t + 30 s], at least 4 s apart. 148 answers (998 s GPU), 291 judge calls in total,
+none unparsable; 2 questions left unscored by provider overload.
+
+| Metric | T | R1 | C4 | R1 − T (95% CI) | C4 − T (95% CI) |
+|---|---|---|---|---|---|
+| **FactQA precision** | 0.585 | 0.488 | 0.498 | −0.096 (−0.208 to −0.001) | −0.087 (−0.189 to +0.010) |
+| **FactQA recall** | 0.509 | 0.386 | 0.380 | −0.123 (−0.203 to −0.054) | −0.128 (−0.206 to −0.054) |
+| Entailment | 0.157 | 0.251 | 0.239 | +0.094 (+0.005 to +0.179) | +0.082 (+0.011 to +0.150) |
+| METEOR | 0.312 | 0.287 | 0.282 | −0.025 (−0.047 to −0.007) | −0.030 (−0.045 to −0.016) |
+| Answer words | 111 | 105 | 103 | −5.5 | −8.0 |
+
+Per question (mean FactQA, ±0.05 equal): R1 better/equal/worse 17/17/36; C4 22/13/37.
+
+**Reading.** With any frames, the 2B answerer writes shorter, more conservative answers: they contradict the
+reference less often (entailment up, significantly) but state fewer of its points (recall down,
+significantly). Since the questions were generated from the transcript, the transcript already carries the
+answer; frames shift the model's attention away from it. **EduVidQA's synthetic training split therefore
+cannot support a claim that better frame selection improves answers** for this answerer. Untested: the 269
+expert-written real questions (locked), larger answerers, and adaptive "no frames vs frames" decisions.
