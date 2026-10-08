@@ -93,6 +93,87 @@ def _frames(r):
     return decode_at(str(path), times, max_side=640, video_id=r["video_id"]).frames
 
 
+def _decode(r, times):
+    from videoqa.frames import decode_at, probe  # noqa: PLC0415
+
+    path = DATA / "videos" / f"{r['video_id']}.mp4"
+    dur = probe(str(path)).duration_s
+    times = [min(max(0.0, x), dur - 0.05) for x in times]
+    return decode_at(str(path), times, max_side=640, video_id=r["video_id"]).frames
+
+
+C4_TIMES = RUN / "c4_times.json"     # MobileCLIP choices, computed once (stage answer-g1b) and reused
+
+
+def _frames_for(r, condition: str):
+    """Frames shown to the answerer under each gate condition (all label-free).
+
+    T   none                                   (transcript only)
+    TF  4 evenly spaced in [t-30, t+10]        (gate G1)
+    R1  1 frame at the question timestamp t    (the EduVidQA paper's reference frame)
+    C4  4 frames chosen by MobileCLIP question-image similarity from a 2 s scan of
+        [t-60, t+30], at least 4 s apart       (gate G1b)
+    """
+    if condition == "T":
+        return []
+    if condition == "TF":
+        return _frames(r)
+    if condition == "R1":
+        return _decode(r, [r["t"]])
+    if condition == "C4":
+        times = json.loads(C4_TIMES.read_text(encoding="utf-8"))[r["qa_id"]]
+        return _decode(r, times)
+    raise ValueError(condition)
+
+
+def choose_c4(r, enc) -> list[float]:
+    """Top-4 MobileCLIP frames for the question in a 2 s scan of [t-60, t+30], >= 4 s apart."""
+    cands = _decode(r, list(np.arange(r["t"] - 60, r["t"] + 30.01, 2.0)))
+    sims = enc.embed_images([f.image for f in cands]) @ enc.embed_texts([r["question"]])[0]
+    chosen = []
+    for i in np.argsort(-sims):
+        t = cands[i].decoded_pts_s
+        if all(abs(t - c) >= 4.0 for c in chosen):
+            chosen.append(round(float(t), 3))
+        if len(chosen) == 4:
+            break
+    return sorted(chosen)
+
+
+def stage_answer_g1b(a) -> None:
+    """Answers for R1 and C4 on the questions whose T and TF answers were both judged in G1."""
+    from videoqa.config import load_config  # noqa: PLC0415
+    from videoqa.v2.budget import CallBudget  # noqa: PLC0415
+    from videoqa.v2.encoders import FrozenEncoders  # noqa: PLC0415
+    from videoqa.v3.openended import AnswerCache, answerer_identity, make_open_answerer  # noqa: PLC0415
+
+    scored = [json.loads(x) for x in Path("reports/v3_gate/scores_nemotron-ultra.jsonl").read_text().splitlines() if x]
+    by = {}
+    for x in scored:
+        by.setdefault(x["qa_id"], set()).add(x["condition"])
+    keep = {q for q, c in by.items() if {"T", "TF"} <= c}
+    rows = [r for r in _question_rows() if r["qa_id"] in keep]
+    if not C4_TIMES.exists():
+        enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
+        C4_TIMES.write_text(json.dumps({r["qa_id"]: choose_c4(r, enc) for r in rows}, indent=1), encoding="utf-8")
+        del enc
+    cfg = load_config(a.config)
+    budget = CallBudget(RUN / "budget_answer_g1b.json", 150, 1800.0)
+    cache = AnswerCache(RUN / "answers.jsonl", answerer_identity(cfg), make_open_answerer(cfg), budget)
+    for n, r in enumerate(rows):
+        excerpt = _excerpt(r)
+        frames = {c: _frames_for(r, c) for c in ("R1", "C4")}
+        if not budget.reserve(sum(cache.get(r["question"], excerpt, f) is None for f in frames.values())):
+            print(f"answer budget reached before question {n}; stopping cleanly")
+            break
+        for f in frames.values():
+            cache.answer(r["qa_id"], r["question"], excerpt, f)
+        if (n + 1) % 10 == 0:
+            print(f"{n + 1}/{len(rows)} fresh={cache.calls}", flush=True)
+    print(json.dumps({"questions": len(rows), "fresh_answers": cache.calls,
+                      "budget": {"calls": budget.calls, "seconds": round(budget.seconds)}}, indent=1))
+
+
 def stage_answer(a) -> None:
     from videoqa.config import load_config  # noqa: PLC0415
     from videoqa.v2.budget import CallBudget  # noqa: PLC0415
@@ -119,22 +200,30 @@ def stage_answer(a) -> None:
                       "budget": {"calls": budget.calls, "seconds": round(budget.seconds)}}, indent=1))
 
 
-def _answer_rows(a) -> list[dict]:
-    """(question, condition, answer) rows for every selected question with both answers cached."""
+def _question_rows() -> list[dict]:
+    """The selected gate questions joined with their dataset rows and transcript paths."""
+    meta = {q["qa_id"]: q for q in json.loads((RUN / "questions.json").read_text(encoding="utf-8"))}
+    rows_by_id = {json.loads(x)["qa_id"]: json.loads(x) for x in (DATA / "qa.jsonl").read_text(encoding="utf-8").splitlines()
+                  if x.strip()}
+    return [{**rows_by_id[qid], **m, "transcript_path": next(
+        str(DATA / "transcripts" / f"{m['video_id']}{e}") for e in (".json", ".vtt")
+        if (DATA / "transcripts" / f"{m['video_id']}{e}").exists())} for qid, m in meta.items()]
+
+
+def _answer_rows(a, conditions=("T", "TF")) -> list[dict]:
+    """(question, condition, answer) rows for every selected question with ALL conditions cached."""
     from videoqa.config import load_config  # noqa: PLC0415
     from videoqa.v3.openended import AnswerCache, answerer_identity  # noqa: PLC0415
 
     cache = AnswerCache(RUN / "answers.jsonl", answerer_identity(load_config(a.config)))
-    meta = {q["qa_id"]: q for q in json.loads((RUN / "questions.json").read_text(encoding="utf-8"))}
-    rows_by_id = {json.loads(s)["qa_id"]: json.loads(s) for s in (DATA / "qa.jsonl").read_text(encoding="utf-8").splitlines()
-                  if s.strip()}
+    c4 = json.loads(C4_TIMES.read_text(encoding="utf-8")) if C4_TIMES.exists() else {}
     out = []
-    for qid, m in meta.items():
-        r = {**rows_by_id[qid], **m, "transcript_path": next(
-            str(DATA / "transcripts" / f"{m['video_id']}{e}") for e in (".json", ".vtt")
-            if (DATA / "transcripts" / f"{m['video_id']}{e}").exists())}
-        excerpt, frames = _excerpt(r), _frames(r)
-        ans = {c: cache.get(r["question"], excerpt, f) for c, f in (("T", []), ("TF", frames))}
+    for r in _question_rows():
+        qid = r["qa_id"]
+        if "C4" in conditions and qid not in c4:
+            continue
+        excerpt = _excerpt(r)
+        ans = {c: cache.get(r["question"], excerpt, _frames_for(r, c)) for c in conditions}
         if all(ans.values()):
             for c, rec in ans.items():
                 out.append({"qa_id": qid, "video_id": r["video_id"], "condition": c, "question": r["question"],
@@ -210,11 +299,17 @@ def stage_score(a) -> None:
     from videoqa.v3.metrics import NLI_MODEL, Entailment, bleu1, meteor, rouge_l  # noqa: PLC0415
 
     provider, model, pace = JUDGES[a.factqa_judge]
-    rows = _answer_rows(a)
+    conditions = tuple(a.conditions.split(","))
+    rows = _answer_rows(a, conditions)
     # Ledger 1 summed parallel latencies against its time cap and stopped early (125 calls); the
     # remaining calls run under ledger 2, whose calls cap keeps the total within the approved 400.
-    used = json.loads((RUN / f"budget_{a.factqa_judge}.json").read_text())["calls"]         if (RUN / f"budget_{a.factqa_judge}.json").exists() else 0
-    budget = CallBudget(RUN / f"budget_{a.factqa_judge}_2.json", JUDGE_LIMITS[0] - used, 3600.0) if used else         CallBudget(RUN / f"budget_{a.factqa_judge}.json", *JUDGE_LIMITS)
+    if conditions == ("T", "TF"):
+        used = json.loads((RUN / f"budget_{a.factqa_judge}.json").read_text())["calls"] if (RUN / f"budget_{a.factqa_judge}.json").exists() else 0
+        budget = (CallBudget(RUN / f"budget_{a.factqa_judge}_2.json", JUDGE_LIMITS[0] - used, 3600.0) if used
+                  else CallBudget(RUN / f"budget_{a.factqa_judge}.json", *JUDGE_LIMITS))
+    else:                                             # gate G1b: its own approved ledger (300 judge calls)
+        budget = CallBudget(RUN / f"budget_{a.factqa_judge}_g1b.json", 300, 3600.0)
+    tag = "" if conditions == ("T", "TF") else "_" + "-".join(conditions)
     cache = RUN / f"factqa_{a.factqa_judge}.jsonl"
     if provider == "gemini":
         if a.max_usd is None:
@@ -257,45 +352,46 @@ def stage_score(a) -> None:
                        "bleu1": bleu1(r["reference"], r["answer"]), "rouge_l": rouge_l(r["reference"], r["answer"]),
                        "meteor": meteor(r["reference"], r["answer"]), "entailment": e,
                        "answer_words": len(r["answer"].split())})
-    (RUN / f"scores_{a.factqa_judge}.jsonl").write_text("".join(json.dumps(x) + "\n" for x in scored), encoding="utf-8")
+    (RUN / f"scores_{a.factqa_judge}{tag}.jsonl").write_text("".join(json.dumps(x) + "\n" for x in scored), encoding="utf-8")
 
     metrics = ("factqa_precision", "factqa_recall", "bleu1", "rouge_l", "meteor", "entailment", "answer_words")
     by = {}
     for x in scored:
         by.setdefault(x["qa_id"], {})[x["condition"]] = x
-    pairs = {q: d for q, d in by.items() if "T" in d and "TF" in d}
+    pairs = {q: d for q, d in by.items() if all(c in d for c in conditions)}
     videos = {q: d["T"]["video_id"] for q, d in pairs.items()}
-    out = {"gate": "G1: do frames help open-ended EduVidQA answers? (official training videos only)",
+    out = {"gate": "G1/G1b: do (selected) frames help open-ended EduVidQA answers? (official training videos only)",
            "questions": len(pairs), "videos": len(set(videos.values())), "judge": model, "provider": provider,
            "judge_versions": sorted({v.get("model_version") for v in fq.records.values()}),
            "nli_model": list(NLI_MODEL), "judge_calls": budget.calls, "judge_usd_measured": round(fq.spent_usd, 4),
            "unparsed_factqa": sum(v.get("score") is None for v in fq.records.values()), "metrics": {}}
+    out["conditions"] = list(conditions)
     for m in metrics:
-        ok = {q: d for q, d in pairs.items() if d["T"][m] is not None and d["TF"][m] is not None}
-        out["metrics"][m] = {"transcript_only": float(np.mean([d["T"][m] for d in ok.values()])),
-                             "transcript_plus_frames": float(np.mean([d["TF"][m] for d in ok.values()])),
-                             "frames_minus_transcript": _video_bootstrap({q: d["TF"][m] - d["T"][m] for q, d in ok.items()},
-                                                                         videos),
+        ok = {q: d for q, d in pairs.items() if all(d[c][m] is not None for c in conditions)}
+        out["metrics"][m] = {"mean": {c: float(np.mean([d[c][m] for d in ok.values()])) for c in conditions},
+                             "minus_transcript_only": {c: _video_bootstrap({q: d[c][m] - d["T"][m] for q, d in ok.items()},
+                                                                           videos) for c in conditions if c != "T"},
                              "paired_questions": len(ok)}
     Path("reports/v3_gate").mkdir(parents=True, exist_ok=True)
-    Path(f"reports/v3_gate/g1_summary_{a.factqa_judge}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
+    Path(f"reports/v3_gate/g1_summary_{a.factqa_judge}{tag}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
     print(json.dumps(out, indent=1))
 
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("stage", choices=("answer", "judge-audit", "audit-sheet", "judge-rest", "score"))
+    p.add_argument("stage", choices=("answer", "answer-g1b", "judge-audit", "audit-sheet", "judge-rest", "score"))
     p.add_argument("--n", type=int, default=100)
     p.add_argument("--judge", choices=("phi4mini", "qwen3vl4b"), default="phi4mini")
     p.add_argument("--max-usd", type=float, default=None, help="hard dollar cap for paid Gemini calls (score stage)")
     p.add_argument("--factqa-judge", choices=("nemotron-ultra", "gemini-flash"), default="nemotron-ultra")
+    p.add_argument("--conditions", default="T,TF", help="score stage: conditions to compare, T first (e.g. T,R1,C4)")
     p.add_argument("--workers", type=int, default=8, help="parallel judge requests (paced to the free-tier RPM)")
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     {"answer": stage_answer, "judge-audit": lambda x: stage_judge(x, "audit"),
      "audit-sheet": stage_audit_sheet, "judge-rest": lambda x: stage_judge(x, "rest"),
-     "score": stage_score}[a.stage](a)
+     "score": stage_score, "answer-g1b": stage_answer_g1b}[a.stage](a)
 
 
 if __name__ == "__main__":
