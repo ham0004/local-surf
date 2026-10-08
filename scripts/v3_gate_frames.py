@@ -183,8 +183,11 @@ def stage_audit_sheet(a) -> None:
     print(f"{len(items)} audit items written (conditions hidden)")
 
 
-GEMINI_MODEL = "gemini-3.8-flash"            # strongest model the free tier serves (Pro returns quota 0)
-GEMINI_LIMITS = (400, 3600.0)                 # approved by the user for the gate: calls, API seconds
+JUDGES = {   # name -> (provider, model, free-tier pacing in seconds between call starts)
+    "nemotron-ultra": ("nvidia", "nvidia/nemotron-3-ultra-550b-a55b", 1.6),   # NVIDIA NIM free tier: 40 RPM
+    "gemini-flash": ("gemini", "gemini-3.8-flash", 4.5),                      # free tier: 20 requests/day
+}
+JUDGE_LIMITS = (400, 7200.0)    # approved for the gate: 400 judge calls; API seconds summed over parallel calls
 
 
 def _video_bootstrap(diffs: dict, videos: dict, repeats: int = 5000) -> dict:
@@ -199,37 +202,55 @@ def _video_bootstrap(diffs: dict, videos: dict, repeats: int = 5000) -> dict:
 
 
 def stage_score(a) -> None:
-    """FactQA (Gemini) + BLEU-1/ROUGE-L/METEOR/entailment for every answer; G1 paired differences."""
+    """FactQA (API judge) + BLEU-1/ROUGE-L/METEOR/entailment for every answer; G1 paired differences."""
+    from concurrent.futures import ThreadPoolExecutor  # noqa: PLC0415
+
     from videoqa.v2.budget import CallBudget  # noqa: PLC0415
-    from videoqa.v3.factqa import CostCapReached, GeminiFactQA, verdict_key  # noqa: PLC0415
+    from videoqa.v3.factqa import CostCapReached, GeminiFactQA, OpenAICompatFactQA, verdict_key  # noqa: PLC0415
     from videoqa.v3.metrics import NLI_MODEL, Entailment, bleu1, meteor, rouge_l  # noqa: PLC0415
 
+    provider, model, pace = JUDGES[a.factqa_judge]
     rows = _answer_rows(a)
-    budget = CallBudget(RUN / "budget_gemini.json", *GEMINI_LIMITS)
-    if a.max_usd is None:
-        raise SystemExit("--max-usd is required: the paid Gemini tier needs an explicit dollar cap")
-    fq = GeminiFactQA(GEMINI_MODEL, RUN / "factqa_gemini.jsonl", budget, max_usd=a.max_usd)
-    ent = Entailment()(([(r["reference"], r["answer"]) for r in rows]))
-    scored = []
-    for n, (r, e) in enumerate(zip(rows, ent, strict=True)):
-        need = sum(verdict_key(GEMINI_MODEL, d, r["question"], a1, a2) not in fq.records
+    budget = CallBudget(RUN / f"budget_{a.factqa_judge}.json", *JUDGE_LIMITS)
+    cache = RUN / f"factqa_{a.factqa_judge}.jsonl"
+    if provider == "gemini":
+        if a.max_usd is None:
+            raise SystemExit("--max-usd is required for Gemini (paid beyond the free 20/day)")
+        fq = GeminiFactQA(model, cache, budget, min_interval_s=pace, max_usd=a.max_usd)
+    else:
+        fq = OpenAICompatFactQA(model, cache, budget=budget, min_interval_s=pace)
+
+    # Reserve whole answers (both directions) in a fixed order before any call is made.
+    todo, need_total = [], 0
+    for r in rows:
+        need = sum(verdict_key(model, d, r["question"], a1, a2) not in fq.records
                    for d, a1, a2 in (("precision", r["answer"], r["reference"]), ("recall", r["reference"], r["answer"])))
-        if not budget.reserve(need):                    # both calls of an answer, or none
-            print("Gemini budget reached; stopping cleanly")
+        if not budget.reserve(need_total + need):
+            print(f"judge budget covers {len(todo)} of {len(rows)} answers; the rest are not scored")
             break
+        need_total += need
+        todo.append(r)
+
+    def judge(r):
         try:
-            f = fq.score(r["qa_id"], r["question"], r["reference"], r["answer"])
+            return fq.score(r["qa_id"], r["question"], r["reference"], r["answer"])
         except CostCapReached as e:
-            print(f"cost cap reached ({e}); stopping cleanly")
-            break
+            print(f"cost cap reached ({e})")
+            return None
+
+    with ThreadPoolExecutor(max_workers=a.workers) as pool:
+        verdicts = list(pool.map(judge, todo))
+    ent = Entailment()([(r["reference"], r["answer"]) for r in todo])
+    scored = []
+    for r, f, e in zip(todo, verdicts, ent, strict=True):
+        if f is None:
+            continue
         scored.append({"qa_id": r["qa_id"], "video_id": r["video_id"], "condition": r["condition"],
                        "factqa_precision": f["precision"], "factqa_recall": f["recall"],
                        "bleu1": bleu1(r["reference"], r["answer"]), "rouge_l": rouge_l(r["reference"], r["answer"]),
                        "meteor": meteor(r["reference"], r["answer"]), "entailment": e,
                        "answer_words": len(r["answer"].split())})
-        if (n + 1) % 20 == 0:
-            print(f"{n + 1}/{len(rows)} scored; Gemini calls {budget.calls}/{budget.max_calls}", flush=True)
-    (RUN / "scores.jsonl").write_text("".join(json.dumps(x) + "\n" for x in scored), encoding="utf-8")
+    (RUN / f"scores_{a.factqa_judge}.jsonl").write_text("".join(json.dumps(x) + "\n" for x in scored), encoding="utf-8")
 
     metrics = ("factqa_precision", "factqa_recall", "bleu1", "rouge_l", "meteor", "entailment", "answer_words")
     by = {}
@@ -238,9 +259,9 @@ def stage_score(a) -> None:
     pairs = {q: d for q, d in by.items() if "T" in d and "TF" in d}
     videos = {q: d["T"]["video_id"] for q, d in pairs.items()}
     out = {"gate": "G1: do frames help open-ended EduVidQA answers? (official training videos only)",
-           "questions": len(pairs), "videos": len(set(videos.values())), "judge": GEMINI_MODEL,
+           "questions": len(pairs), "videos": len(set(videos.values())), "judge": model, "provider": provider,
            "judge_versions": sorted({v.get("model_version") for v in fq.records.values()}),
-           "nli_model": list(NLI_MODEL), "gemini_calls": budget.calls, "gemini_usd_measured": round(fq.spent_usd, 4),
+           "nli_model": list(NLI_MODEL), "judge_calls": budget.calls, "judge_usd_measured": round(fq.spent_usd, 4),
            "unparsed_factqa": sum(v.get("score") is None for v in fq.records.values()), "metrics": {}}
     for m in metrics:
         ok = {q: d for q, d in pairs.items() if d["T"][m] is not None and d["TF"][m] is not None}
@@ -250,7 +271,7 @@ def stage_score(a) -> None:
                                                                          videos),
                              "paired_questions": len(ok)}
     Path("reports/v3_gate").mkdir(parents=True, exist_ok=True)
-    Path("reports/v3_gate/g1_summary.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
+    Path(f"reports/v3_gate/g1_summary_{a.factqa_judge}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
     print(json.dumps(out, indent=1))
 
 
@@ -260,6 +281,8 @@ def main() -> None:
     p.add_argument("--n", type=int, default=100)
     p.add_argument("--judge", choices=("phi4mini", "qwen3vl4b"), default="phi4mini")
     p.add_argument("--max-usd", type=float, default=None, help="hard dollar cap for paid Gemini calls (score stage)")
+    p.add_argument("--factqa-judge", choices=("nemotron-ultra", "gemini-flash"), default="nemotron-ultra")
+    p.add_argument("--workers", type=int, default=8, help="parallel judge requests (paced to the free-tier RPM)")
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
