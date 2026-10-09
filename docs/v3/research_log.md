@@ -84,3 +84,11 @@ Detailed results live in the linked reports; this log is the chronological index
   + MobileCLIP top-4, exact letter scoring, dev only, 400 calls / 1 GPU-hour; passes if frames beat the
   transcript with a CI above zero.
 - Status: dev transcription running; the gate starts automatically when it finishes.
+
+**Step 11. CG-Bench long-video sample downloaded** (2026-10-09)
+- `scripts/research/fetch_cgbench_videos.py` read the 32 remote archive directories and downloaded only
+  the 51 videos that have English subtitles: 15.21 GB instead of ~128 GB of whole archives. Videos are in
+  `data/cgbench/videos/`, subtitles in `data/cgbench/transcripts/` (not in git; log in
+  `data/cgbench/fetch_log.json`).
+- These 51 videos (~500 questions with human evidence intervals) are the long-video development pool;
+  their train/dev/test split by video will be declared before any result.
