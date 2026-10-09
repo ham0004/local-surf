@@ -56,3 +56,22 @@ Where the heads go later (not in the baseline):
 Procedure: change one setting at a time from the v2 defaults, keep a change only if it helps on dev, then
 test the combination; all trials logged with their numbers. The chosen configuration is frozen as **the
 baseline** that Head A and Head B must beat.
+
+## Frozen baseline (2026-10-10, after the baseline cycle; research_log steps 27–36)
+
+| Box | Frozen setting |
+|---|---|
+| [1] retrieval | BM25 over 20 s units, question + options as query, top 4 windows (+1 neighbour) — unchanged |
+| [2] Path A | MiniLM zero-shot line relevance inside the windows, 6 lines, frame at line end − 0.3 s — unchanged |
+| [3] Path B | **hybrid**: best 3 frames of the scan inside the windows + best 3 of the top-24 dense whole-video MobileCLIP times (2 s features, ≥ 4 s apart); one per stable run |
+| [4] pool | merge + de-duplicate (hash ≤ 3 or ≤ 1 s) — unchanged |
+| [5] selector | **MMR (0.7 relevance / 0.3 redundancy) on MobileCLIP similarity to question + options** |
+| K | **4** |
+| [6] transcript to the answerer | **none** (multiple choice and open-ended both scored best without the excerpt) |
+| [7] answerer | frozen Qwen3-VL-2B (unchanged) |
+
+Dev results of the frozen baseline (v2 default in brackets): CG-Bench multiple choice **40.2%** (28.0),
+paired +12.2 (+4.6..+21.5); Video-MMMU Perception **63.3%** (56.1), +7.1 (−1.0..+15.3); CG-Bench open-ended
+(judge agreement with hand grading 40/40 on a sample) **19.5%** (13.4), +6.1 (−1.3..+13.3); CG-Bench pool
+evidence recall **60%** (33%). Head A replaces box [2]'s rule, Head B box [5]'s rule; everything else stays
+as above for every later comparison, including the final test.

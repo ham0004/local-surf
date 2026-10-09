@@ -389,3 +389,20 @@ Detailed results live in the linked reports; this log is the chronological index
 - A second ledger is declared for the remaining follow-ups of step 34 (about 1,100 calls):
   `runs/v3_baseline/budget_2.json`, 1,500 calls / 2 GPU-hours (`--ledger budget_2.json`). Open-ended answers
   keep their own ledger (1,500).
+
+**Step 36. No-transcript follow-ups, open-ended check, and the frozen baseline** (2026-10-10)
+- Without transcript (K = 4 unless stated), CG-Bench / Video-MMMU: mmropt 40.2 / 63.3; mmr 39.0 / 65.3;
+  clipopt 39.0 / 63.3; clip 32.9 / 58.2; mmropt K = 2 37.8 / 52.0; K = 8 39.0 / 60.2; Path A 3 proposals
+  37.8 / 61.2; Path B 12 proposals 36.6 / 59.2. No change beats mmropt at K = 4 (mmr's mean is 0.4 points
+  higher, about one question; a change is kept only when it helps).
+- Open-ended answers on CG-Bench dev (82; answers generated without options; short human references):
+  - Judge: Nemotron-3-Ultra (NVIDIA NIM free tier), our one-line correct/incorrect prompt
+    (`ShortAnswerJudge`), 246 verdicts. Hand check of 40 random verdicts: 40/40 agree (2 borderline:
+    "motherboard" vs "computer host", father-son vs father-daughter). Three references are broken in the
+    dataset (bare "3", "4" or "Can" for non-count questions); they count as incorrect for every method.
+  - Correct: frozen setting without transcript 19.5%; with 120 words 17.1%; v2 default 13.4%.
+    Paired: no transcript − v2 +6.1 (−1.3..+13.3); no transcript − 120 words +2.4 (−2.5..+6.5). Same
+    direction as multiple choice; not significant on 82 questions.
+- **Baseline frozen** (`docs/v3/baseline_framework.md`, "Frozen baseline"): hybrid Path B, MMR on question
+  + options, K = 4, no transcript to the answerer. Dev: CG-Bench 40.2% MC / 19.5% open-ended / 60% pool
+  evidence; Video-MMMU 63.3%. This is the bar for Head A and Head B. Next: Head A cycle (step 29 plan).
