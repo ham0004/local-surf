@@ -148,3 +148,18 @@ Detailed results live in the linked reports; this log is the chronological index
   with question conditioning (FiLM), time features and a 2-layer transformer over time (~1 M parameters).
   An untrained head ranks frames exactly like MobileCLIP (unit-tested), so any change is learned.
 - `scripts/v3_head_a.py`: pilot declared before any result (protocol in the script docstring).
+
+**Step 19. Head A pilot: does not pass (overfitting on 306 questions)** (2026-10-09)
+- Dev hit@4 (82 questions; a chosen frame inside the human evidence): random 8.6%, uniform 7.3%,
+  MobileCLIP 43.9%, smoothed MobileCLIP 45.1%, AKS 43.9% (threshold 0.05 tuned on train), Head A 46.3%
+  (3-seed score average). Head A − MobileCLIP = +2.4 (CI −6.1 to +11.0): the declared rule (CI above 0)
+  is not met. Training data: 306 fit / 67 val questions from 37 train videos.
+- Diagnosis from the curves: training loss falls throughout while held-out train-video hit@4 drops from
+  ~0.39 (epochs 0–7, i.e. close to the MobileCLIP starting point) to ~0.12–0.16 by epoch 29; the kept
+  checkpoints are essentially untrained. The model (~1 M parameters) overfits a few hundred questions.
+- Decision: the pilot is reported as failed. Because the failure has a specific, testable cause (too
+  little supervision), the next experiment scales the training data rather than changing the method:
+  Head A needs no subtitles, so all released CG-Bench videos except the 14 dev/test videos can supply
+  training questions with human evidence. This is declared as a new experiment with its own stop rule
+  (if scaled Head A still does not beat MobileCLIP on dev, Head A is stopped). Report:
+  `reports/v3_head_a/offline_dev.json`.
