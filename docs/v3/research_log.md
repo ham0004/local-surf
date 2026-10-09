@@ -92,3 +92,12 @@ Detailed results live in the linked reports; this log is the chronological index
   `data/cgbench/fetch_log.json`).
 - These 51 videos (~500 questions with human evidence intervals) are the long-video development pool;
   their train/dev/test split by video will be declared before any result.
+
+**Step 12. CG-Bench question file and declared split** (2026-10-09)
+- `scripts/research/prepare_cgbench.py`: 510 questions on the 51 English-subtitled videos, each with
+  choices, gold index, human clue intervals, domain and sub-category.
+- Split declared before any CG-Bench result, by video (sha256 rule): train 37 videos / 373 questions,
+  dev 8 / 82, test 6 / 55. Custom protocol (CG-Bench has no official split). The test part is small;
+  results on it will carry wide intervals and are reported as such.
+- Gold answers spread over A–H (largest E = 85/510); 6–8 options per question.
+- Manifest: `reports/cgbench_manifest.json`.

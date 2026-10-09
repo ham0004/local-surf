@@ -1,0 +1,31 @@
+{
+ "dataset": "CG-Bench (English-subtitled subset we hold)",
+ "videos": 51,
+ "questions": 510,
+ "questions_per_split": {
+  "train": 373,
+  "dev": 82,
+  "test": 55
+ },
+ "videos_per_split": {
+  "train": 37,
+  "dev": 8,
+  "test": 6
+ },
+ "split_rule": "sha256('cgbench:'+video_uid) % 10: 0-5 train, 6-7 dev, 8-9 test",
+ "gold_position_counts": {
+  "D": 83,
+  "B": 71,
+  "G": 49,
+  "F": 82,
+  "E": 85,
+  "A": 58,
+  "C": 63,
+  "H": 19
+ },
+ "options_per_question": {
+  "6": 126,
+  "7": 266,
+  "8": 118
+ }
+}
