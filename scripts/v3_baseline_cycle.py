@@ -49,6 +49,9 @@ POOLS = {
     "dense": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="features"),
     # half of Path B from the dense whole-video features, half from the v2 scan inside the BM25 windows
     "hybrid": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid"),
+    # stage 3, path budgets on the chosen pool (hybrid): Path A 3 instead of 6; Path B 12 instead of 6
+    "hybrid_a3": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", n_path_a=3),
+    "hybrid_b12": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", n_path_b=12),
 }
 FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/features"}
 LIMITS = (4000, 4 * 3600.0)
@@ -76,7 +79,7 @@ def stage_pools(a) -> None:
     from videoqa.v2.head_a import HotMomentScorer  # noqa: PLC0415
 
     cfg = PoolConfig(**POOLS[a.pool], excerpt_words=300,
-                     features_dir=FEATURES[a.dataset] if a.pool in ("dense", "hybrid") else None)
+                     features_dir=FEATURES[a.dataset] if a.pool == "dense" or a.pool.startswith("hybrid") else None)
     enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
     head_a = HotMomentScorer(device="cuda", cache_dir="cache/hf/hub")
     out = pool_dir(a.dataset, a.pool)
