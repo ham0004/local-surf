@@ -64,18 +64,43 @@ def group_words(words, max_words: int = 14, max_gap_s: float = 1.0, max_len_s: f
     return segs
 
 
+def sanitize(segs: list[dict]) -> list[dict]:
+    """Make segments valid and time-ordered: Whisper word timestamps occasionally run backwards
+    (e.g. [68.76, 61.94]). Each segment starts no earlier than the previous one ends and has end >= start."""
+    out, prev_end = [], 0.0
+    for x in segs:
+        s = max(float(x["start"]), prev_end)
+        e = max(float(x["end"]), s + 0.01)
+        out.append({"start": round(s, 3), "end": round(e, 3), "text": x["text"]})
+        prev_end = e
+    return out
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--videos", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--language", default="en")
     p.add_argument("--ids", default=None, help="optional file with one video id per line (transcribe these first)")
+    p.add_argument("--repair", action="store_true", help="only re-sanitize existing transcript files, no ASR")
     p.add_argument("--batch", type=int, default=1, help="word timestamps keep attention maps; >1 can exhaust 16 GB")
     a = p.parse_args()
+    out = Path(a.out)
+    if a.repair:
+        fixed = 0
+        for f in out.glob("*.json"):
+            if f.name.startswith("_"):
+                continue
+            segs = json.loads(f.read_text(encoding="utf-8"))
+            clean = sanitize(segs)
+            if clean != segs:
+                f.write_text(json.dumps(clean, ensure_ascii=False), encoding="utf-8")
+                fixed += 1
+        print(f"repaired {fixed} transcript files")
+        return
     import torch  # noqa: PLC0415
     from transformers import pipeline  # noqa: PLC0415
 
-    out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     meta_path = out / "_asr_meta.json"
     meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
@@ -96,7 +121,7 @@ def main() -> None:
             continue
         res = asr({"raw": audio, "sampling_rate": 16000}, chunk_length_s=30, batch_size=a.batch,
                   return_timestamps="word", generate_kwargs={"language": a.language, "task": "transcribe"})
-        segs = group_words(res.get("chunks", []))
+        segs = sanitize(group_words(res.get("chunks", [])))
         (out / f"{v.stem}.json").write_text(json.dumps(segs, ensure_ascii=False), encoding="utf-8")
         meta[v.stem] = {"model": MODEL, "revision": revision, "language": a.language,
                         "audio_seconds": round(len(audio) / 16000, 1), "seconds": round(time.perf_counter() - t0, 1),
