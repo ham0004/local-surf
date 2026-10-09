@@ -275,3 +275,17 @@ Detailed results live in the linked reports; this log is the chronological index
   (a) learned relevance on frozen MiniLM features; (b) fine-tuned cross-encoder; (c) (b) + offset
   distribution (the proposed design); (d) (c) + multi-line evidence aggregation over a time grid; with the
   zero-shot rules above as baselines.
+
+**Step 30. Baseline cycle: one more Path B setting (dense whole-video features)** (2026-10-10)
+- Interim stage-1 numbers on CG-Bench dev (K = 4, 120 words): pools built inside the BM25 windows hold an
+  evidence frame for only 32–33% of questions and reach 23–32% accuracy; the whole-video even scan (cap 48)
+  raises pool evidence recall to 50% and accuracy to 34% (MobileCLIP top-K). Both are below the gate's
+  dense rule (MobileCLIP top-4 over 2 s features of the whole video, 40.2%, gate_cgbench_report.md). A
+  baseline that ignores that rule would be too weak a bar for the heads, so the rule enters the cycle as a
+  pool setting:
+  - `PoolConfig.path_b_scope = "features"`: Path B ranks the precomputed 2 s MobileCLIP features of the
+    whole video by question similarity, decodes the top 24 (≥ 4 s apart), keeps one per stable run and the
+    best 6, as in the other settings. Path A is unchanged.
+  - Same selectors, K = 4, 120 words, plus Path A-only / Path B-only on this pool
+    (`scripts/run_baseline_dense.sh`). Video-MMMU dev features computed for this (98 videos,
+    `v3_features.py --split dev`).
