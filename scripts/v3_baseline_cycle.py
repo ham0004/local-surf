@@ -55,6 +55,8 @@ POOLS = {
 }
 FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/features"}
 LIMITS = (4000, 4 * 3600.0)
+# second ledger, declared in research_log step 35 after the first was used up by stages 1-3
+EXTRA_LIMITS = (1500, 2 * 3600.0)
 OPEN_LIMITS = (1500, 4 * 3600.0)
 JUDGE = "nvidia/nemotron-3-ultra-550b-a55b"
 JUDGE_LIMITS = (3000, 4 * 3600.0)
@@ -159,7 +161,7 @@ def stage_answer(a) -> None:
     RUN.mkdir(parents=True, exist_ok=True)
     cache_path, rows_path = RUN / "answers.jsonl", RUN / "rows.jsonl"
     cache = {json.loads(x)["key"]: json.loads(x) for x in cache_path.read_text().splitlines()} if cache_path.exists() else {}
-    budget = CallBudget(RUN / "budget.json", *LIMITS)
+    budget = CallBudget(RUN / a.ledger, *(LIMITS if a.ledger == "budget.json" else EXTRA_LIMITS))
     answerer = None
     qa = {it.qa.qa_id: it.qa for it in items(a.dataset)}
     for rule in a.selectors.split(","):
@@ -295,6 +297,7 @@ def main() -> None:
     p.add_argument("--k", type=int, default=4)
     p.add_argument("--words", type=int, default=120)
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
+    p.add_argument("--ledger", default="budget.json", help="answer-call ledger (budget_2.json = the step-35 extension)")
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     {"pools": stage_pools, "answer": stage_answer, "open": stage_open, "judge": stage_judge,

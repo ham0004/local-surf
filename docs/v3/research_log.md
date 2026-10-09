@@ -380,3 +380,12 @@ Detailed results live in the linked reports; this log is the chronological index
   primary objective).
 - Follow-up trials (no transcript): K = 2 and 8; selectors clip / clipopt / mmr; Path A 3; Path B 12. The
   Whisper job was paused for the GPU (resumable).
+
+**Step 35. Baseline answer budget used up; second ledger** (2026-10-10)
+- The declared ledger (4,000 answer calls, local GPU, no cost) was used up after stages 1–3 and part of the
+  no-transcript follow-ups (3,919 calls had run; the runner stopped cleanly). Done before the stop:
+  K = 8 at 120 words (CG-Bench 36.6, Video-MMMU 59.2), K = 2 without transcript on CG-Bench (37.8), and
+  81/82 CG-Bench questions of K = 8 without transcript.
+- A second ledger is declared for the remaining follow-ups of step 34 (about 1,100 calls):
+  `runs/v3_baseline/budget_2.json`, 1,500 calls / 2 GPU-hours (`--ledger budget_2.json`). Open-ended answers
+  keep their own ledger (1,500).
