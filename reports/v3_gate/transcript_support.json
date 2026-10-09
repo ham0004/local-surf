@@ -1,0 +1,11 @@
+{
+ "questions": 45,
+ "videos": 14,
+ "judge": "nvidia/nemotron-3-ultra-550b-a55b",
+ "judge_calls": 93,
+ "reference_claims_supported_by_own_transcript": 0.4949877283210617,
+ "reference_claims_supported_by_other_video_transcript": 0.00606060606060606,
+ "share_of_questions_own_support_at_least_0.5": 0.5333333333333333,
+ "share_of_questions_own_support_at_least_0.8": 0.24444444444444444,
+ "own_minus_control": 0.4889271222604556
+}
