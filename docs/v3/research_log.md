@@ -334,3 +334,23 @@ Detailed results live in the linked reports; this log is the chronological index
   rest (dense whole video), same selectors. Then the configuration with the best mean over both
   benchmarks (and the higher CG-Bench evidence recall on ties) goes to stage 3 (K, transcript budget,
   path budgets) and is frozen.
+
+**Step 33. Baseline cycle: hybrid Path B results; setting chosen for stage 3** (2026-10-10)
+- Hybrid pool (best 3 Path B frames from the BM25-window scan + best 3 of the rest), K = 4, 120 words:
+
+  | Selector | CG-Bench (pool evidence 60%) | Video-MMMU |
+  |---|---|---|
+  | clip / clipopt / mmr / mmropt / relevance | 29.3 / 34.1 / 32.9 / **35.4** / 25.6 | 55.1 / 55.1 / 58.2 / **58.2** / 51.0 |
+  | Path A only / Path B only | 25.6 / 34.1 | 55.1 / 52.0 |
+
+- Mean of the two benchmarks (declared rule, step 32): hybrid + mmropt 46.8; even whole-video + clip 45.6;
+  hybrid + mmr 45.6; dense + clipopt 44.9; v2 + clip (the v2 default) 42.0. Chosen for stage 3:
+  **hybrid pool + MMR on question and options (mmropt)**. Its advantages over the next settings are within
+  dev noise; it is chosen by the declared rule, and its CG-Bench pool evidence recall (60%) is close to
+  the best (dense, 62%) while it keeps the lecture-friendly window frames.
+- Stage 3 started on it (`scripts/run_baseline_stage3.sh`): K ∈ {2, 8}; transcript 0 or 300 words; Path A
+  3 instead of 6 proposals; Path B 12 instead of 6.
+- The EduVidQA audio download finished (122 of 157 videos; the rest returned HTTP 403); Whisper
+  transcription of the 122 is running alongside (data/eduvidqa/transcripts_asr, Head A training data).
+- The CG-Bench train-video feature extraction (246 of 719 done) is paused to keep the GPU for the
+  baseline cycle; it is resumable and will serve Head B training data.
