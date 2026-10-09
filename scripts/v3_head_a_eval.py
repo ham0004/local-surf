@@ -21,6 +21,7 @@ Each method also has a "+nms" variant: proposals at least 8 s apart, so k propos
 
     python scripts/v3_head_a_eval.py zeroshot            # writes reports/v3_head_a/zeroshot.json
     python scripts/v3_head_a_eval.py offsets             # speech-to-evidence offsets on train (analysis)
+    python scripts/v3_head_a_eval.py rerankers           # stronger frozen rerankers (downloads public models)
 """
 
 from __future__ import annotations
@@ -137,6 +138,52 @@ class ZeroShot:
         raise ValueError(method)
 
 
+class Reranker:
+    """Any Hugging Face cross-encoder reranker, zero-shot: relevance of (question, line + 1 neighbour each side)."""
+
+    def __init__(self, model_id: str, device: str = "cuda") -> None:
+        import torch  # noqa: PLC0415
+        from transformers import AutoModelForSequenceClassification, AutoTokenizer  # noqa: PLC0415
+
+        self.torch, self.device = torch, device
+        self.tok = AutoTokenizer.from_pretrained(model_id, cache_dir="cache/hf/hub")
+        self.model = AutoModelForSequenceClassification.from_pretrained(
+            model_id, cache_dir="cache/hf/hub", torch_dtype=torch.float16).eval().to(device)
+
+    def score(self, query: str, texts: list[str], batch: int = 128) -> np.ndarray:
+        out = []
+        with self.torch.no_grad():
+            for i in range(0, len(texts), batch):
+                b = self.tok([query] * len(texts[i:i + batch]), texts[i:i + batch], padding=True, truncation=True,
+                             max_length=256, return_tensors="pt").to(self.device)
+                out.append(self.model(**b).logits[:, 0].float().cpu().numpy())
+        return np.concatenate(out) if out else np.zeros(0)
+
+
+def stage_rerankers(a) -> None:
+    """Stronger frozen rerankers over every line (as minilm_all), question only and question + options."""
+    from videoqa.v2.candidates import _with_neighbours  # noqa: PLC0415
+
+    recs = load(a.split)
+    table = {}
+    for model_id in a.models.split(","):
+        rr = Reranker(model_id)
+        for mode in ("q", "qo"):
+            props = []
+            for r in recs:
+                segs = segments(r)
+                q = r["question"] + (" Options: " + " | ".join(r["options"]) if mode == "qo" and r["options"] else "")
+                rel = rr.score(q, [_with_neighbours(segs, s) for s in segs])
+                props.append([line_time(segs[i], r["duration_s"]) for i in np.argsort(-rel, kind="stable")[:64]])
+            table[f"{model_id}|{mode}"] = res = score_metrics(recs, props)
+            print(f"{model_id:45s} {mode:2s} " + " ".join(f"R@{k}={res[f'recall@{k}']:.3f}" for k in KS), flush=True)
+        del rr
+    OUT.mkdir(parents=True, exist_ok=True)
+    path = OUT / f"rerankers_{a.split}.json"
+    old = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    path.write_text(json.dumps({**old, **table}, indent=1), encoding="utf-8")
+
+
 def stage_zeroshot(a) -> None:
     recs = load(a.split)
     zs = ZeroShot()
@@ -180,11 +227,12 @@ def stage_offsets(a) -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("stage", choices=("zeroshot", "offsets"))
+    p.add_argument("stage", choices=("zeroshot", "offsets", "rerankers"))
+    p.add_argument("--models", default="cross-encoder/ms-marco-MiniLM-L12-v2,BAAI/bge-reranker-base,BAAI/bge-reranker-v2-m3")
     p.add_argument("--split", default="dev", choices=("dev", "train"))
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
-    {"zeroshot": stage_zeroshot, "offsets": stage_offsets}[a.stage](a)
+    {"zeroshot": stage_zeroshot, "offsets": stage_offsets, "rerankers": stage_rerankers}[a.stage](a)
 
 
 if __name__ == "__main__":

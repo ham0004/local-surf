@@ -220,15 +220,20 @@ def train_one(a) -> dict:
             hard = [i for i in np.argsort(-e["zs"]) if not e["near"][i]][: a.hard]
             rand = list(np.random.choice(neg, size=min(a.random_neg, len(neg)), replace=False))
             negs = list(dict.fromkeys(hard + rand))
-            p = int(np.random.choice(pos))
-            # near lines that are not the sampled positive also get offset supervision
-            extra = [int(i) for i in np.flatnonzero(e["bins"] >= 0) if i != p and i not in negs][:4]
-            idx = [p] + negs + extra
+            if a.loss == "mil":
+                # multiple-instance: the near lines form a bag; the loss rewards the bag's best lines, so the
+                # model may rank whichever near line really relates to the question (others can be chatter)
+                bag = [int(i) for i in np.random.permutation(pos)[: a.bag]]
+            else:
+                bag = [int(np.random.choice(pos))]
+            # near lines outside the bag also get offset supervision
+            extra = [int(i) for i in np.flatnonzero(e["bins"] >= 0) if i not in bag and i not in negs][:4]
+            idx = bag + negs + extra
             with torch.autocast("cuda", dtype=torch.bfloat16):
                 rel, off = model.forward(query_text(r, a.query), [ctx[i] for i in idx])
             rel = rel.float()
-            loss = torch.nn.functional.cross_entropy(rel[: 1 + len(negs)][None], torch.zeros(1, dtype=torch.long,
-                                                                                             device=rel.device))
+            scored = rel[: len(bag) + len(negs)]
+            loss = torch.logsumexp(scored, 0) - torch.logsumexp(scored[: len(bag)], 0)
             if use_off:
                 tb = torch.as_tensor(e["bins"][idx], device=rel.device)
                 m = tb >= 0
@@ -239,7 +244,7 @@ def train_one(a) -> dict:
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step()
-            losses.append(float(loss))
+            losses.append(float(loss.detach()))
         score = evaluate(model, va, a.method, a.query)["recall@6"]
         history.append({"epoch": epoch + 1, "loss": float(np.mean(losses)), "inner_val_recall@6": score,
                         "seconds": time.perf_counter() - tic})
@@ -249,7 +254,7 @@ def train_one(a) -> dict:
                                        for k, s in model.state().items()}
     model.load_state(best_state)
     dev = evaluate(model, load("dev"), a.method, a.query)
-    return {"method": a.method, "seed": a.seed, "query": a.query, "weak": not a.no_weak, "lr": a.lr,
+    return {"method": a.method, "seed": a.seed, "query": a.query, "weak": not a.no_weak, "lr": a.lr, "loss": a.loss,
             "epochs": a.epochs, "best_inner_val_recall@6": best, "history": history,
             "train_questions": len(tr), "inner_val_questions": len(va), "dev": dev}
 
@@ -310,6 +315,9 @@ def main() -> None:
     p.add_argument("--hard", type=int, default=8)
     p.add_argument("--random-neg", type=int, default=8)
     p.add_argument("--off-weight", type=float, default=0.5)
+    p.add_argument("--loss", default="mil", choices=("mil", "single"),
+                   help="mil: near lines as a bag (multiple-instance); single: one random near line is the positive")
+    p.add_argument("--bag", type=int, default=8)
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     {"prepare": stage_prepare, "train": stage_train, "zs_dens": stage_zs_dens, "report": stage_report}[a.stage](a)
