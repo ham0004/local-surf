@@ -89,6 +89,9 @@ def build_pool(qa, transcript, video_path: str, encoders, head_a, cfg: PoolConfi
     order = np.argsort(-scores[:, 1]) if len(in_win) else []
     path_a = [(in_win[i], scores[i]) for i in order[: cfg.n_path_a]]
     a_times = [max(0.0, min(duration - 0.05, s.end_s - 0.3)) for s, _ in path_a]   # end of line: board fullest
+    if hasattr(head_a, "moments") and segs:  # v3 Head A: its own moments over the whole transcript
+        a_times = [max(0.0, min(duration - 0.05, x)) for x in head_a.moments(qa, segs, duration, cfg.n_path_a)]
+        path_a = [(min(segs, key=lambda s, x=x: abs(s.end_s - x)), np.zeros(2)) for x in a_times]
     t["head_a"] = time.perf_counter() - tic
 
     # -- Path B: sparse scan inside the windows -------------------------------

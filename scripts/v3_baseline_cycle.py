@@ -33,6 +33,7 @@ import dataclasses
 import hashlib
 import json
 import os
+import sys
 import time
 from pathlib import Path
 
@@ -52,7 +53,12 @@ POOLS = {
     # stage 3, path budgets on the chosen pool (hybrid): Path A 3 instead of 6; Path B 12 instead of 6
     "hybrid_a3": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", n_path_a=3),
     "hybrid_b12": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", n_path_b=12),
+    # Head A cycle (frozen baseline, only Path A changes): zero-shot MiniLM over the whole transcript, and the
+    # learned Head A (light residual head, density moments, bge features; 3 seeds averaged; research_log step 39)
+    "hybrid_azs": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="zeroshot"),
+    "hybrid_ahead": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="head"),
 }
+HEAD_A_CKPTS = [f"runs/v3_head_a/ckpt/light_dens_ens_human_{s}.pt" for s in range(3)]
 FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/features"}
 LIMITS = (4000, 4 * 3600.0)
 # second ledger, declared in research_log step 35 after the first was used up by stages 1-3
@@ -80,10 +86,22 @@ def stage_pools(a) -> None:
     from videoqa.v2.encoders import FrozenEncoders  # noqa: PLC0415
     from videoqa.v2.head_a import HotMomentScorer  # noqa: PLC0415
 
-    cfg = PoolConfig(**POOLS[a.pool], excerpt_words=300,
+    settings = dict(POOLS[a.pool])
+    path_a = settings.pop("path_a", "v2")
+    cfg = PoolConfig(**settings, excerpt_words=300,
                      features_dir=FEATURES[a.dataset] if a.pool == "dense" or a.pool.startswith("hybrid") else None)
     enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
     head_a = HotMomentScorer(device="cuda", cache_dir="cache/hf/hub")
+    if path_a == "zeroshot":
+        from videoqa.v3.head_a import ZeroShotMoments  # noqa: PLC0415
+        head_a = ZeroShotMoments(head_a)
+    elif path_a == "head":
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from v3_head_a_eval import Reranker  # noqa: PLC0415
+        from v3_head_a_light import BGE  # noqa: PLC0415
+
+        from videoqa.v3.head_a import LearnedMoments  # noqa: PLC0415
+        head_a = LearnedMoments(head_a, HEAD_A_CKPTS, bge=Reranker(BGE))
     out = pool_dir(a.dataset, a.pool)
     out.mkdir(parents=True, exist_ok=True)
     done = {p.name for p in out.iterdir()}

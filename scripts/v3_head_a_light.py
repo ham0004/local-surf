@@ -30,7 +30,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 from pathlib import Path
 
@@ -40,65 +39,55 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from v3_head_a_eval import KS, load, score_metrics  # noqa: E402
-from v3_head_a_train import N_BINS, density_moments, inner_val, labels, line_times, zeroshot_rel  # noqa: E402
+from v3_head_a_train import inner_val, labels, zeroshot_rel  # noqa: E402
+
+from videoqa.v3.head_a import (  # noqa: E402
+    bge_features,
+    build_net,
+    density_moments,
+    line_features,
+    line_times,
+)
 
 RUN = Path("runs/v3_head_a")
+BGE = "BAAI/bge-reranker-base"           # revision 2cfc18c9415c912f9d8155881c133215df768a70 (step 38)
 OUT = Path("reports/v3_head_a")
-CUES = {
-    "speech": ("say", "said", "says", "mention", "subtitle", "explain", "why", "talk", "according", "narrator"),
-    "visual": ("color", "colour", "wear", "how many", "shape", "letters", "sign", "screen", "pattern", "logo",
-               "written", "appear", "shown", "picture"),
-    "order": ("after", "before", "when", "first", "last", "then", "finally"),
-}
-FEATURE_NAMES = ["z", "z_gap", "z_rank", "ctx1_max", "ctx1_mean", "ctx3_max", "ctx3_mean", "ctx7_max", "ctx7_mean",
-                 "bm25_q", "bm25_qo", "opt_best", "opt_spread", "words", "digit", "position", "density",
-                 "cue_speech", "cue_visual", "cue_order", "has_options"]
-_WORD = re.compile(r"[a-z0-9]+")
+def stage_bge(a) -> None:
+    """Second frozen scorer for the 'ens' feature set: bge-reranker-base on question + options (step 38's best)."""
+    from v3_head_a_eval import Reranker, segments  # noqa: PLC0415
+
+    from videoqa.v2.candidates import _with_neighbours  # noqa: PLC0415
+
+    rr = Reranker(BGE)
+    out = {}
+    for split in ("train", "dev"):
+        for r in load(split):
+            segs = segments(r)
+            q = r["question"] + (" Options: " + " | ".join(r["options"]) if r["options"] else "")
+            out[r["qa_id"].replace(":", "__")] = rr.score(q, [_with_neighbours(segs, x) for x in segs]).astype(np.float32)
+    np.savez_compressed(RUN / "bge_rel.npz", **out)
+    print(f"bge scores for {len(out)} questions")
 
 
-def _toks(t: str) -> set[str]:
-    return {w for w in _WORD.findall(t.lower()) if len(w) > 2}
-
-
-def line_features(rec, z: np.ndarray) -> np.ndarray:
-    from videoqa.retrieval import bm25_scores, tokenize  # noqa: PLC0415
-
-    lines, n = rec["lines"], len(rec["lines"])
-    if n == 0:
-        return np.zeros((0, len(FEATURE_NAMES)), np.float32)
-    texts = [x[2] for x in lines]
-    order = np.argsort(np.argsort(-z))
-    ctx = []
-    for w in (1, 3, 7):
-        mx = np.array([z[max(0, i - w): i + w + 1].max() for i in range(n)])
-        mn = np.array([z[max(0, i - w): i + w + 1].mean() for i in range(n)])
-        ctx += [mx - z.max(), mn - z.max()]
-    corpus = [tokenize(t) for t in texts]
-    bq = np.asarray(bm25_scores(tokenize(rec["question"]), corpus))
-    bqo = np.asarray(bm25_scores(tokenize(rec["question"] + " " + " ".join(rec["options"] or [])), corpus))
-    opts = [_toks(o) for o in (rec["options"] or [])]
-    ov = np.array([[len(_toks(t) & o) / (len(o) + 1) for o in opts] for t in texts]) if opts else np.zeros((n, 1))
-    t = line_times(rec)
-    dens = np.array([np.sum(np.abs(t - x) <= 15.0) for x in t])
-    q = rec["question"].lower()
-    cue = [float(any(c in q for c in CUES[k])) for k in ("speech", "visual", "order")]
-    rows = np.column_stack([
-        z, z - z.max(), order / max(n - 1, 1), *ctx,
-        bq / (bq.max() + 1e-6), bqo / (bqo.max() + 1e-6), ov.max(1), ov.max(1) - ov.min(1),
-        np.log1p([len(x.split()) for x in texts]), [float(bool(re.search(r"\d", x))) for x in texts],
-        t / max(rec["duration_s"], 1.0), np.log1p(dens),
-        np.tile(cue, (n, 1)), np.full(n, float(bool(rec["options"])))])
-    return rows.astype(np.float32)
+def bge_features(z2: np.ndarray) -> np.ndarray:
+    n = len(z2)
+    ctx3 = np.array([z2[max(0, i - 3): i + 4].max() for i in range(n)])
+    order = np.argsort(np.argsort(-z2))
+    return np.column_stack([z2 - z2.max(), order / max(n - 1, 1), ctx3 - z2.max()]).astype(np.float32)
 
 
 def stage_features(a) -> None:
     zs = zeroshot_rel()
+    bge = np.load(RUN / "bge_rel.npz") if a.feature_set == "ens" else None
     out = {}
     for split in ("train", "dev"):
         for r in load(split):
-            out[r["qa_id"].replace(":", "__")] = line_features(r, zs[r["qa_id"]])
-    np.savez_compressed(RUN / "light_features.npz", **out)
-    print(f"features for {len(out)} questions, {len(FEATURE_NAMES)} per line")
+            f = line_features(r, zs[r["qa_id"]])
+            if bge is not None and len(f):
+                f = np.concatenate([f, bge_features(bge[r["qa_id"].replace(":", "__")])], axis=1)
+            out[r["qa_id"].replace(":", "__")] = f
+    np.savez_compressed(RUN / f"light_features{'' if a.feature_set == 'base' else '_' + a.feature_set}.npz", **out)
+    print(f"features for {len(out)} questions ({a.feature_set})")
 
 
 def stage_train(a) -> None:
@@ -106,7 +95,7 @@ def stage_train(a) -> None:
 
     torch.manual_seed(a.seed)
     np.random.seed(a.seed)
-    z = np.load(RUN / "light_features.npz")
+    z = np.load(RUN / f"light_features{'' if a.feature_set == 'base' else '_' + a.feature_set}.npz")
     feats = {k.replace("__", ":"): z[k] for k in z.files}
     train = [r for r in load("train") if len(r["lines"]) and (not r["weak"] or not a.no_weak)]
     tr = [r for r in train if not inner_val(r["video_id"])]
@@ -125,11 +114,7 @@ def stage_train(a) -> None:
         if near.any():
             x, z0 = tens(r)
             data.append((x, z0, torch.as_tensor(near), torch.as_tensor(bins), 0.5 if r["weak"] else 1.0))
-    d = len(FEATURE_NAMES)
-    net = torch.nn.Sequential(torch.nn.Linear(d, a.width), torch.nn.GELU(), torch.nn.Linear(a.width, a.width),
-                              torch.nn.GELU(), torch.nn.Linear(a.width, 1 + (N_BINS if use_off else 0)))
-    torch.nn.init.zeros_(net[-1].weight)
-    torch.nn.init.zeros_(net[-1].bias)
+    net = build_net(next(iter(feats.values())).shape[1], a.width, use_off)
     opt = torch.optim.AdamW(net.parameters(), lr=a.lr, weight_decay=a.wd)
 
     def predict(r):
@@ -175,14 +160,21 @@ def stage_train(a) -> None:
     if best_state is not None:
         net.load_state_dict(best_state)
     net.eval()
-    res = {"method": a.method, "seed": a.seed, "weak": not a.no_weak, "width": a.width, "lr": a.lr,
+    res = {"method": a.method, "seed": a.seed, "weak": not a.no_weak, "features": a.feature_set,
+           "width": a.width, "lr": a.lr,
            "epochs": a.epochs, "best_inner_val_recall@6": best,
            "chosen_epoch": max(hist, key=lambda h: h["inner_val_recall@6"])["epoch"], "history": hist,
            "dev": evaluate(dev)}
+    if a.save:
+        ck = RUN / "ckpt" / f"{a.method}_{a.feature_set}_{'weak' if not a.no_weak else 'human'}_{a.seed}.pt"
+        ck.parent.mkdir(parents=True, exist_ok=True)
+        torch.save({"method": a.method, "feature_set": a.feature_set, "width": a.width, "mu": mu, "sd": sd,
+                    "state": net.state_dict(), "dev": {k: v for k, v in res["dev"].items() if k != "_hits6"}}, ck)
+        res["checkpoint"] = str(ck)
     with open(RUN / "light_results.jsonl", "a", encoding="utf-8") as fh:
         fh.write(json.dumps(res) + "\n")
     dv = res["dev"]
-    print(f"DEV {a.method} seed={a.seed} weak={not a.no_weak} epoch={res['chosen_epoch']} "
+    print(f"DEV {a.method} {a.feature_set} seed={a.seed} weak={not a.no_weak} epoch={res['chosen_epoch']} "
           f"inner={best:.3f} " + " ".join(f"R@{k}={dv[f'recall@{k}']:.3f}" for k in KS), flush=True)
 
 
@@ -190,15 +182,15 @@ def stage_report(a) -> None:
     rows = [json.loads(x) for x in (RUN / "light_results.jsonl").read_text(encoding="utf-8").splitlines() if x.strip()]
     groups: dict = {}
     for r in rows:
-        groups.setdefault((r["method"], r["weak"]), []).append(r)
+        groups.setdefault((r["method"], r["weak"], r.get("features", "base")), []).append(r)
     table = []
-    for (m, w), g in groups.items():
-        row = {"method": m, "weak": w, "seeds": len(g)}
+    for (m, w, fs), g in groups.items():
+        row = {"method": m, "weak": w, "features": fs, "seeds": len(g)}
         for k in KS:
             v = [x["dev"][f"recall@{k}"] for x in g]
             row[f"recall@{k}"], row[f"recall@{k}_sd"] = float(np.mean(v)), float(np.std(v))
         table.append(row)
-        print(f"{m:10s} weak={w!s:5s} seeds={len(g)} "
+        print(f"{m:10s} {fs:4s} weak={w!s:5s} seeds={len(g)} "
               + " ".join(f"R@{k}={row[f'recall@{k}']:.3f}±{row[f'recall@{k}_sd']:.3f}" for k in KS))
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "light_dev.json").write_text(json.dumps(table, indent=1), encoding="utf-8")
@@ -206,7 +198,9 @@ def stage_report(a) -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("stage", choices=("features", "train", "report"))
+    p.add_argument("stage", choices=("bge", "features", "train", "report"))
+    p.add_argument("--feature-set", default="base", choices=("base", "ens"),
+                   help="ens = base + bge-reranker-base relevance features")
     p.add_argument("--method", default="light", choices=("light", "light_dens", "light_off"))
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--no-weak", action="store_true")
@@ -215,8 +209,9 @@ def main() -> None:
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--wd", type=float, default=1e-3)
     p.add_argument("--off-weight", type=float, default=0.5)
+    p.add_argument("--save", action="store_true", help="write the trained head to runs/v3_head_a/ckpt/")
     a = p.parse_args()
-    {"features": stage_features, "train": stage_train, "report": stage_report}[a.stage](a)
+    {"bge": stage_bge, "features": stage_features, "train": stage_train, "report": stage_report}[a.stage](a)
 
 
 if __name__ == "__main__":
