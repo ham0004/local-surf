@@ -11,6 +11,8 @@ Pool settings (each builds its own pools):
     v2        BM25 windows, legacy scan, 5 s step, cap 24, A 6 + B 6          (v2 main experiment)
     balanced  as v2, balanced scan inside the windows
     video     as v2, but Path B scans the whole video evenly (cap 48)
+    dense     as v2, but Path B ranks dense 2 s MobileCLIP features of the whole video and decodes the
+              top 24 (>= 4 s apart); needs scripts/v3_features.py output
 
 Selector rules (on the same pool): clip (question similarity), clipopt (question + options), mmr,
 mmropt (MMR on question + options), relevance (Path A speech relevance); path ablations: A_only, B_only.
@@ -40,7 +42,10 @@ POOLS = {
     "v2": dict(scan_step_s=5.0, scan_cap=24),
     "balanced": dict(scan_step_s=5.0, scan_cap=24, scan_policy="balanced"),
     "video": dict(scan_step_s=5.0, scan_cap=48, path_b_scope="video"),
+    # dense 2 s MobileCLIP features over the whole video (the gate's strongest frame rule), top 24 decoded
+    "dense": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="features"),
 }
+FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/features"}
 LIMITS = (4000, 4 * 3600.0)
 
 
@@ -62,7 +67,8 @@ def stage_pools(a) -> None:
     from videoqa.v2.encoders import FrozenEncoders  # noqa: PLC0415
     from videoqa.v2.head_a import HotMomentScorer  # noqa: PLC0415
 
-    cfg = PoolConfig(**POOLS[a.pool], excerpt_words=300)
+    cfg = PoolConfig(**POOLS[a.pool], excerpt_words=300,
+                     features_dir=FEATURES[a.dataset] if a.pool == "dense" else None)
     enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
     head_a = HotMomentScorer(device="cuda", cache_dir="cache/hf/hub")
     out = pool_dir(a.dataset, a.pool)

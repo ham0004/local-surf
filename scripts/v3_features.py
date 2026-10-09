@@ -11,6 +11,7 @@ Resumable: existing feature files are skipped. Text embeddings are computed wher
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import time
 from pathlib import Path
@@ -39,6 +40,7 @@ def main() -> None:
     p.add_argument("--dataset", default="cgbench")
     p.add_argument("--step", type=float, default=2.0)
     p.add_argument("--limit", type=int, default=0)
+    p.add_argument("--split", default=None, help="only videos with questions in this experiment split")
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     from videoqa.v2.encoders import FrozenEncoders  # noqa: PLC0415
@@ -48,6 +50,10 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
     videos = sorted((root / "videos").glob("*.mp4"))
+    if a.split:
+        rows = [json.loads(x) for x in (root / "qa.jsonl").read_text(encoding="utf-8").splitlines() if x.strip()]
+        keep = {r["video_id"] for r in rows if r.get("experiment_split") == a.split}
+        videos = [v for v in videos if v.stem in keep]
     if a.limit:
         videos = videos[: a.limit]
     for n, v in enumerate(videos):

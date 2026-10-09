@@ -55,6 +55,9 @@ class PoolConfig:
     scan_policy: str = "legacy"  # opt-in "balanced" for a new candidate-pool experiment
     path_b_scope: str = "windows"  # "windows" (v2: scan inside the BM25 windows) or "video" (whole video,
                                    # evenly at max(scan_step_s, duration / scan_cap)); a baseline-cycle setting
+                                   # "features": whole video from precomputed dense features (features_dir)
+    features_dir: str | None = None  # <dir>/<video_id>.npz (times, emb) from scripts/v3_features.py
+    features_gap_s: float = 4.0      # "features" scope: decode the top scan_cap times at least this far apart
 
 
 # ---------------------------------------------------------------------------
@@ -88,7 +91,10 @@ def build_pool(qa, transcript, video_path: str, encoders, head_a, cfg: PoolConfi
     t["head_a"] = time.perf_counter() - tic
 
     # -- Path B: sparse scan inside the windows -------------------------------
-    if cfg.path_b_scope == "video":
+    if cfg.path_b_scope == "features":
+        scan_times = _feature_scan_times(Path(cfg.features_dir) / f"{qa.video_id}.npz",
+                                         encoders.embed_texts([qa.question])[0], cfg.scan_cap, cfg.features_gap_s)
+    elif cfg.path_b_scope == "video":
         step = max(cfg.scan_step_s, duration / max(cfg.scan_cap, 1))
         scan_times = [float(t) for t in np.arange(0.5, max(duration - 0.05, 0.5), step)][: cfg.scan_cap]
     else:
@@ -154,6 +160,20 @@ def _with_neighbours(segs, s) -> str:
     """Segment text with one neighbouring line on each side (Head A's input context)."""
     i = segs.index(s)
     return " ".join(x.text for x in segs[max(0, i - 1): i + 2])
+
+
+def _feature_scan_times(path: Path, q_emb, cap: int, gap: float) -> list[float]:
+    """The ``cap`` dense-feature times most similar to the question, at least ``gap`` s apart."""
+    z = np.load(path)
+    order = np.argsort(-(z["emb"].astype(np.float32) @ np.asarray(q_emb, np.float32)), kind="stable")
+    out: list[float] = []
+    for i in order:
+        t = float(z["times"][i])
+        if all(abs(t - u) >= gap for u in out):
+            out.append(t)
+            if len(out) >= cap:
+                break
+    return out
 
 
 def scan_timestamps(windows, duration: float, step: float, cap: int,
