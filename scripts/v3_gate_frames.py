@@ -102,6 +102,27 @@ def _decode(r, times):
     return decode_at(str(path), times, max_side=640, video_id=r["video_id"]).frames
 
 
+ANSWERERS = {   # name -> (model id, pinned revision, answer cache file); the default is the 2B of v1/v2
+    "2b": (None, None, "answers.jsonl"),
+    "4b": ("Qwen/Qwen3-VL-4B-Instruct", "ebb281ec70b05090aa6165b016eac8ec08e71b17", "answers_4b.jsonl"),
+}
+
+
+def _answerer_cfg(a):
+    """Loaded config with the answer model swapped when --answerer is not the default 2B."""
+    from videoqa.config import load_config  # noqa: PLC0415
+
+    cfg = load_config(a.config)
+    model_id, revision, _ = ANSWERERS[a.answerer]
+    if model_id:
+        cfg["answerer"] = {**cfg["answerer"], "model_id": model_id, "revision": revision}
+    return cfg
+
+
+def _answer_cache_path(a) -> Path:
+    return RUN / ANSWERERS[a.answerer][2]
+
+
 C4_TIMES = RUN / "c4_times.json"     # MobileCLIP choices, computed once (stage answer-g1b) and reused
 
 
@@ -157,12 +178,14 @@ def stage_answer_g1b(a) -> None:
         enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
         C4_TIMES.write_text(json.dumps({r["qa_id"]: choose_c4(r, enc) for r in rows}, indent=1), encoding="utf-8")
         del enc
-    cfg = load_config(a.config)
-    budget = CallBudget(RUN / "budget_answer_g1b.json", 150, 1800.0)
-    cache = AnswerCache(RUN / "answers.jsonl", answerer_identity(cfg), make_open_answerer(cfg), budget)
+    cfg = _answerer_cfg(a)
+    suffix = "" if a.answerer == "2b" else f"_{a.answerer}"
+    budget = CallBudget(RUN / f"budget_answer_g1b{suffix}.json", 150, 1800.0)
+    cache = AnswerCache(_answer_cache_path(a), answerer_identity(cfg), make_open_answerer(cfg), budget)
+    conds = ("R1", "C4") if a.answerer == "2b" else tuple(a.conditions.split(","))
     for n, r in enumerate(rows):
         excerpt = _excerpt(r)
-        frames = {c: _frames_for(r, c) for c in ("R1", "C4")}
+        frames = {c: _frames_for(r, c) for c in conds}
         if not budget.reserve(sum(cache.get(r["question"], excerpt, f) is None for f in frames.values())):
             print(f"answer budget reached before question {n}; stopping cleanly")
             break
@@ -215,7 +238,7 @@ def _answer_rows(a, conditions=("T", "TF")) -> list[dict]:
     from videoqa.config import load_config  # noqa: PLC0415
     from videoqa.v3.openended import AnswerCache, answerer_identity  # noqa: PLC0415
 
-    cache = AnswerCache(RUN / "answers.jsonl", answerer_identity(load_config(a.config)))
+    cache = AnswerCache(_answer_cache_path(a), answerer_identity(_answerer_cfg(a)))
     c4 = json.loads(C4_TIMES.read_text(encoding="utf-8")) if C4_TIMES.exists() else {}
     out = []
     for r in _question_rows():
@@ -307,6 +330,8 @@ def stage_score(a) -> None:
         used = json.loads((RUN / f"budget_{a.factqa_judge}.json").read_text())["calls"] if (RUN / f"budget_{a.factqa_judge}.json").exists() else 0
         budget = (CallBudget(RUN / f"budget_{a.factqa_judge}_2.json", JUDGE_LIMITS[0] - used, 3600.0) if used
                   else CallBudget(RUN / f"budget_{a.factqa_judge}.json", *JUDGE_LIMITS))
+    elif a.answerer != "2b":                          # answerer check: its own approved ledger (300 judge calls)
+        budget = CallBudget(RUN / f"budget_{a.factqa_judge}_{a.answerer}.json", 300, 3600.0)
     else:                                             # gate G1b: its own approved ledger (300 judge calls)
         g1 = RUN / f"budget_{a.factqa_judge}_g1b.json"
         used = json.loads(g1.read_text())["calls"] if g1.exists() else 0
@@ -314,7 +339,8 @@ def stage_score(a) -> None:
         # runs under a second ledger whose call cap keeps the G1b total within the approved 300.
         budget = (CallBudget(RUN / f"budget_{a.factqa_judge}_g1b_2.json", 300 - used, 3600.0) if used
                   else CallBudget(g1, 300, 3600.0))
-    tag = "" if conditions == ("T", "TF") else "_" + "-".join(conditions)
+    tag = ("" if conditions == ("T", "TF") else "_" + "-".join(conditions)) + \
+        ("" if a.answerer == "2b" else f"_{a.answerer}")
     cache = RUN / f"factqa_{a.factqa_judge}.jsonl"
     if provider == "gemini":
         if a.max_usd is None:
@@ -389,6 +415,8 @@ def main() -> None:
     p.add_argument("--judge", choices=("phi4mini", "qwen3vl4b"), default="phi4mini")
     p.add_argument("--max-usd", type=float, default=None, help="hard dollar cap for paid Gemini calls (score stage)")
     p.add_argument("--factqa-judge", choices=("nemotron-ultra", "gemini-flash"), default="nemotron-ultra")
+    p.add_argument("--answerer", choices=tuple(ANSWERERS), default="2b",
+                   help="answer model (2b = the frozen Qwen3-VL-2B used so far)")
     p.add_argument("--conditions", default="T,TF", help="score stage: conditions to compare, T first (e.g. T,R1,C4)")
     p.add_argument("--workers", type=int, default=8, help="parallel judge requests (paced to the free-tier RPM)")
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
