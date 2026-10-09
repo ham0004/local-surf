@@ -227,3 +227,14 @@ Detailed results live in the linked reports; this log is the chronological index
 - `docs/v3/baseline_framework.md`: the v2 two-path pipeline with rules only (BM25 windows → Path A speech lines
   + Path B visual scan → de-duplicated pool → rule selector → frozen Qwen3-VL-2B), where Head A and Head B
   plug in later, and the settings the baseline cycle tunes on dev before freezing the baseline.
+
+**Step 27. Baseline cycle started (declared trials)** (2026-10-10)
+- Runner `scripts/v3_baseline_cycle.py`; framework option added: Path B scope "video" (whole-video scan,
+  cap 48) next to v2's "windows" (`PoolConfig.path_b_scope`). OCR off (no rule selector uses it).
+- Trials on CG-Bench dev (82) and Video-MMMU Perception dev (98), one setting at a time from v2 defaults:
+  1. Pools {v2, balanced, video} × selectors {clip, clipopt, mmr, mmropt, relevance}, K = 4, 120 words.
+  2. Path ablation on the v2 pool: Path A only, Path B only (option-aware ranking).
+  3. On the best pool + selector: K ∈ {2, 8}; transcript ∈ {0, 300} words.
+- Budget: 4,000 answer calls / 4 GPU-hours (one ledger). Results: `reports/v3_baseline/table.json`.
+- The Video-MMMU test transcription (147/301 done) is paused to free GPU memory; it resumes before the
+  final test (resumable).

@@ -53,6 +53,8 @@ class PoolConfig:
     dup_seconds: float = 1.0     # same moment -> same candidate
     max_side: int = 640          # frame size (the answerer's size, so pixels are shared)
     scan_policy: str = "legacy"  # opt-in "balanced" for a new candidate-pool experiment
+    path_b_scope: str = "windows"  # "windows" (v2: scan inside the BM25 windows) or "video" (whole video,
+                                   # evenly at max(scan_step_s, duration / scan_cap)); a baseline-cycle setting
 
 
 # ---------------------------------------------------------------------------
@@ -86,7 +88,11 @@ def build_pool(qa, transcript, video_path: str, encoders, head_a, cfg: PoolConfi
     t["head_a"] = time.perf_counter() - tic
 
     # -- Path B: sparse scan inside the windows -------------------------------
-    scan_times = scan_timestamps(windows, duration, cfg.scan_step_s, cfg.scan_cap, cfg.scan_policy)
+    if cfg.path_b_scope == "video":
+        step = max(cfg.scan_step_s, duration / max(cfg.scan_cap, 1))
+        scan_times = [float(t) for t in np.arange(0.5, max(duration - 0.05, 0.5), step)][: cfg.scan_cap]
+    else:
+        scan_times = scan_timestamps(windows, duration, cfg.scan_step_s, cfg.scan_cap, cfg.scan_policy)
     tic = time.perf_counter()
     decoded = decode_at(video_path, sorted(set(a_times + scan_times)), max_side=cfg.max_side,
                         video_id=qa.video_id).frames
