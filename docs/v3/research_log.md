@@ -222,3 +222,8 @@ Detailed results live in the linked reports; this log is the chronological index
   multiple-choice accuracy.
 - Next, in order: (1) baseline cycle on CG-Bench dev and Video-MMMU dev; (2) Head A cycle; (3) Head B cycle;
   (4) combined and ablations; (5) final comparison.
+
+**Step 26. Starting framework written down** (2026-10-10)
+- `docs/v3/baseline_framework.md`: the v2 two-path pipeline with rules only (BM25 windows → Path A speech lines
+  + Path B visual scan → de-duplicated pool → rule selector → frozen Qwen3-VL-2B), where Head A and Head B
+  plug in later, and the settings the baseline cycle tunes on dev before freezing the baseline.
