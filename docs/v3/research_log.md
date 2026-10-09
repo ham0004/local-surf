@@ -140,3 +140,11 @@ Detailed results live in the linked reports; this log is the chronological index
   long videos, and CG-Bench's human evidence intervals can supervise it. Plan: question-conditioned
   temporal scorer over frozen MobileCLIP features, offline hit@4 and online QA evaluation, pilot on the 51
   videos before scaling. Document: `docs/v3/phase2_plan.md`.
+
+**Step 18. Features and Head A implementation** (2026-10-09)
+- `scripts/v3_features.py`: frozen MobileCLIP-S2 embedding every 2 s of each whole video (~1 minute per
+  40-minute video); running on the 51 CG-Bench videos.
+- `src/videoqa/v3/temporal_head.py`: Head A as a residual over MobileCLIP's question–frame similarity,
+  with question conditioning (FiLM), time features and a 2-layer transformer over time (~1 M parameters).
+  An untrained head ranks frames exactly like MobileCLIP (unit-tested), so any change is learned.
+- `scripts/v3_head_a.py`: pilot declared before any result (protocol in the script docstring).
