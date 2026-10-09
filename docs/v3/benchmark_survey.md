@@ -52,3 +52,20 @@ information visible only in frames and absent from the reference cannot earn cre
 
 Before any labelling: run the same cheap gate (transcript only vs transcript + frames) on a CG-Bench
 sample, so the frame effect is measured with our answerer, not assumed from GPT-4o numbers.
+
+## What the downloaded files show (2026-10-09, after accepting both dataset agreements)
+
+**CG-Bench** (`cgbench.json`, 12,129 questions, 1,219 videos, 548–6,325 s, median 1,560 s; fields
+question, choices, answer, right_answer, clue_intervals, domain, sub_category, duration):
+- Subtitles exist for 519 videos; by script check only **117 are English** (1,212 questions). The rest
+  are non-Latin (likely Chinese; many video ids are Bilibili ids). 700 videos have no subtitles.
+- The 32 `video_chunk_*.zip` archives hold **770 of the 1,219 videos**, and **51 of the 117**
+  English-subtitled ones, spread over 25 archives. Archive directories can be read remotely, so single
+  videos can be fetched by byte range instead of downloading ~128 GB of archives.
+- Consequence: a transcript-guided CG-Bench study is limited to ~51 videos (~500 questions) unless
+  subtitles are produced by speech recognition (a declared protocol change).
+
+**Video-MMMU**: all 300 videos are in six subject zips (13.4 GB). 900 questions, 3 per video.
+Perception: 300 multiple-choice questions on 272 videos, **277 OCR** (reading on-screen text) and
+23 ASR; 258 have 10 options; gold positions A–J spread (largest C = 59/300). No transcripts are
+shipped (the paper used Whisper), so a transcript-based protocol needs our own ASR.
