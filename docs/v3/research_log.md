@@ -406,3 +406,17 @@ Detailed results live in the linked reports; this log is the chronological index
 - **Baseline frozen** (`docs/v3/baseline_framework.md`, "Frozen baseline"): hybrid Path B, MMR on question
   + options, K = 4, no transcript to the answerer. Dev: CG-Bench 40.2% MC / 19.5% open-ended / 60% pool
   evidence; Video-MMMU 63.3%. This is the bar for Head A and Head B. Next: Head A cycle (step 29 plan).
+
+**Step 37. Head A cycle, method family 1: fine-tuning the MiniLM cross-encoder — negative result** (2026-10-10)
+- `scripts/v3_head_a_train.py`: the MiniLM cross-encoder fine-tuned on train (CG-Bench human intervals +
+  EduVidQA weak times) to rank lines within 10 s of the evidence above hard (high zero-shot, far) and random
+  negatives; with or without an offset head (`ft_rel`, `ft_rel_off`).
+- The evaluation path was checked first: the untrained model reproduces the zero-shot numbers exactly (dev
+  R@6 28.0; with uniform offsets 21.3; with the density proposals 28.0).
+- One epoch, lr 2e-5 (single random near line as positive) or 1e-5 (multiple-instance loss over the near
+  lines; human labels only): dev R@6 **7.9** and **9.1**; inner validation 19.2 vs 44.6 for the zero-shot
+  model. Training destroys the pretrained relevance ranking: for most CG-Bench questions the speech near the
+  evidence is unrelated to the question (step 29: the best zero-shot line is > 120 s from the evidence for 57%),
+  so "near the evidence" is a very noisy relevance label for an encoder with 22M free parameters.
+- Decision: do not tune the encoder. Methods must keep the zero-shot ranking as their starting point:
+  (2) a light residual head over frozen line features, (3) stronger frozen rerankers.
