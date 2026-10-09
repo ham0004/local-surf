@@ -420,3 +420,19 @@ Detailed results live in the linked reports; this log is the chronological index
   so "near the evidence" is a very noisy relevance label for an encoder with 22M free parameters.
 - Decision: do not tune the encoder. Methods must keep the zero-shot ranking as their starting point:
   (2) a light residual head over frozen line features, (3) stronger frozen rerankers.
+
+**Step 38. Head A cycle, method family 3: stronger frozen rerankers** (2026-10-10; `reports/v3_head_a/rerankers_dev.json`)
+- Every line scored by a public reranker (line + one neighbour each side), zero-shot, question only (q) or
+  question + options (qo); dev, 164 questions. Revisions: MiniLM-L12 7b02352, bge-reranker-base 2cfc18c,
+  bge-reranker-v2-m3 953dc6f.
+
+  | Reranker | R@1 | R@2 | R@4 | R@6 |
+  |---|---|---|---|---|
+  | MiniLM-L6 (v2's, q) — reference | 11.0 | 15.9 | 26.2 | 28.0 |
+  | MiniLM-L12 q / qo | 10.4 / 12.2 | 17.1 / 17.7 | 23.2 / 20.1 | 27.4 / 22.0 |
+  | bge-reranker-base q / qo | 11.6 / 15.2 | 16.5 / 20.7 | 26.8 / 26.2 | 29.3 / 31.1 |
+  | bge-reranker-v2-m3 (568M) q / qo | 12.2 / 14.0 | 18.3 / 18.3 | 23.2 / 25.6 | 25.6 / 31.1 |
+
+- Reading: a 25× larger reranker adds at most 3 points at R@6. The limit is not text-matching quality: on
+  long videos the speech rarely describes what the question asks about. Gains must come from how the speech
+  evidence is turned into moments (context, question type, offsets), which is what the light head learns.
