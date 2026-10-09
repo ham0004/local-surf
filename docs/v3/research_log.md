@@ -313,3 +313,24 @@ Detailed results live in the linked reports; this log is the chronological index
   - Video-MMMU: all rules except relevance lie within 54–59%; with 98 questions these differences are
     within noise. On lectures the Path A frames alone (55.1) do better than Path B alone (51.0); on
     CG-Bench the reverse (25.6 vs 30.5): the two paths are useful on different kinds of video.
+
+**Step 32. Baseline cycle: dense Path B results; hybrid setting declared** (2026-10-10)
+- Dense pool (Path B from 2 s whole-video MobileCLIP features), K = 4, 120 words:
+
+  | Selector | CG-Bench (pool evidence 62%) | Video-MMMU |
+  |---|---|---|
+  | clip / clipopt / mmr / mmropt / relevance | 32.9 / **37.8** / 32.9 / 34.1 / 25.6 | 49.0 / 52.0 / 55.1 / 54.1 / 50.0 |
+  | Path A only / Path B only | 25.6 / 36.6 | 55.1 / 48.0 |
+
+- Paired differences (95% CI, bootstrap over videos):
+  - CG-Bench: dense+clipopt − v2+clip +9.8 (−1.2..+21.0); dense+clipopt − video+clip +3.7 (−5.3..+13.4);
+    option-aware vs question-only on the dense pool +4.9 (**+1.0..+10.1**, the only clear difference).
+  - Video-MMMU: dense+clipopt − v2+clip −4.1 (−11.2..+3.1); video+clipopt − v2+clip +3.1 (−4.1..+10.2).
+- Reading: on long videos the evidence is usually not where the speech matches (pool evidence 33% with
+  BM25-window scanning, 62% with the dense whole-video scan); on lectures the frames near the matching
+  speech do at least as well. Accuracy differences between settings are mostly within the noise of 82/98
+  dev questions; evidence recall (human labels, CG-Bench) is the steadier signal.
+- Declared next trial: `hybrid` Path B, the best 3 frames from the BM25-window scan plus the best 3 of the
+  rest (dense whole video), same selectors. Then the configuration with the best mean over both
+  benchmarks (and the higher CG-Bench evidence recall on ties) goes to stage 3 (K, transcript budget,
+  path budgets) and is frozen.
