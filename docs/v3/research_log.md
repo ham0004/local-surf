@@ -125,3 +125,12 @@ Detailed results live in the linked reports; this log is the chronological index
 - Decision: Video-MMMU is a benchmark where frame selection can show an effect; it becomes the main
   development and test benchmark for the selection methods (dev third for development, test two thirds
   untouched). Report: `docs/v3/gate_videommmu_report.md`.
+
+**Step 16. CG-Bench gate: selection headroom measured** (2026-10-09)
+- 82 dev questions (8 long videos, median 39 min, evidence windows median 14 s), 410 calls / 447 s.
+- Accuracy: question only 15.9%, retrieved transcript 15.9%, + 4 uniform frames 17.1%, + 4 MobileCLIP
+  frames 40.2% (+24.4 over transcript, CI +14.9 to +32.5), + 4 frames inside the human evidence 63.4%.
+  Headroom of a perfect selector over MobileCLIP: +23.2 (CI +11.3 to +36.5).
+- Decision: the main research target is Head A ("where to look") on long videos, where uniform frames fail
+  and better localisation is worth up to ~23 points. CG-Bench's human evidence intervals provide direct
+  supervision for it. Report: `docs/v3/gate_cgbench_report.md`.
