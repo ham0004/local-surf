@@ -197,3 +197,14 @@ Detailed results live in the linked reports; this log is the chronological index
   MobileCLIP for 42% (top 6), the pool of both for 64% (6 + 6) and 80% (16 + 16). The paths find different
   evidence, which supports the two-path design. Head A's measurable target: raise the transcript path's
   evidence recall at a fixed proposal budget. Details: `docs/v3/head_a_methods.md`.
+
+**Step 24. Back to the handoff: original designs for Head A and Head B** (2026-10-09)
+- Re-read `FRAMEWORK_HANDOFF.md`. Steps 18–22 had drifted from it by building a whole-video visual scorer
+  under the name Head A; the plan of step 1 (speech-anchored Head A, set-selecting Head B) is restored.
+- Head A (proposed): speech-to-sight offset localiser — per transcript line, question-conditioned relevance
+  plus an offset distribution (−40 to +40 s) for where the picture is; trained on CG-Bench clue intervals and
+  EduVidQA question timestamps (weak). Ablation: offset fixed at 0.
+- Head B (proposed): answer-discriminative evidence set selector — set model over pooled A + B candidates
+  using per-option evidence profiles (decisive and complementary evidence); trained on human evidence, then
+  answerer swap labels. Ablations: no option profile; no set context.
+- Document: `docs/v3/heads_design.md`.
