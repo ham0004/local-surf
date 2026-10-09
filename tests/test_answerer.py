@@ -92,3 +92,13 @@ def test_abstention_is_kept_not_turned_into_a_forced_guess():
 def test_letterless_answer_uses_models_own_top_letter_and_is_flagged():
     a = finalize_answer("green, because the light changed", ["red", "green"], [0.2, 0.8], [], [])
     assert a.option_index == 1 and a.forced_choice and a.confidence == 0.8
+
+
+def test_parse_option_letter_beyond_h_and_pronoun_i():
+    from videoqa.answerer import parse_option_letter
+
+    assert parse_option_letter("J. the tenth option", 10) == 9
+    assert parse_option_letter("(I) because the slide says so", 10) == 8
+    assert parse_option_letter("I think the answer is B", 10) == 1
+    assert parse_option_letter("Answer: G", 10) == 6
+    assert parse_option_letter("B", 4) == 1

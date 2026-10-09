@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import hashlib
 
-from .answerer import SYSTEM_PROMPT, AnswerRequest, AnswerUsage, build_prompt_text, finalize_answer
+from .answerer import OPTION_LETTERS, SYSTEM_PROMPT, AnswerRequest, AnswerUsage, build_prompt_text, finalize_answer
 from .schemas import Answer, Frame
 
 
@@ -132,7 +132,7 @@ class HFVLMAnswerer:
 
         probs = None
         if req.options:
-            letters = "ABCDEFGH"[: len(req.options)]
+            letters = OPTION_LETTERS[: len(req.options)]
             letter_ids = [self._processor.tokenizer.convert_tokens_to_ids(c) for c in letters]
             probs = torch.softmax(out.scores[0][0, letter_ids].float(), dim=-1).tolist()
         return finalize_answer(text, req.options, probs, req.frames, req.excerpt), usage
