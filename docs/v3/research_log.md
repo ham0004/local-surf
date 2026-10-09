@@ -238,3 +238,40 @@ Detailed results live in the linked reports; this log is the chronological index
 - Budget: 4,000 answer calls / 4 GPU-hours (one ledger). Results: `reports/v3_baseline/table.json`.
 - The Video-MMMU test transcription (147/301 done) is paused to free GPU memory; it resumes before the
   final test (resumable).
+
+**Step 28. Head A data: text and evidence times only** (2026-10-10; preparation, no training)
+- Head A reads the question and the timed speech, so its data needs subtitles and evidence times, not
+  videos. `scripts/v3_head_a_data.py` builds `data/head_a/{train,dev}.jsonl`:
+  - CG-Bench: the release's subtitles.zip has English subtitles for 83 train-split videos (877 questions
+    with human clue intervals) and 17 dev-split videos (164 questions), also for videos whose video file we
+    do not hold. Test-split videos are skipped.
+  - EduVidQA synthetic_train: questions that mention a time ("At 3:54, ...", "Referring to the slide at
+    1:46, ..."); the time is removed from the question (otherwise the model reads the answer position from
+    the text) and used as weak evidence (time ± 20 s). 546 questions have an English caption track; 2,870
+    more lack one, so their audio is being downloaded for Whisper transcription
+    (`fetch_eduvidqa_videos.py --audio-only`; some videos return HTTP 403 and are skipped).
+- Train 1,423 questions / 117 videos; dev 164 / 17 (CG-Bench only, human intervals).
+
+**Step 29. Head A harness and the zero-shot Path A rules on dev** (2026-10-10)
+- `scripts/v3_head_a_eval.py`: every Path A method returns ranked moments; metric = share of questions with
+  at least one of the first k moments inside a human clue interval (± 1 s). Dev, 164 questions:
+
+  | Method (zero-shot) | R@1 | R@2 | R@4 | R@6 |
+  |---|---|---|---|---|
+  | uniform 6 moments (chance) | 3.0 | 6.1 | 9.8 | 12.8 |
+  | BM25 window centres | 7.9 | 9.8 | 14.0 | 14.0 |
+  | BM25 single lines | 13.4 | 18.9 | 23.2 | 26.2 |
+  | v2 Path A (MiniLM inside BM25 windows, line end) | 10.4 | 15.9 | 25.0 | 25.0 |
+  | MiniLM over all lines | 11.0 | 15.9 | 26.2 | 28.0 |
+
+  (8 s non-maximum suppression changes these by at most ±2 points.) The v2 rule's 6 speech moments reach
+  the evidence for 1 question in 4: large room for a learned Head A.
+- Where is the evidence relative to the best-matching line? (train, 877 human-interval questions;
+  `reports/v3_head_a/offsets_train.json`): evidence centre − line end is within ±10 s for 166 (19%),
+  10–40 s away for 109 (12%), 40–120 s for 104 (12%), more than 120 s for 498 (57%).
+- Reading: the main failure is choosing the wrong line (57% far away), not the offset; when the line is
+  near, the evidence is often 10–40 s before or after it. Head A must therefore learn line relevance first
+  and the offset second. Methods to compare in the Head A cycle (after the baseline is frozen):
+  (a) learned relevance on frozen MiniLM features; (b) fine-tuned cross-encoder; (c) (b) + offset
+  distribution (the proposed design); (d) (c) + multi-line evidence aggregation over a time grid; with the
+  zero-shot rules above as baselines.
