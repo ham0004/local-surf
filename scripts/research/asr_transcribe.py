@@ -69,6 +69,7 @@ def main() -> None:
     p.add_argument("--videos", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--language", default="en")
+    p.add_argument("--ids", default=None, help="optional file with one video id per line (transcribe these first)")
     p.add_argument("--batch", type=int, default=1, help="word timestamps keep attention maps; >1 can exhaust 16 GB")
     a = p.parse_args()
     import torch  # noqa: PLC0415
@@ -82,6 +83,9 @@ def main() -> None:
                    model_kwargs={"cache_dir": "cache/hf/hub"})
     revision = getattr(asr.model.config, "_commit_hash", None)
     videos = sorted(Path(a.videos).glob("*.mp4"))
+    if a.ids:
+        keep = {x.strip() for x in Path(a.ids).read_text(encoding="utf-8").splitlines() if x.strip()}
+        videos = [v for v in videos if v.stem in keep]
     for n, v in enumerate(videos):
         if (out / f"{v.stem}.json").exists():
             continue
