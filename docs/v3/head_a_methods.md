@@ -1,5 +1,12 @@
 # Head A ("where to look"): method survey and chosen design
 
+> **Correction (2026-10-09, same day):** in the project architecture, **Head A is the transcript path**:
+> BM25 and related retrieval find speech close to the question, and Head A learns *where the useful
+> picture is* relative to that speech (which lines, and how far before or after them). The whole-video
+> MobileCLIP scorer and the "retrieve then verify" ranker described below belong to **Path B and Head B**
+> (visual candidates; choosing the final frames from the pooled candidates of both paths). The research
+> and the diagnostic remain valid; the roles are re-assigned in the section "Roles in the architecture".
+
 Written 2026-10-09, after the Head A pilot (step 19) and before any further Head A result.
 
 ## Why Head A first
@@ -64,3 +71,36 @@ final prior-work check; no novelty is claimed now.
 
 The scaled whole-video Head A (step 21) continues as declared; it shares the same training data and gives a
 direct comparison between "score the whole video" and "retrieve then verify".
+
+
+## Roles in the architecture (corrected) and the path diagnostic
+
+Measured on CG-Bench train questions (373, 37 videos; `reports/v3_head_a/path_recall_train.json`):
+
+| Candidate source | Reaches the human evidence |
+|---|---|
+| BM25 transcript windows (top 4) overlap the evidence | 55% |
+| Path A proxy: top-6 speech lines by query-word overlap, line end within 10 s of the evidence | 38% |
+| Path A proxy: top-16 lines | 54% |
+| Path B: top-6 option-aware MobileCLIP peaks | 42% |
+| Path B: top-16 peaks | 58% |
+| **Pool A + B (6 + 6)** | **64%** |
+| **Pool A + B (16 + 16)** | **80%** |
+
+The two paths are complementary: their union covers far more evidence than either alone. This supports
+the two-path design, and it fixes the jobs:
+
+- **Head A (transcript path):** from the question and the timed transcript, propose the moments where the
+  visual evidence is: which speech lines are relevant and the time offset of the picture relative to them
+  (before, during or after; TAN found narration and picture are often not aligned). Baseline: query-word /
+  BM25 line ranking (38% at 6 proposals) and v2's zero-shot MiniLM relevance. Target: raise Path A's
+  evidence recall at a fixed proposal budget. Supervision: CG-Bench human intervals mapped to lines
+  (positive lines and offsets), train videos only.
+- **Path B:** visual scan with option-aware MobileCLIP (42% at 6).
+- **Head B:** from the pooled candidates of both paths, choose the final K frames (the verify-and-rank
+  design above: precise checks on a small pool, low-capacity ranker trained on human evidence).
+
+Data limit to resolve: a transcript-based Head A needs English speech. Only 117 CG-Bench videos have English
+subtitles (51 held); the 719 streamed training videos mostly lack them. Options: speech recognition on those
+videos (only where speech is English), other lecture/long-video sources with evidence times, or EduVidQA's
+question timestamps as weak positions. Decided before Head A training.

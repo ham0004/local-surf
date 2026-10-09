@@ -188,3 +188,12 @@ Detailed results live in the linked reports; this log is the chronological index
 - Decision: build Head A as retrieve-then-verify (cheap top-32 shortlist, precise frozen verification
   signals targeted at measured failure types, low-capacity learned ranker trained on human evidence).
   Test order and stop rules in `docs/v3/head_a_methods.md`.
+
+**Step 23. Roles corrected; the two paths are complementary** (2026-10-09)
+- Correction: in the project architecture Head A is the transcript path (speech close to the query → where
+  the picture is). The whole-video MobileCLIP scorer of steps 18–21 is Path B work, and the
+  retrieve-then-verify ranker of step 22 is Head B (choosing final frames from the pooled candidates).
+- Path diagnostic on CG-Bench train: speech-line proposals reach the evidence for 38% of questions (top 6),
+  MobileCLIP for 42% (top 6), the pool of both for 64% (6 + 6) and 80% (16 + 16). The paths find different
+  evidence, which supports the two-path design. Head A's measurable target: raise the transcript path's
+  evidence recall at a fixed proposal budget. Details: `docs/v3/head_a_methods.md`.

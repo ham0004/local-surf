@@ -1,0 +1,12 @@
+{
+ "bm25_window_overlaps_evidence": 0.55,
+ "speech_lines_top6_within_10s": 0.383,
+ "speech_lines_top16_within_10s": 0.539,
+ "clip_top6": 0.416,
+ "clip_top16": 0.582,
+ "pool_6+6": 0.643,
+ "pool_16+16": 0.799,
+ "subtitle_lines_per_hour": 778.825,
+ "questions": 373,
+ "videos": 37
+}
