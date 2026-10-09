@@ -1,0 +1,23 @@
+{
+ "recall_at_K": {
+  "4": 0.36193029490616624,
+  "8": 0.46112600536193027,
+  "16": 0.5817694369973191,
+  "32": 0.7050938337801609,
+  "64": 0.7855227882037533
+ },
+ "recall_at_32_by_category": {
+  "Entity Perception": 0.7878787878787878,
+  "2D Spatial Perception": 0.5925925925925926,
+  "Text Perception": 0.6829268292682927,
+  "Event Perception": 0.676923076923077,
+  "Event Cognition": 0.8095238095238095,
+  "Entity Cognition": 0.6610169491525424,
+  "Time Perception": 0.7307692307692307,
+  "Time Cognition": 0.5714285714285714,
+  "Hallucination": 0.5555555555555556,
+  "Scene Perception": 0.7037037037037037,
+  "Text Cognition": 0.6666666666666666,
+  "Scene Cognition": 1.0
+ }
+}

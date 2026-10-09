@@ -178,3 +178,13 @@ Detailed results live in the linked reports; this log is the chronological index
 - `scripts/v3_head_a_scaled.py` (declared before results): training on all those videos' questions,
   config chosen on an inner 10% of training videos, 3 seeds, one dev comparison against option-aware
   MobileCLIP with a stop rule (CI must exclude 0).
+
+**Step 22. Head A method research and design choice** (2026-10-09)
+- Read and compared the main families for "where to look": training-free relevance + coverage (AKS,
+  MarKey, FORTE, GIFT, Ground-Cover-Refine), answer-aware queries (2609.31668), temporal search with object
+  detection (T*, LV-Haystack), learned temporal agents (TSPO), grounding, and answer-utility selectors.
+- Diagnostic on train: option-aware MobileCLIP puts the human evidence among its top-32 candidates for 71%
+  of questions but in its top-4 for only 36%. The problem is ranking, not recall.
+- Decision: build Head A as retrieve-then-verify (cheap top-32 shortlist, precise frozen verification
+  signals targeted at measured failure types, low-capacity learned ranker trained on human evidence).
+  Test order and stop rules in `docs/v3/head_a_methods.md`.
