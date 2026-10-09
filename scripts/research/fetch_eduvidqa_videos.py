@@ -42,6 +42,27 @@ def video_ids(raw: Path, split: str) -> list[str]:
     return sorted(ids, key=lambda v: hashlib.sha256(v.encode()).hexdigest())
 
 
+def fetch_audio(vid: str, out: Path) -> dict:
+    """Audio-only stream (for speech recognition when no usable transcript exists)."""
+    import yt_dlp  # noqa: PLC0415 - research-tool dependency
+
+    (out / "audio").mkdir(parents=True, exist_ok=True)
+    have = list((out / "audio").glob(f"{vid}.*"))
+    if have:
+        return {"video_id": vid, "ok": True, "bytes": have[0].stat().st_size, "cached": True}
+    opts = {"format": "ba[ext=m4a]/ba", "outtmpl": str(out / "audio" / f"{vid}.%(ext)s"),
+            "quiet": True, "no_warnings": True, "noprogress": True, "retries": 3}
+    t0 = time.perf_counter()
+    try:
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(f"https://www.youtube.com/watch?v={vid}", download=True)
+        got = list((out / "audio").glob(f"{vid}.*"))
+        return {"video_id": vid, "ok": bool(got), "bytes": got[0].stat().st_size if got else 0,
+                "duration_s": info.get("duration"), "seconds": time.perf_counter() - t0}
+    except Exception as e:  # noqa: BLE001 - record every failure reason
+        return {"video_id": vid, "ok": False, "error": str(e)[:300], "seconds": time.perf_counter() - t0}
+
+
 def fetch(vid: str, out: Path) -> dict:
     import yt_dlp  # noqa: PLC0415 - research-tool dependency
 
@@ -85,15 +106,16 @@ def main() -> None:
     p.add_argument("--out", default="data/eduvidqa")
     p.add_argument("--split", choices=tuple(SPLITS), default="synthetic_train")
     p.add_argument("--limit", type=int, default=20)
+    p.add_argument("--audio-only", action="store_true", help="fetch audio streams for ASR instead of video")
     a = p.parse_args()
     out = Path(a.out)
     (out / "videos").mkdir(parents=True, exist_ok=True)
     (out / "transcripts").mkdir(parents=True, exist_ok=True)
-    log_path = out / "video_access.json"
+    log_path = out / ("audio_access.json" if a.audio_only else "video_access.json")
     log = json.loads(log_path.read_text(encoding="utf-8")) if log_path.exists() else {}
     ids = video_ids(Path(a.raw), a.split)
     for n, vid in enumerate(ids[: a.limit]):
-        rec = fetch(vid, out)
+        rec = fetch_audio(vid, out) if a.audio_only else fetch(vid, out)
         rec["split"] = a.split
         log[vid] = rec
         log_path.write_text(json.dumps(log, indent=1), encoding="utf-8")

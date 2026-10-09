@@ -81,6 +81,7 @@ def main() -> None:
     p.add_argument("--videos", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--language", default="en")
+    p.add_argument("--pattern", default="*.mp4", help="media files to transcribe, e.g. *.m4a for audio-only downloads")
     p.add_argument("--ids", default=None, help="optional file with one video id per line (transcribe these first)")
     p.add_argument("--repair", action="store_true", help="only re-sanitize existing transcript files, no ASR")
     p.add_argument("--batch", type=int, default=1, help="word timestamps keep attention maps; >1 can exhaust 16 GB")
@@ -107,7 +108,7 @@ def main() -> None:
     asr = pipeline("automatic-speech-recognition", model=MODEL, dtype=torch.float16, device="cuda:0",
                    model_kwargs={"cache_dir": "cache/hf/hub"})
     revision = getattr(asr.model.config, "_commit_hash", None)
-    videos = sorted(Path(a.videos).glob("*.mp4"))
+    videos = sorted(Path(a.videos).glob(a.pattern))
     if a.ids:
         keep = {x.strip() for x in Path(a.ids).read_text(encoding="utf-8").splitlines() if x.strip()}
         videos = [v for v in videos if v.stem in keep]
