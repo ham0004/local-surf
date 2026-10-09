@@ -29,17 +29,24 @@ class FrozenEncoders:
         self.counts = {"clip_image": 0, "clip_text": 0, "ocr": 0}
 
     # -- MobileCLIP --------------------------------------------------------
-    def embed_images(self, images: list) -> np.ndarray:
-        """(N, D) unit-norm image embeddings for PIL images."""
+    def embed_images(self, images: list, batch: int = 64) -> np.ndarray:
+        """(N, D) unit-norm image embeddings for PIL images.
+
+        Encoded in batches of ``batch``: a whole-video scan can be several hundred frames, which in
+        one batch exhausted a 16 GB GPU (5 GB batch-norm allocation on a long Video-MMMU video).
+        """
         if not images:
             return np.zeros((0, 512), dtype=np.float32)
         self._clip.ensure_loaded()
         torch, model, prep = self._clip._torch, self._clip._model, self._clip._preprocess
         t0 = time.perf_counter()
+        parts = []
         with torch.no_grad():
-            x = torch.stack([prep(im) for im in images]).to(self._clip.device)
-            e = model.encode_image(x)
-            e = (e / e.norm(dim=-1, keepdim=True)).float().cpu().numpy()
+            for i in range(0, len(images), batch):
+                x = torch.stack([prep(im) for im in images[i:i + batch]]).to(self._clip.device)
+                f = model.encode_image(x)
+                parts.append((f / f.norm(dim=-1, keepdim=True)).float().cpu().numpy())
+        e = np.concatenate(parts)
         self.seconds["clip_image"] += time.perf_counter() - t0
         self.counts["clip_image"] += len(images)
         return e
