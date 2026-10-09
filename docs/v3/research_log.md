@@ -436,3 +436,38 @@ Detailed results live in the linked reports; this log is the chronological index
 - Reading: a 25× larger reranker adds at most 3 points at R@6. The limit is not text-matching quality: on
   long videos the speech rarely describes what the question asks about. Gains must come from how the speech
   evidence is turned into moments (context, question type, offsets), which is what the light head learns.
+
+**Step 39. Head A cycle, method family 2: light residual head over frozen line features** (2026-10-10)
+- `scripts/v3_head_a_light.py`, shared code in `src/videoqa/v3/head_a.py`. score_i = z_i (frozen MiniLM) +
+  MLP(21 label-free line features: relevance context over ±1/3/7 lines, BM25, option overlap, length,
+  position, speech density, question cues); last layer zero-initialised, so the untrained head is the
+  zero-shot rule. Multiple-instance listwise loss over all lines (near = within 10 s of the evidence). Inner
+  validation (15% of train videos) picks the epoch; 3 seeds; dev scored once per model.
+- Dev recall (mean ± sd over 3 seeds; zero-shot MiniLM R@1 11.0, R@2 15.9, R@4 26.2, R@6 28.0):
+
+  | Variant | Train data | R@1 | R@2 | R@4 | R@6 |
+  |---|---|---|---|---|---|
+  | line ranking (`light`) | + EduVidQA weak | 15.0 ± 0.6 | 20.9 ± 0.6 | 29.3 ± 0.5 | 32.7 ± 0.3 |
+  | line ranking | human only | 15.0 ± 0.3 | 21.3 ± 1.0 | 29.5 ± 1.3 | 32.1 ± 1.3 |
+  | density moments (`light_dens`) | + EduVidQA weak | 15.2 ± 0.9 | 21.1 ± 1.3 | 29.5 ± 0.8 | 32.5 ± 1.9 |
+  | density moments | human only | 15.2 ± 0.5 | 23.4 ± 0.3 | 31.5 ± 1.0 | 35.2 ± 1.3 |
+  | learned offsets (`light_off`, the proposed design) | + weak | 14.2 ± 0.3 | 22.6 ± 0.5 | 26.4 ± 0.3 | 30.7 ± 1.3 |
+  | learned offsets | human only | 15.4 ± 0.6 | 21.1 ± 1.5 | 27.8 ± 2.0 | 31.7 ± 1.8 |
+  | line ranking + bge features (`ens`) | human only | 17.9 ± 0.8 | 23.6 ± 1.6 | 30.5 ± 1.0 | 33.5 ± 1.0 |
+  | **density moments + bge features** | human only | 16.9 ± 0.3 | 24.8 ± 1.3 | 32.3 ± 1.5 | **36.2 ± 1.6** |
+
+- Findings:
+  - Keeping the frozen ranking and learning a residual works; tuning the encoder did not (step 37).
+  - Density moments (several relevant lines vote for a moment) beat single-line ranking by about 3 points
+    at R@6.
+  - The proposed learned offsets do not help (−3.5 vs density moments without offsets): with 877 human
+    questions, an offset distribution per line is not learnable beyond the Gaussian vote. Reported as a
+    negative result for the original Head A design.
+  - The EduVidQA weak times (question time ± 20 s) do not help; their noise (~35 s average error, per the
+    paper) is larger than the 10 s "near" window.
+- Chosen Head A: **density moments + bge features, human labels, 3 seeds averaged** (no seed picked on dev).
+  Re-trained with checkpoints (identical numbers). Seed average on dev: R@1 17.7, R@2 26.2, R@4 32.9,
+  R@6 36.6; paired vs zero-shot R@6 **+8.5 (+4.1..+13.1)**, bootstrap over the 17 dev videos.
+- Next: the frozen baseline with only Path A replaced, by (a) zero-shot MiniLM over the whole transcript and
+  (b) the chosen Head A; multiple choice on both benchmarks plus Path A-only frames
+  (ledger `budget_heada.json`, 1,500 calls).
