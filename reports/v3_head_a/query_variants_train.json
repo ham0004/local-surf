@@ -1,0 +1,6 @@
+{
+ "question": 0.30831099195710454,
+ "question+options text": 0.36193029490616624,
+ "mean(question, options)": 0.3163538873994638,
+ "question + max over options": 0.3351206434316354
+}

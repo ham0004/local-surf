@@ -163,3 +163,18 @@ Detailed results live in the linked reports; this log is the chronological index
   training questions with human evidence. This is declared as a new experiment with its own stop rule
   (if scaled Head A still does not beat MobileCLIP on dev, Head A is stopped). Report:
   `reports/v3_head_a/offline_dev.json`.
+
+**Step 20. Option-aware query (label-free baseline improvement, train-only finding)** (2026-10-09)
+- On the 37 pilot train videos only (dev untouched), MobileCLIP retrieval with "question + options" text
+  instead of the question alone raises hit@4 from 30.8% to 36.2% (+5.4, CI +1.6 to +9.0, video bootstrap).
+  Mean of question and option embeddings: 31.6%; question + max over options: 33.5%.
+  (`reports/v3_head_a/query_variants_train.json`). Adding options to the query is a common practice, not a
+  contribution; it is adopted as the stronger baseline and as Head A's input.
+
+**Step 21. Scaled Head A declared; training features streaming** (2026-10-09)
+- `scripts/research/cgbench_train_features.py` streams the 719 other released CG-Bench videos (dev/test
+  excluded by id): byte-range download, 2 s MobileCLIP features, video deleted (no 160 GB stored).
+  ~30–80 s per video, ~9 hours in total, running.
+- `scripts/v3_head_a_scaled.py` (declared before results): training on all those videos' questions,
+  config chosen on an inner 10% of training videos, 3 seeds, one dev comparison against option-aware
+  MobileCLIP with a stop rule (CI must exclude 0).
