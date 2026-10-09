@@ -289,3 +289,27 @@ Detailed results live in the linked reports; this log is the chronological index
   - Same selectors, K = 4, 120 words, plus Path A-only / Path B-only on this pool
     (`scripts/run_baseline_dense.sh`). Video-MMMU dev features computed for this (98 videos,
     `v3_features.py --split dev`).
+
+**Step 31. Baseline cycle stages 1–2: results** (2026-10-10; `reports/v3_baseline/table.json`)
+- Multiple-choice accuracy, K = 4 frames, 120 transcript words, frozen Qwen3-VL-2B. CG-Bench dev 82
+  questions (8 videos; "evidence" = an evidence frame is in the pool); Video-MMMU Perception dev 98.
+
+  | Pool (Path B scope) | Selector | CG-Bench | Video-MMMU |
+  |---|---|---|---|
+  | v2 (BM25 windows; pool evidence 33%) | clip / clipopt / mmr / mmropt / relevance | 28.0 / 26.8 / 26.8 / 28.0 / 23.2 | 56.1 / 54.1 / 56.1 / 58.2 / 51.0 |
+  | balanced windows (pool evidence 32%) | same order | 29.3 / 30.5 / 31.7 / 30.5 / 23.2 | 55.1 / 57.1 / 57.1 / 59.2 / 51.0 |
+  | whole video, even (pool evidence 50%) | same order | **34.1** / 30.5 / 29.3 / 31.7 / 22.0 | 57.1 / **59.2** / 58.2 / 58.2 / 48.0 |
+  | v2 pool, Path A only / Path B only (option-aware) | | 25.6 / 30.5 | 55.1 / 51.0 |
+
+- References on the same CG-Bench dev questions (gate, 300 words): question only 15.9, evenly spaced 4
+  frames 17.1, dense MobileCLIP top-4 40.2, frames inside the human evidence 63.4.
+- Reading:
+  - CG-Bench: where Path B looks matters most. Scanning the whole video raises pool evidence recall from
+    33% to 50% and the best accuracy from 28–32% to 34%; still below the dense rule (40.2%), hence the
+    dense setting (step 30, running).
+  - The speech-relevance selector is the weakest rule on both benchmarks (22–23% CG-Bench, 48–51%
+    Video-MMMU): ranking frames by the zero-shot speech score of the nearest line does not find the
+    picture. This is the Path A weakness Head A targets (step 29).
+  - Video-MMMU: all rules except relevance lie within 54–59%; with 98 questions these differences are
+    within noise. On lectures the Path A frames alone (55.1) do better than Path B alone (51.0); on
+    CG-Bench the reverse (25.6 vs 30.5): the two paths are useful on different kinds of video.
