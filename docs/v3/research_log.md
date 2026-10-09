@@ -471,3 +471,30 @@ Detailed results live in the linked reports; this log is the chronological index
 - Next: the frozen baseline with only Path A replaced, by (a) zero-shot MiniLM over the whole transcript and
   (b) the chosen Head A; multiple choice on both benchmarks plus Path A-only frames
   (ledger `budget_heada.json`, 1,500 calls).
+
+**Step 40. Head A in the frozen pipeline (only Path A changed)** (2026-10-10; ledger `budget_heada.json`)
+- Frozen baseline (hybrid Path B, mmropt, K = 4, no transcript) with Path A from: the v2 rule (MiniLM inside
+  the BM25 windows), zero-shot MiniLM over the whole transcript (`hybrid_azs`), or the chosen Head A
+  (`hybrid_ahead`). Path A-only = the 4 best Path A frames (option-aware ranking).
+
+  | Path A | CG-Bench pool evidence | CG-Bench A-only | CG-Bench mmropt | Video-MMMU A-only | Video-MMMU mmropt |
+  |---|---|---|---|---|---|
+  | v2 rule (baseline) | 59.8 | 30.5 | **40.2** | **61.2** | **63.3** |
+  | zero-shot, whole transcript | 64.6 | 29.3 | 39.0 | 60.2 | 62.2 |
+  | Head A (learned) | **64.6** | **34.1** | 39.0 | 57.1 | 62.2 |
+
+- Paired (95% CI): CG-Bench pool evidence Head A − baseline **+4.9 (+1.0..+10.8)**; CG-Bench A-only +3.7
+  (−2.5..+9.5); CG-Bench mmropt −1.2 (−4.7..+2.9); Video-MMMU A-only −4.1 (−11.2..+2.0); Video-MMMU mmropt
+  −1.0 (−7.1..+5.1).
+- Reading:
+  - On long videos Head A puts the evidence into the pool more often (+4.9, significant) and its own frames
+    answer better (+3.7, not significant), but the frozen selector does not use them: with mmropt the
+    chosen frames hit the evidence for 45% of questions with Head A vs 50% with the baseline pool. The
+    selector ranks by MobileCLIP similarity, so a better speech-derived candidate is not recognised as
+    better. The gain is lost at box [5], which is Head B's job.
+  - On lectures, Head A (trained on CG-Bench vlogs and films) transfers badly: v2's in-window line-end rule
+    is better there (A-only 61.2 vs 57.1). The supervision covers one domain only.
+- Head A outcome so far: a real localisation gain on long videos (moment recall +8.5, pool evidence +4.9),
+  no end-to-end QA gain through the frozen selector, and a domain-transfer loss on lectures. Both Path A
+  sources (baseline and Head A pools) go into the Head B cycle; the combined A + B step decides whether
+  Head A is kept.
