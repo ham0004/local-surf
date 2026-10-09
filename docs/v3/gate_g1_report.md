@@ -90,3 +90,25 @@ they consistently reduce coverage by about 10 points (shorter, narrower answers)
 The gate conclusion stands in a milder form: for the 2B answerer on EduVidQA's synthetic questions,
 frames (naive or selected) do not improve answers. Means per language group:
 `reports/v3_gate/language_split_means.json`.
+
+# Check: does a larger answerer (Qwen3-VL-4B) benefit from selected frames?
+
+**No.** Same protocol, English-transcript videos only, answerer swapped to `Qwen/Qwen3-VL-4B-Instruct`
+(pinned revision ebb281ec); conditions T and C4 (MobileCLIP top-4). 96 answer calls (cap 150; the
+1,800 s answer cap was reached, partly from two slow Tamil-transcript answers made before the language
+filter existed), 160 judge calls (cap 300). 35 paired questions from 14 videos after excluding the
+Tamil video.
+
+| Metric | T | C4 | C4 − T (95% CI) |
+|---|---|---|---|
+| FactQA precision | 0.429 | 0.427 | −0.003 (−0.058 to +0.048) |
+| FactQA recall | 0.581 | 0.536 | −0.046 (−0.141 to +0.032) |
+| Entailment | 0.091 | 0.089 | −0.002 (−0.036 to +0.028) |
+
+C4 better/same/worse on 8/7/20 questions. The 4B model writes longer answers (135 words) with higher
+coverage but lower precision than the 2B; with frames it neither gains accuracy nor coverage.
+
+**Gate decision.** Frames, naive or selected, do not improve answers on EduVidQA's synthetic training
+questions for either answerer. The limitation is the data (questions generated from transcripts), not
+the 2B model's size. A frame-selection method cannot be shown to help on this split; selection research
+needs a benchmark where frames demonstrably matter. Data: `reports/v3_gate/g1_4b_english.json`.

@@ -1,0 +1,135 @@
+{
+ "gate": "G1/G1b: do (selected) frames help open-ended EduVidQA answers? (official training videos only)",
+ "questions": 36,
+ "videos": 15,
+ "judge": "nvidia/nemotron-3-ultra-550b-a55b",
+ "provider": "nvidia",
+ "judge_versions": [
+  "nvidia/nemotron-3-ultra-550b-a55b"
+ ],
+ "nli_model": [
+  "cross-encoder/nli-roberta-base",
+  "1be0567456f0543475805e758725f151f283705a"
+ ],
+ "judge_calls": 160,
+ "judge_usd_measured": 0.0,
+ "unparsed_factqa": 0,
+ "metrics": {
+  "factqa_precision": {
+   "mean": {
+    "T": 0.43675552842219506,
+    "C4": 0.41467136258802934
+   },
+   "minus_transcript_only": {
+    "C4": {
+     "difference": -0.022084165834165836,
+     "ci95_video_bootstrap": [
+      -0.10166258295276155,
+      0.03717540553582219
+     ]
+    }
+   },
+   "paired_questions": 36
+  },
+  "factqa_recall": {
+   "mean": {
+    "T": 0.5850933788433789,
+    "C4": 0.5252817398650732
+   },
+   "minus_transcript_only": {
+    "C4": {
+     "difference": -0.05981163897830563,
+     "ci95_video_bootstrap": [
+      -0.16172369297369296,
+      0.019387275092632224
+     ]
+    }
+   },
+   "paired_questions": 36
+  },
+  "bleu1": {
+   "mean": {
+    "T": 0.35814952029577035,
+    "C4": 0.35860243393925884
+   },
+   "minus_transcript_only": {
+    "C4": {
+     "difference": 0.00045291364348848243,
+     "ci95_video_bootstrap": [
+      -0.022233849040679772,
+      0.02384811970140212
+     ]
+    }
+   },
+   "paired_questions": 36
+  },
+  "rouge_l": {
+   "mean": {
+    "T": 0.22598079669541063,
+    "C4": 0.2236994394433699
+   },
+   "minus_transcript_only": {
+    "C4": {
+     "difference": -0.0022813572520407697,
+     "ci95_video_bootstrap": [
+      -0.01144028520328575,
+      0.007257725589157697
+     ]
+    }
+   },
+   "paired_questions": 36
+  },
+  "meteor": {
+   "mean": {
+    "T": 0.3037740760030684,
+    "C4": 0.29241514780780103
+   },
+   "minus_transcript_only": {
+    "C4": {
+     "difference": -0.01135892819526729,
+     "ci95_video_bootstrap": [
+      -0.026935070423794037,
+      0.006845949598364211
+     ]
+    }
+   },
+   "paired_questions": 36
+  },
+  "entailment": {
+   "mean": {
+    "T": 0.08846300728489748,
+    "C4": 0.08872558301987334
+   },
+   "minus_transcript_only": {
+    "C4": {
+     "difference": 0.00026257573497585126,
+     "ci95_video_bootstrap": [
+      -0.032283465947534534,
+      0.03046456951020585
+     ]
+    }
+   },
+   "paired_questions": 36
+  },
+  "answer_words": {
+   "mean": {
+    "T": 134.66666666666666,
+    "C4": 130.02777777777777
+   },
+   "minus_transcript_only": {
+    "C4": {
+     "difference": -4.638888888888889,
+     "ci95_video_bootstrap": [
+      -9.846276595744682,
+      1.8572420634920621
+     ]
+    }
+   },
+   "paired_questions": 36
+  }
+ },
+ "conditions": [
+  "T",
+  "C4"
+ ]
+}
