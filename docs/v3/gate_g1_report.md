@@ -68,3 +68,25 @@ significantly). Since the questions were generated from the transcript, the tran
 answer; frames shift the model's attention away from it. **EduVidQA's synthetic training split therefore
 cannot support a claim that better frame selection improves answers** for this answerer. Untested: the 269
 expert-written real questions (locked), larger answerers, and adaptive "no frames vs frames" decisions.
+
+# Correction: 6 of the 20 gate videos had non-English transcripts
+
+The caption tracks of 6 videos (30 of the 92 gate questions) are **Tamil**, although the YouTube track
+is labelled "en" (found when Qwen3-VL-4B ran out of memory on a 4,895-token prompt). Across all 87
+downloaded EduVidQA transcripts, 10 are not English. For those questions "transcript only" meant
+"almost no usable transcript", so the pooled G1/G1b numbers above mix two different situations.
+A script-based check (`src/videoqa/v3/language.py`, ≥ 90% Latin letters) now excludes them.
+
+**Re-analysis on the 14 English-transcript videos** (same verdicts, no new calls; 95% video-bootstrap CIs):
+
+| Condition − transcript only | FactQA precision (accuracy) | FactQA recall (coverage) |
+|---|---|---|
+| TF: 4 evenly spaced frames (48 questions) | −0.063 (−0.146 to +0.015) | **−0.097** (−0.174 to −0.023) |
+| R1: frame at the timestamp (46 questions) | −0.005 (−0.096 to +0.084) | **−0.104** (−0.176 to −0.035) |
+| C4: MobileCLIP top-4 (46 questions) | −0.029 (−0.122 to +0.057) | **−0.099** (−0.190 to −0.018) |
+
+**Corrected reading.** With a real English transcript, frames do **not** reduce accuracy measurably, but
+they consistently reduce coverage by about 10 points (shorter, narrower answers); they never improve it.
+The gate conclusion stands in a milder form: for the 2B answerer on EduVidQA's synthetic questions,
+frames (naive or selected) do not improve answers. Means per language group:
+`reports/v3_gate/language_split_means.json`.

@@ -174,6 +174,9 @@ def stage_answer_g1b(a) -> None:
         by.setdefault(x["qa_id"], set()).add(x["condition"])
     keep = {q for q, c in by.items() if {"T", "TF"} <= c}
     rows = [r for r in _question_rows() if r["qa_id"] in keep]
+    if a.answerer != "2b":                    # later checks use English-transcript videos only
+        english = _english_videos()
+        rows = [r for r in rows if r["video_id"] in english]
     if not C4_TIMES.exists():
         enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
         C4_TIMES.write_text(json.dumps({r["qa_id"]: choose_c4(r, enc) for r in rows}, indent=1), encoding="utf-8")
@@ -221,6 +224,18 @@ def stage_answer(a) -> None:
             print(f"{n + 1}/{len(qs)} fresh={cache.calls} {cache.seconds / max(cache.calls, 1):.1f}s/answer", flush=True)
     print(json.dumps({"questions": len(qs), "videos": len({q['video_id'] for q in qs}), "fresh_answers": cache.calls,
                       "budget": {"calls": budget.calls, "seconds": round(budget.seconds)}}, indent=1))
+
+
+def _english_videos() -> set[str]:
+    """Videos whose saved transcript is really English (see videoqa.v3.language)."""
+    from videoqa.transcript import load_transcript  # noqa: PLC0415
+    from videoqa.v3.language import is_english_transcript  # noqa: PLC0415
+
+    out = set()
+    for path in (DATA / "transcripts").glob("*.json"):
+        if is_english_transcript(load_transcript(path, path.stem).segments):
+            out.add(path.stem)
+    return out
 
 
 def _question_rows() -> list[dict]:
