@@ -208,3 +208,17 @@ Detailed results live in the linked reports; this log is the chronological index
   using per-option evidence profiles (decisive and complementary evidence); trained on human evidence, then
   answerer swap labels. Ablations: no option profile; no set context.
 - Document: `docs/v3/heads_design.md`.
+
+**Step 25. Process correction: return to the handoff's sequence** (2026-10-09)
+- The handoff's order is: benchmark/scorer readiness → **baseline cycle** (framework settings tuned on the
+  common benchmark's dev split and frozen) → research and a 2–3 method shortlist with an original design →
+  one full cycle per method (Head A, then Head B) against the frozen baseline → combined + ablations → final
+  frozen comparison on the same test questions → external comparison.
+- Steps 18–22 jumped from the gates straight to training a learned component, skipping the baseline cycle,
+  and the component was not the handoff's Head A. Those runs are kept as Path B diagnostics; they do not
+  replace the baseline cycle.
+- Also restored from the handoff: open-ended answers are the primary objective. CG-Bench provides open-ended
+  reference answers, so dev/test comparisons will report open-ended FactQA (validated judge) next to
+  multiple-choice accuracy.
+- Next, in order: (1) baseline cycle on CG-Bench dev and Video-MMMU dev; (2) Head A cycle; (3) Head B cycle;
+  (4) combined and ablations; (5) final comparison.

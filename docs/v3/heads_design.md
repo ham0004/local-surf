@@ -87,7 +87,10 @@ and ReFoCUS (learned set selection from answer loss or RL, without per-option ev
 
 ---
 
-## Experiment order (per the handoff's per-method cycle)
+## Experiment order (the handoff's sequence; corrected 2026-10-09, step 25)
+0. Benchmarks and scorer fixed: CG-Bench (dev 8 videos / 82 questions, test 6 / 55) and Video-MMMU (dev 98,
+   test 202 per track), multiple-choice accuracy plus open-ended FactQA where references exist (CG-Bench).
+   The baseline cycle below comes BEFORE any head is trained.
 1. Baseline cycle on dev: path budgets (A and B proposals), K, transcript budget, with uniform, MobileCLIP,
    option-aware MobileCLIP, AKS and the v2 pipeline as baselines.
 2. Head A cycle: build, train, tune on train/inner validation, evaluate Path A recall on dev; then pooled
