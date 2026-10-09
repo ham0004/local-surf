@@ -41,7 +41,9 @@ import numpy as np
 
 RUN = Path("runs/v3_baseline")
 OUT = Path("reports/v3_baseline")
-DATASETS = {"cgbench": ("data/cgbench", "dev", None), "videommmu": ("data/videommmu", "dev", "vmmmu:Perception:")}
+DATASETS = {"cgbench": ("data/cgbench", "dev", None), "videommmu": ("data/videommmu", "dev", "vmmmu:Perception:"),
+            # Head B training pools (CG-Bench train videos we hold; never used for selection decisions)
+            "cgbench_train": ("data/cgbench", "train", None)}
 POOLS = {
     "v2": dict(scan_step_s=5.0, scan_cap=24),
     "balanced": dict(scan_step_s=5.0, scan_cap=24, scan_policy="balanced"),
@@ -59,7 +61,9 @@ POOLS = {
     "hybrid_ahead": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="head"),
 }
 HEAD_A_CKPTS = [f"runs/v3_head_a/ckpt/light_dens_ens_human_{s}.pt" for s in range(3)]
-FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/features"}
+FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/features",
+            "cgbench_train": "data/cgbench/features"}
+SELECTIONS = Path("runs/v3_head_b/selections")
 LIMITS = (4000, 4 * 3600.0)
 # second ledger, declared in research_log step 35 after the first was used up by stages 1-3
 EXTRA_LIMITS = (1500, 2 * 3600.0)
@@ -130,8 +134,18 @@ def excerpt(pool, words: int):
     return out
 
 
+_FILE_SELECTIONS: dict = {}
+
+
 def select(pool, rule: str, k: int, qo_emb):
     cands = list(pool.candidates)
+    if rule.startswith("file:"):                     # a Head B method's saved choice (scripts/v3_head_b.py)
+        path = SELECTIONS / f"{rule[5:]}.json"
+        if path not in _FILE_SELECTIONS:
+            _FILE_SELECTIONS[path] = json.loads(path.read_text(encoding="utf-8"))
+        ids = _FILE_SELECTIONS[path][pool.qa_id][:k]
+        by_id = {c.id: c for c in cands}
+        return [by_id[i] for i in ids]
     if rule == "A_only":
         cands = [c for c in cands if "A" in c.paths]
     if rule == "B_only":
