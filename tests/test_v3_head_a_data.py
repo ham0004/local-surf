@@ -37,3 +37,12 @@ def test_feature_scan_times_ranks_and_spaces(tmp_path):
     np.savez(tmp_path / "v.npz", times=times, emb=emb)
     out = _feature_scan_times(tmp_path / "v.npz", np.array([1, 0, 0, 0], np.float32), cap=3, gap=4.0)
     assert out == [18.0, 14.0, 10.0]
+
+
+def test_short_answer_verdict_parser():
+    from videoqa.v3.factqa import parse_verdict
+
+    assert parse_verdict("the colour matches.\nVerdict: CORRECT") is True
+    assert parse_verdict("**Verdict:** incorrect") is False
+    assert parse_verdict("Verdict: INCORRECT ... on reflection Verdict: CORRECT") is True
+    assert parse_verdict("no verdict") is None

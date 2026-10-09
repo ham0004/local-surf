@@ -205,3 +205,51 @@ class OpenAICompatFactQA(GeminiFactQA):
         u = out.get("usage", {}) or {}
         return text, out.get("model", self.model), {"input": int(u.get("prompt_tokens", 0)),
                                                    "output": int(u.get("completion_tokens", 0))}
+
+
+SHORT_JUDGE_VERSION = "short-answer-1"
+SHORT_JUDGE_PROMPT = """You grade answers to questions about a video. You are given the question, the reference answer written by a human annotator who watched the video, and a model's answer.
+Decide whether the model's answer is correct: it must state the same thing as the reference (synonyms, paraphrases, extra detail and different units or formats are fine). It is incorrect if it gives a different or contradicting answer, several alternatives, or no answer.
+Reply with one line: Verdict: CORRECT or Verdict: INCORRECT
+Question: {question}
+Reference answer: {reference}
+Model answer: {generated}"""
+
+
+def parse_verdict(text: str) -> bool | None:
+    hits = re.findall(r"Verdict:\s*\**\s*(CORRECT|INCORRECT)", text, flags=re.IGNORECASE)
+    return hits[-1].upper() == "CORRECT" if hits else None
+
+
+class ShortAnswerJudge(OpenAICompatFactQA):
+    """Correct / incorrect for open-ended answers with short human references (CG-Bench open-ended).
+
+    CG-Bench grades open-ended answers with an LLM judge against the annotator's short answer; this is our
+    own one-line prompt for that (SHORT_JUDGE_PROMPT), with the same transport, cache and budget as FactQA.
+    """
+
+    def correct(self, qa_id: str, question: str, reference: str, generated: str) -> dict:
+        payload = {"model": self.model, "prompt": SHORT_JUDGE_VERSION, "q": question, "ref": reference,
+                   "gen": generated}
+        k = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
+        with self._lock:
+            if k in self.records:
+                self.hits += 1
+                return self.records[k]
+            if self.budget is not None:
+                self.budget.check_one()
+        t0 = time.perf_counter()
+        text, version, u = self._post(SHORT_JUDGE_PROMPT.format(question=question, reference=reference,
+                                                                generated=generated))
+        spent = time.perf_counter() - t0
+        rec = {"key": k, "qa_id": qa_id, "model_version": version, "input_tokens": u["input"],
+               "output_tokens": u["output"], "seconds": spent, "correct": parse_verdict(text),
+               "raw_tail": text[-300:]}
+        with self._lock:
+            self.calls += 1
+            if self.budget is not None:
+                self.budget.charge(spent * self.time_share)
+            self.records[k] = rec
+            with open(self.path, "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(rec) + "\n")
+        return rec

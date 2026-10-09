@@ -20,6 +20,8 @@ Answer settings: K final frames; transcript budget in words (BM25 excerpt; 0 = n
 
     python scripts/v3_baseline_cycle.py pools  --dataset cgbench --pool v2
     python scripts/v3_baseline_cycle.py answer --dataset cgbench --pool v2 --selectors clip,clipopt --k 4 --words 120
+    python scripts/v3_baseline_cycle.py open   --dataset cgbench --pool dense --selectors clip --k 4 --words 120
+    python scripts/v3_baseline_cycle.py judge      # open-ended correct/incorrect (CG-Bench short references)
     python scripts/v3_baseline_cycle.py report
 """
 
@@ -47,6 +49,9 @@ POOLS = {
 }
 FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/features"}
 LIMITS = (4000, 4 * 3600.0)
+OPEN_LIMITS = (1500, 4 * 3600.0)
+JUDGE = "nvidia/nemotron-3-ultra-550b-a55b"
+JUDGE_LIMITS = (3000, 4 * 3600.0)
 
 
 def items(dataset: str):
@@ -180,6 +185,65 @@ def stage_answer(a) -> None:
         print(f"{a.dataset}/{a.pool}/{rule} K={a.k} words={a.words}: done; calls {budget.calls}", flush=True)
 
 
+def stage_open(a) -> None:
+    """Open-ended answers (no options shown) for one pool + selector; CG-Bench has short human references."""
+    from videoqa.config import load_config  # noqa: PLC0415
+    from videoqa.v2.budget import CallBudget  # noqa: PLC0415
+    from videoqa.v2.candidates import load_pool  # noqa: PLC0415
+    from videoqa.v2.encoders import FrozenEncoders  # noqa: PLC0415
+    from videoqa.v2.teacher import _as_frame  # noqa: PLC0415
+    from videoqa.v3.openended import AnswerCache, answerer_identity, make_open_answerer  # noqa: PLC0415
+
+    meta = json.loads((pool_dir(a.dataset, a.pool).parent / "pools.json").read_text())
+    pools = [load_pool(pool_dir(a.dataset, a.pool), q) for q in meta["qa_ids"]]
+    enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
+    qo = enc.embed_texts([p.question + " Options: " + ", ".join(p.options) for p in pools])
+    cfg = load_config(a.config)
+    budget = CallBudget(RUN / "open_budget.json", *OPEN_LIMITS)
+    cache = AnswerCache(RUN / "open_answers.jsonl", answerer_identity(cfg), None, budget)
+    qa = {it.qa.qa_id: it.qa for it in items(a.dataset)}
+    for rule in a.selectors.split(","):
+        for p, e in zip(pools, qo, strict=True):
+            frames = [_as_frame(c) for c in select(p, rule, a.k, e)]
+            ex = excerpt(p, a.words)
+            if cache.get(p.question, ex, frames) is None and cache.answerer is None:
+                cache.answerer = make_open_answerer(cfg)
+            rec = cache.answer(p.qa_id, p.question, ex, frames)
+            row = {"dataset": a.dataset, "pool": a.pool, "selector": rule, "k": a.k, "words": a.words,
+                   "qa_id": p.qa_id, "question": p.question, "reference": qa[p.qa_id].gold_answer,
+                   "answer": rec["text"]}
+            with open(RUN / "open_rows.jsonl", "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(row) + "\n")
+        print(f"open {a.dataset}/{a.pool}/{rule} K={a.k} words={a.words}: done; calls {budget.calls}", flush=True)
+
+
+def stage_judge(a) -> None:
+    """Correct / incorrect for every open-ended row (NVIDIA NIM free tier, validated prompt, cached)."""
+    from concurrent.futures import ThreadPoolExecutor  # noqa: PLC0415
+
+    from videoqa.v2.budget import CallBudget  # noqa: PLC0415
+    from videoqa.v3.factqa import ShortAnswerJudge  # noqa: PLC0415
+
+    rows = [json.loads(x) for x in (RUN / "open_rows.jsonl").read_text(encoding="utf-8").splitlines() if x.strip()]
+    judge = ShortAnswerJudge(JUDGE, RUN / "judge.jsonl", budget=CallBudget(RUN / "judge_budget.json", *JUDGE_LIMITS),
+                             max_tokens=4096)
+    judge.time_share = 1 / 4
+
+    def one(r):
+        try:
+            return judge.correct(r["qa_id"], r["question"], r["reference"], r["answer"])["correct"]
+        except Exception as e:  # noqa: BLE001 - one failed verdict must not stop the batch
+            print(f"judge failed {r['qa_id']}: {str(e)[:120]}", flush=True)
+            return None
+
+    with ThreadPoolExecutor(4) as ex:
+        verdicts = list(ex.map(one, rows))
+    for r, v in zip(rows, verdicts, strict=True):
+        r["open_correct"] = v
+    (RUN / "open_judged.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    print(f"judged {sum(v is not None for v in verdicts)}/{len(rows)}; new calls {judge.calls}")
+
+
 def stage_report(a) -> None:
     rows = [json.loads(x) for x in (RUN / "rows.jsonl").read_text().splitlines() if x.strip()]
     latest = {}
@@ -198,17 +262,27 @@ def stage_report(a) -> None:
                       "chosen_evidence_recall": float(np.mean(ev)) if ev else None,
                       "pool_size_median": float(np.median([r["pool_size"] for r in g])),
                       "pool_seconds_median": float(np.median([r["pool_seconds"] for r in g]))})
+    judged = RUN / "open_judged.jsonl"
+    if judged.exists():
+        last = {}
+        for r in (json.loads(x) for x in judged.read_text(encoding="utf-8").splitlines() if x.strip()):
+            last[(r["dataset"], r["pool"], r["selector"], r["k"], r["words"], r["qa_id"])] = r["open_correct"]
+        for t in table:
+            v = [c for (d, p, s, k, w, _), c in last.items()
+                 if (d, p, s, k, w) == (t["dataset"], t["pool"], t["selector"], t["k"], t["words"]) and c is not None]
+            t["open_accuracy"], t["open_n"] = (float(np.mean(v)), len(v)) if v else (None, 0)
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "table.json").write_text(json.dumps(table, indent=1), encoding="utf-8")
     for t in table:
         print(f"{t['dataset']:9s} {t['pool']:8s} {t['selector']:9s} K={t['k']} w={t['words']:3d} n={t['n']:3d} "
               f"acc={t['accuracy']:.3f} pool_ev={t['pool_evidence_recall']} chosen_ev={t['chosen_evidence_recall']} "
-              f"pool={t['pool_size_median']:.0f} t={t['pool_seconds_median']:.1f}s")
+              f"pool={t['pool_size_median']:.0f} t={t['pool_seconds_median']:.1f}s"
+              + (f" open={t['open_accuracy']:.3f} (n={t['open_n']})" if t.get("open_accuracy") is not None else ""))
 
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("stage", choices=("pools", "answer", "report"))
+    p.add_argument("stage", choices=("pools", "answer", "open", "judge", "report"))
     p.add_argument("--dataset", choices=tuple(DATASETS), default="cgbench")
     p.add_argument("--pool", choices=tuple(POOLS), default="v2")
     p.add_argument("--selectors", default="clip,clipopt,mmr,mmropt,relevance")
@@ -217,7 +291,8 @@ def main() -> None:
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
-    {"pools": stage_pools, "answer": stage_answer, "report": stage_report}[a.stage](a)
+    {"pools": stage_pools, "answer": stage_answer, "open": stage_open, "judge": stage_judge,
+     "report": stage_report}[a.stage](a)
 
 
 if __name__ == "__main__":
