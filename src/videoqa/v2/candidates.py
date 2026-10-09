@@ -56,6 +56,7 @@ class PoolConfig:
     path_b_scope: str = "windows"  # "windows" (v2: scan inside the BM25 windows) or "video" (whole video,
                                    # evenly at max(scan_step_s, duration / scan_cap)); a baseline-cycle setting
                                    # "features": whole video from precomputed dense features (features_dir)
+                                   # "hybrid": half of Path B from "features", half from the windows scan
     features_dir: str | None = None  # <dir>/<video_id>.npz (times, emb) from scripts/v3_features.py
     features_gap_s: float = 4.0      # "features" scope: decode the top scan_cap times at least this far apart
 
@@ -91,9 +92,14 @@ def build_pool(qa, transcript, video_path: str, encoders, head_a, cfg: PoolConfi
     t["head_a"] = time.perf_counter() - tic
 
     # -- Path B: sparse scan inside the windows -------------------------------
-    if cfg.path_b_scope == "features":
+    window_times: set[float] = set()
+    if cfg.path_b_scope in ("features", "hybrid"):
         scan_times = _feature_scan_times(Path(cfg.features_dir) / f"{qa.video_id}.npz",
                                          encoders.embed_texts([qa.question])[0], cfg.scan_cap, cfg.features_gap_s)
+        if cfg.path_b_scope == "hybrid":      # plus the v2 scan inside the BM25 windows; half the slots each
+            w = scan_timestamps(windows, duration, cfg.scan_step_s, cfg.scan_cap, cfg.scan_policy)
+            window_times = {round(x, 3) for x in w}
+            scan_times = scan_times + [x for x in w if all(abs(x - u) >= 0.5 for u in scan_times)]
     elif cfg.path_b_scope == "video":
         step = max(cfg.scan_step_s, duration / max(cfg.scan_cap, 1))
         scan_times = [float(t) for t in np.arange(0.5, max(duration - 0.05, 0.5), step)][: cfg.scan_cap]
@@ -116,7 +122,12 @@ def build_pool(qa, transcript, video_path: str, encoders, head_a, cfg: PoolConfi
     embs = dict(zip(uniq, encoders.embed_images([f.image for f in uniq.values()]), strict=True))
     q_emb = encoders.embed_texts([qa.question])[0]
     t["clip"] = time.perf_counter() - tic
-    reps_ranked = sorted(reps, key=lambda f: -float(embs[f.digest] @ q_emb))[: cfg.n_path_b]
+    reps_ranked = sorted(reps, key=lambda f: -float(embs[f.digest] @ q_emb))
+    if window_times:                          # hybrid: best half from the windows, the rest from the video
+        from_win = [f for f in reps_ranked if round(f.requested_s, 3) in window_times][: cfg.n_path_b // 2]
+        rest = [f for f in reps_ranked if f not in from_win][: cfg.n_path_b - len(from_win)]
+        reps_ranked = sorted(from_win + rest, key=lambda f: -float(embs[f.digest] @ q_emb))
+    reps_ranked = reps_ranked[: cfg.n_path_b]
 
     # -- merge + de-duplicate ---------------------------------------------------
     cands: list[FrameCandidate] = []
