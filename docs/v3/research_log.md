@@ -354,3 +354,29 @@ Detailed results live in the linked reports; this log is the chronological index
   transcription of the 122 is running alongside (data/eduvidqa/transcripts_asr, Head A training data).
 - The CG-Bench train-video feature extraction (246 of 719 done) is paused to keep the GPU for the
   baseline cycle; it is resumable and will serve Head B training data.
+
+**Step 34. Baseline cycle stage 3 on hybrid + mmropt** (2026-10-10)
+- One setting changed at a time from K = 4, 120 words, Path A 6 + Path B 6:
+
+  | Change | CG-Bench | Video-MMMU |
+  |---|---|---|
+  | (setting of step 33) | 35.4 | 58.2 |
+  | K = 2 | 34.1 | 50.0 |
+  | K = 8 | 36.6 | (stopped at 49/98: GPU out of memory next to the Whisper job; rerun) |
+  | no transcript (0 words) | **40.2** | **63.3** |
+  | 300 words | 34.1 | 59.2 |
+  | Path A 3 proposals | 36.6 | 57.1 |
+  | Path B 12 proposals (pool evidence 68%) | 34.1 | 56.1 |
+
+- Paired differences (95% CI, bootstrap over videos):
+  - no transcript − 120 words: CG-Bench **+4.9 (+1.4..+7.7)**, Video-MMMU **+5.1 (+0.0..+11.2)**;
+  - 300 − 120 words: −1.2 (−3.9..+0.0) and +1.0 (−3.1..+5.1);
+  - K = 2 − K = 4: −1.2 (−6.9..+5.2) and **−8.2 (−15.3..−2.0)**;
+  - hybrid + mmropt, no transcript − v2 default (BM25-window pool, clip, 120 words): CG-Bench
+    **+12.2 (+4.6..+21.5)**, Video-MMMU +7.1 (−1.0..+15.3).
+- Reading: with this 2B answerer the BM25 transcript excerpt lowers multiple-choice accuracy on both
+  benchmarks; the frames carry the answer and the excerpt distracts. This holds for the multiple-choice
+  format; whether it also holds for open-ended answers is measured before freezing (open-ended is the
+  primary objective).
+- Follow-up trials (no transcript): K = 2 and 8; selectors clip / clipopt / mmr; Path A 3; Path B 12. The
+  Whisper job was paused for the GPU (resumable).
