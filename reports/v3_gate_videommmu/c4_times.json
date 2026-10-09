@@ -1,0 +1,590 @@
+{
+ "vmmmu:Perception:validation_Biology_22": [
+  542.5,
+  546.5,
+  550.5,
+  554.5
+ ],
+ "vmmmu:Perception:test_Computer_Science_310": [
+  256.5,
+  260.5,
+  334.5,
+  338.5
+ ],
+ "vmmmu:Perception:validation_Manage_3": [
+  94.5,
+  98.5,
+  110.5,
+  114.5
+ ],
+ "vmmmu:Perception:validation_Math_17": [
+  226.5,
+  230.5,
+  234.5,
+  284.5
+ ],
+ "vmmmu:Perception:validation_Architecture_and_Engineering_12": [
+  48.52,
+  58.52,
+  112.52,
+  116.52
+ ],
+ "vmmmu:Perception:validation_Basic_Medical_Science_9": [
+  270.5,
+  274.5,
+  278.5,
+  282.5
+ ],
+ "vmmmu:Perception:validation_Art_Theory_15": [
+  228.5,
+  418.5,
+  576.5,
+  582.5
+ ],
+ "vmmmu:Perception:validation_Biology_7": [
+  42.509,
+  50.517,
+  56.523,
+  74.508
+ ],
+ "vmmmu:Perception:validation_Chemistry_9": [
+  0.52,
+  6.52,
+  210.52,
+  220.52
+ ],
+ "vmmmu:Perception:test_Energy_and_Power_33": [
+  72.5,
+  76.5,
+  94.5,
+  98.5
+ ],
+ "vmmmu:Perception:validation_Pharmacy_10": [
+  306.505,
+  312.51,
+  316.514,
+  320.517
+ ],
+ "vmmmu:Perception:validation_Materials_18": [
+  2.502,
+  6.506,
+  10.511,
+  106.507
+ ],
+ "vmmmu:Perception:validation_Accounting_24": [
+  276.52,
+  298.52,
+  312.52,
+  366.52
+ ],
+ "vmmmu:Perception:validation_Architecture_and_Engineering_2": [
+  80.5,
+  84.5,
+  88.5,
+  476.5
+ ],
+ "vmmmu:Perception:test_Mechanical_Engineering_203": [
+  40.5,
+  46.5,
+  230.5,
+  248.5
+ ],
+ "vmmmu:Perception:new_Art_Theory_2": [
+  244.5,
+  248.5,
+  256.5,
+  262.5
+ ],
+ "vmmmu:Perception:validation_Economics_6": [
+  26.5,
+  30.5,
+  34.5,
+  38.5
+ ],
+ "vmmmu:Perception:validation_Agriculture_7": [
+  106.5,
+  110.5,
+  114.5,
+  118.5
+ ],
+ "vmmmu:Perception:test_Pharmacy_231": [
+  0.5,
+  4.505,
+  8.508,
+  12.512
+ ],
+ "vmmmu:Perception:validation_Architecture_and_Engineering_17": [
+  256.523,
+  274.508,
+  286.52,
+  570.504
+ ],
+ "vmmmu:Perception:validation_Chemistry_19": [
+  28.5,
+  32.5,
+  118.5,
+  126.5
+ ],
+ "vmmmu:Perception:validation_Diagnostics_and_Laboratory_Medicine_6": [
+  612.5,
+  840.5,
+  844.5,
+  848.5
+ ],
+ "vmmmu:Perception:validation_Accounting_5": [
+  202.5,
+  252.5,
+  256.5,
+  260.5
+ ],
+ "vmmmu:Perception:validation_Finance_4": [
+  8.5,
+  12.5,
+  16.5,
+  24.5
+ ],
+ "vmmmu:Perception:validation_Mechanical_Engineering_23": [
+  74.5,
+  78.5,
+  112.5,
+  120.5
+ ],
+ "vmmmu:Perception:validation_Agriculture_8": [
+  622.5,
+  644.5,
+  662.5,
+  668.5
+ ],
+ "vmmmu:Perception:validation_Public_Health_9": [
+  130.52,
+  148.52,
+  158.52,
+  164.52
+ ],
+ "vmmmu:Perception:test_Materials_91": [
+  8.5,
+  40.5,
+  44.5,
+  54.5
+ ],
+ "vmmmu:Perception:validation_Mechanical_Engineering_13": [
+  22.5,
+  34.5,
+  226.5,
+  462.5
+ ],
+ "vmmmu:Perception:validation_Accounting_2": [
+  30.53,
+  84.518,
+  116.516,
+  126.526
+ ],
+ "vmmmu:Perception:validation_Electronics_5": [
+  24.52,
+  28.52,
+  58.52,
+  136.52
+ ],
+ "vmmmu:Perception:new_Literature_9": [
+  606.5,
+  622.5,
+  628.5,
+  634.5
+ ],
+ "vmmmu:Perception:new_History_7": [
+  12.5,
+  18.5,
+  84.5,
+  172.5
+ ],
+ "vmmmu:Perception:validation_Manage_13": [
+  124.5,
+  160.5,
+  164.5,
+  182.5
+ ],
+ "vmmmu:Perception:validation_Math_23": [
+  732.5,
+  738.5,
+  742.5,
+  746.5
+ ],
+ "vmmmu:Perception:validation_Physics_14": [
+  400.5,
+  404.5,
+  408.5,
+  412.5
+ ],
+ "vmmmu:Perception:test_Electronics_118": [
+  154.5,
+  180.5,
+  190.5,
+  222.5
+ ],
+ "vmmmu:Perception:new_Design_2": [
+  0.5,
+  6.506,
+  12.512,
+  368.502
+ ],
+ "vmmmu:Perception:validation_Economics_11": [
+  14.5,
+  38.5,
+  44.5,
+  372.5
+ ],
+ "vmmmu:Perception:new_Sociology_6": [
+  164.5,
+  184.5,
+  188.5,
+  206.5
+ ],
+ "vmmmu:Perception:validation_Materials_7": [
+  0.5,
+  16.5,
+  22.5,
+  26.5
+ ],
+ "vmmmu:Perception:validation_Manage_4": [
+  838.5,
+  854.5,
+  870.5,
+  876.5
+ ],
+ "vmmmu:Perception:validation_Mechanical_Engineering_30": [
+  12.5,
+  16.5,
+  22.5,
+  34.5
+ ],
+ "vmmmu:Perception:validation_Diagnostics_and_Laboratory_Medicine_1": [
+  738.505,
+  768.502,
+  772.506,
+  1138.505
+ ],
+ "vmmmu:Perception:validation_Chemistry_13": [
+  82.5,
+  88.5,
+  92.5,
+  96.5
+ ],
+ "vmmmu:Perception:validation_Energy_and_Power_22": [
+  80.52,
+  94.52,
+  98.52,
+  102.52
+ ],
+ "vmmmu:Perception:validation_Psychology_7": [
+  0.52,
+  6.52,
+  20.52,
+  54.52
+ ],
+ "vmmmu:Perception:validation_Chemistry_6": [
+  232.5,
+  236.5,
+  240.5,
+  300.5
+ ],
+ "vmmmu:Perception:new_Psychology_4": [
+  434.5,
+  438.5,
+  444.5,
+  448.5
+ ],
+ "vmmmu:Perception:new_Art_Theory_4": [
+  154.52,
+  158.52,
+  200.52,
+  204.52
+ ],
+ "vmmmu:Perception:validation_Pharmacy_2": [
+  70.5,
+  104.5,
+  108.5,
+  166.5
+ ],
+ "vmmmu:Perception:validation_Architecture_and_Engineering_20": [
+  58.52,
+  64.52,
+  70.52,
+  86.52
+ ],
+ "vmmmu:Perception:validation_Architecture_and_Engineering_1": [
+  40.5,
+  44.5,
+  50.5,
+  54.5
+ ],
+ "vmmmu:Perception:validation_Physics_7": [
+  0.5,
+  4.5,
+  80.5,
+  250.5
+ ],
+ "vmmmu:Perception:validation_Computer_Science_10": [
+  66.5,
+  102.5,
+  302.5,
+  400.5
+ ],
+ "vmmmu:Perception:validation_Finance_12": [
+  44.5,
+  52.5,
+  56.5,
+  62.5
+ ],
+ "vmmmu:Perception:validation_Basic_Medical_Science_4": [
+  228.5,
+  232.5,
+  236.5,
+  254.5
+ ],
+ "vmmmu:Perception:new_Sociology_3": [
+  348.5,
+  352.5,
+  370.5,
+  374.5
+ ],
+ "vmmmu:Perception:validation_Finance_8": [
+  202.502,
+  206.506,
+  270.504,
+  274.508
+ ],
+ "vmmmu:Perception:validation_Marketing_25": [
+  186.52,
+  190.524,
+  196.53,
+  204.505
+ ],
+ "vmmmu:Perception:validation_Psychology_22": [
+  258.5,
+  308.5,
+  448.5,
+  468.5
+ ],
+ "vmmmu:Perception:validation_Finance_6": [
+  20.5,
+  48.5,
+  72.5,
+  80.5
+ ],
+ "vmmmu:Perception:test_Computer_Science_141": [
+  22.5,
+  62.5,
+  80.5,
+  546.5
+ ],
+ "vmmmu:Perception:test_Electronics_22": [
+  254.5,
+  260.5,
+  264.5,
+  448.5
+ ],
+ "vmmmu:Perception:validation_Chemistry_20": [
+  88.532,
+  94.537,
+  116.514,
+  132.527
+ ],
+ "vmmmu:Perception:validation_Computer_Science_12": [
+  564.5,
+  642.5,
+  656.5,
+  806.5
+ ],
+ "vmmmu:Perception:validation_Finance_2": [
+  82.52,
+  124.52,
+  128.52,
+  136.52
+ ],
+ "vmmmu:Perception:test_Diagnostics_and_Laboratory_Medicine_72": [
+  74.5,
+  540.5,
+  544.5,
+  584.5
+ ],
+ "vmmmu:Perception:validation_Electronics_6": [
+  402.5,
+  408.5,
+  414.5,
+  420.5
+ ],
+ "vmmmu:Perception:validation_Mechanical_Engineering_2": [
+  12.5,
+  16.5,
+  22.5,
+  34.5
+ ],
+ "vmmmu:Perception:new_Literature_10": [
+  572.5,
+  576.5,
+  580.5,
+  598.5
+ ],
+ "vmmmu:Perception:new_History_9": [
+  66.5,
+  240.5,
+  646.5,
+  668.5
+ ],
+ "vmmmu:Perception:validation_Basic_Medical_Science_6": [
+  774.508,
+  864.531,
+  872.506,
+  974.508
+ ],
+ "vmmmu:Perception:validation_Energy_and_Power_13": [
+  476.51,
+  480.514,
+  492.526,
+  2028.528
+ ],
+ "vmmmu:Perception:new_Sociology_4": [
+  348.5,
+  352.5,
+  370.5,
+  374.5
+ ],
+ "vmmmu:Perception:test_Mechanical_Engineering_359": [
+  48.515,
+  52.519,
+  56.523,
+  64.531
+ ],
+ "vmmmu:Perception:new_Literature_5": [
+  346.52,
+  354.52,
+  388.52,
+  406.52
+ ],
+ "vmmmu:Perception:validation_Clinical_Medicine_3": [
+  86.52,
+  340.507,
+  352.519,
+  562.529
+ ],
+ "vmmmu:Perception:validation_Music_8": [
+  70.504,
+  96.53,
+  126.526,
+  130.53
+ ],
+ "vmmmu:Perception:test_Materials_239": [
+  4.5,
+  8.5,
+  12.5,
+  18.5
+ ],
+ "vmmmu:Perception:validation_Accounting_1": [
+  704.596,
+  716.522,
+  762.609,
+  768.571
+ ],
+ "vmmmu:Perception:validation_Materials_6": [
+  696.52,
+  708.52,
+  712.52,
+  716.52
+ ],
+ "vmmmu:Perception:validation_Agriculture_9": [
+  4.52,
+  8.52,
+  18.52,
+  30.52
+ ],
+ "vmmmu:Perception:test_Architecture_and_Engineering_206": [
+  22.5,
+  60.5,
+  66.5,
+  72.5
+ ],
+ "vmmmu:Perception:validation_Biology_17": [
+  44.5,
+  50.5,
+  58.5,
+  68.5
+ ],
+ "vmmmu:Perception:new_Art_4": [
+  22.523,
+  186.52,
+  214.514,
+  232.532
+ ],
+ "vmmmu:Perception:test_Energy_and_Power_352": [
+  34.5,
+  72.5,
+  76.5,
+  80.5
+ ],
+ "vmmmu:Perception:validation_Math_20": [
+  278.5,
+  286.5,
+  294.5,
+  438.5
+ ],
+ "vmmmu:Perception:validation_Economics_1": [
+  4.5,
+  8.5,
+  28.5,
+  36.5
+ ],
+ "vmmmu:Perception:new_Psychology_5": [
+  210.5,
+  216.5,
+  220.5,
+  300.5
+ ],
+ "vmmmu:Perception:new_Sociology_2": [
+  360.5,
+  388.5,
+  412.5,
+  430.5
+ ],
+ "vmmmu:Perception:validation_Mechanical_Engineering_10": [
+  50.533,
+  58.533,
+  64.533,
+  110.533
+ ],
+ "vmmmu:Perception:new_History_5": [
+  254.5,
+  340.5,
+  490.5,
+  532.5
+ ],
+ "vmmmu:Perception:test_Computer_Science_14": [
+  96.53,
+  236.503,
+  290.524,
+  342.509
+ ],
+ "vmmmu:Perception:validation_Mechanical_Engineering_15": [
+  226.5,
+  464.5,
+  544.5,
+  554.483
+ ],
+ "vmmmu:Perception:validation_Mechanical_Engineering_5": [
+  278.512,
+  282.516,
+  414.514,
+  426.526
+ ],
+ "vmmmu:Perception:validation_Marketing_18": [
+  244.505,
+  254.526,
+  258.526,
+  262.526
+ ],
+ "vmmmu:Perception:new_Design_1": [
+  0.5,
+  6.506,
+  12.512,
+  368.502
+ ]
+}

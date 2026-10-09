@@ -108,3 +108,20 @@ Detailed results live in the linked reports; this log is the chronological index
   4 frames inside the human clue intervals. E4 uses gold evidence locations, so it is an upper
   reference for frame selection (selection headroom = E4 − C4), not a method. Budget 420 calls / 1 h.
 - Queued to run after the Video-MMMU gate.
+
+**Step 14. Three pipeline faults fixed while running the Video-MMMU gate** (2026-10-09)
+- MobileCLIP encoded a whole-video scan in one batch and ran out of GPU memory; images are now encoded
+  in batches of 64 (`src/videoqa/v2/encoders.py`).
+- Whisper word timestamps occasionally ran backwards (e.g. [68.76, 61.94]); ASR segments are now forced
+  to be time-ordered; 67 of 98 dev transcripts were repaired in place (`--repair`), none re-run.
+- The answer prompt and parser only knew options A–H; Video-MMMU has up to 10 (one question 14). Letters
+  now run A–P, unchanged for ≤ 8 options, and the parser prefers the reply's leading letter and ignores
+  the pronoun "I". Regression tests added for all three.
+
+**Step 15. Video-MMMU gate: frames help — gate passes** (2026-10-09)
+- 97 dev Perception questions, frozen Qwen3-VL-2B, exact letter scoring, 388 calls / 1,552 s.
+- Accuracy: question only 28.9%, transcript 40.2%, + 4 uniform frames 52.6% (+12.4, CI +2.1 to +22.7),
+  + 4 MobileCLIP frames 56.7% (+16.5, CI +6.2 to +26.8). MobileCLIP vs uniform +4.1 (CI −3.1 to +12.4).
+- Decision: Video-MMMU is a benchmark where frame selection can show an effect; it becomes the main
+  development and test benchmark for the selection methods (dev third for development, test two thirds
+  untouched). Report: `docs/v3/gate_videommmu_report.md`.
