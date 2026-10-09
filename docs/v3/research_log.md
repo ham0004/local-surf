@@ -134,3 +134,9 @@ Detailed results live in the linked reports; this log is the chronological index
 - Decision: the main research target is Head A ("where to look") on long videos, where uniform frames fail
   and better localisation is worth up to ~23 points. CG-Bench's human evidence intervals provide direct
   supervision for it. Report: `docs/v3/gate_cgbench_report.md`.
+
+**Step 17. Phase 2 plan: learned "where to look" (Head A) for long videos** (2026-10-09)
+- Decision from the gates: the largest measurable headroom (+23 points over MobileCLIP) is localisation in
+  long videos, and CG-Bench's human evidence intervals can supervise it. Plan: question-conditioned
+  temporal scorer over frozen MobileCLIP features, offline hit@4 and online QA evaluation, pilot on the 51
+  videos before scaling. Document: `docs/v3/phase2_plan.md`.
