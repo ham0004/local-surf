@@ -101,3 +101,10 @@ Detailed results live in the linked reports; this log is the chronological index
   results on it will carry wide intervals and are reported as such.
 - Gold answers spread over A–H (largest E = 85/510); 6–8 options per question.
 - Manifest: `reports/cgbench_manifest.json`.
+
+**Step 13. CG-Bench gate declared** (2026-10-09)
+- `scripts/v3_gate_cgbench.py`, run on the 82 dev questions (8 videos): question only; BM25-retrieved
+  transcript (≤ 300 words); + 4 uniform frames; + MobileCLIP top-4 (4 s scan, ≥ 8 s apart); and E4 =
+  4 frames inside the human clue intervals. E4 uses gold evidence locations, so it is an upper
+  reference for frame selection (selection headroom = E4 − C4), not a method. Budget 420 calls / 1 h.
+- Queued to run after the Video-MMMU gate.
