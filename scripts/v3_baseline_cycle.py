@@ -85,6 +85,8 @@ OPEN_LIMITS = (1500, 4 * 3600.0)
 def ledger_limits(name: str) -> tuple:
     if name == "budget.json":
         return LIMITS
+    if name.startswith("budget_text"):              # transcript-policy trials, research_log step 48
+        return (2500, 4 * 3600.0)
     return TEST_LIMITS if name.startswith("budget_test") else EXTRA_LIMITS
 JUDGE = "nvidia/nemotron-3-ultra-550b-a55b"
 JUDGE_LIMITS = (3000, 4 * 3600.0)
