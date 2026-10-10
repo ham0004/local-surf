@@ -638,3 +638,22 @@ Detailed results live in the linked reports; this log is the chronological index
   include 0.
 - The declared open-ended check on CG-Bench test (S0, S1, R3) runs after the transcript-policy trials
   (step 49), which were requested next and are already queued on the GPU.
+
+**Step 49. Transcript policies: multiple-choice accuracy on dev** (2026-10-10; ledger `budget_text.json`)
+- Frozen baseline frames (hybrid pool, mmropt, K = 4); only the transcript given to the answerer changes.
+
+  | Transcript | CG-Bench | VMMMU Perception | VMMMU Comprehension | mean |
+  |---|---|---|---|---|
+  | none (frozen baseline) | **40.2** | **63.3** | 31.6 | **45.0** |
+  | BM25 120 (v2) | 35.4 | 58.2 | 33.7 | 42.4 |
+  | BM25 300 | 34.1 | 59.2 | — | — |
+  | hybrid 120 / 300 | 35.4 / 37.8 | 58.2 / 62.2 | 32.7 / 33.7 | 42.1 / 44.6 |
+  | frames + hybrid 300 / 600 | 36.6 / 37.8 | **63.3** / 60.2 | 32.7 / **34.7** | 44.2 / 44.2 |
+
+- The uncapped full transcript ran out of GPU memory: lines carry ids and times, so a 7,191-word transcript is
+  ~20k tokens and attention with 4 images exceeds 16 GB. Re-run capped at 1,500 and 2,500 words (2,500 covers
+  the whole transcript of most videos: medians 1,570 CG-Bench, 1,194 Video-MMMU).
+- Reading so far: better retrieval of the speech recovers most of what the BM25 excerpt cost (+2.2 mean at 300
+  words) and helps the comprehension questions (+3.1 over no text with frames + hybrid 600), but in multiple
+  choice the 2B answerer still does best on frame-dependent sets without text. Open-ended answers (the primary
+  objective) are measured next for none, hybrid 300, frames + hybrid 600 and full 2,500.
