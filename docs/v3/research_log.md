@@ -580,3 +580,28 @@ Detailed results live in the linked reports; this log is the chronological index
 - Selection headroom remains: in the pool, the best single frame gives the answerer 0.51 gold probability
   vs 0.33 for the frozen rule's first pick (train inner validation), and frames inside the human evidence
   lift CG-Bench to 63.4% (gate) vs 40.2%.
+
+**Step 45. Head B, training-free variant: answer-confidence set selection** (2026-10-10; ledger `budget_verify.json`)
+- Motivation (train labels, step 43): the frozen answerer's confidence tracks correctness (single frames:
+  accuracy 15.5% at confidence < 0.3, 45.5% at ≥ 0.9; the most confident frame per question is right 36.5%
+  of the time vs 27.6% for an average frame). Uses no training labels, so it cannot overfit the CG-Bench
+  domain.
+- Method (`v3_baseline_cycle.py verify`): 4 candidate sets per question (frozen rule and `optset`, each on the
+  frozen pool and the Head A pool); the answerer answers with each; "max" keeps the most confident answer,
+  "sum" adds the option probabilities. Cost: 4 answer calls per question instead of 1. Re-answered requests
+  reproduce the stored answers exactly (1,025 / 1,025).
+- Dev (95% CI vs frozen baseline):
+
+  | Rule | CG-Bench | VMMMU Perception | VMMMU Comprehension | pooled (n = 278) |
+  |---|---|---|---|---|
+  | max | 42.7 (+2.4, +0.0..+6.1) | **66.3** (+3.1, −3.1..+9.2) | 29.6 (−2.0) | +1.1 (−1.7..+3.8) |
+  | sum | 41.5 (+1.2) | 61.2 (−2.0) | 31.6 (0.0) | −0.4 (−2.7..+1.9) |
+
+- The first variant above the frozen baseline on the pooled mean, but not significant; the gain is on the two
+  frame-dependent sets (CG-Bench + Perception: +2.8, −0.6..+6.5), not on Comprehension.
+
+**Step 46. Six candidate sets instead of four** (2026-10-10)
+- Adding the learned selections (base + ev_set, Head A + util) as sets 5 and 6: CG-Bench max 42.7 (same),
+  Perception max 63.3 (−3.1 vs four sets); sum 40.2 / 61.2. More sets add more confidently wrong answers.
+  Comprehension stopped at the ledger cap and was not extended (already worse on the other two sets).
+  Four sets are kept.
