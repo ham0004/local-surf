@@ -227,6 +227,66 @@ def stage_answer(a) -> None:
         print(f"{a.dataset}/{a.pool}/{rule} K={a.k} words={a.words}: done; calls {budget.calls}", flush=True)
 
 
+VERIFY_SETS = [("hybrid", "mmropt"), ("hybrid_ahead", "mmropt"), ("hybrid", "file:{ds}_hybrid_optset"),
+               ("hybrid_ahead", "file:{ds}_hybrid_ahead_optset")]
+
+
+def stage_verify(a) -> None:
+    """Test-time Head B variant (training-free): answer with several candidate frame sets, keep the answer the
+    frozen answerer is most confident in ("max"), or sum the option probabilities over the sets ("sum")."""
+    from videoqa.answerer import AnswerRequest, make_answerer  # noqa: PLC0415
+    from videoqa.config import load_config  # noqa: PLC0415
+    from videoqa.v2.budget import CallBudget  # noqa: PLC0415
+    from videoqa.v2.candidates import load_pool  # noqa: PLC0415
+    from videoqa.v2.encoders import FrozenEncoders  # noqa: PLC0415
+    from videoqa.v2.teacher import _as_frame, answerer_identity  # noqa: PLC0415
+
+    cfg = load_config(a.config)
+    identity = answerer_identity(cfg)
+    path = RUN / "answers_probs.jsonl"
+    cache = {json.loads(x)["key"]: json.loads(x) for x in path.read_text().splitlines()} if path.exists() else {}
+    budget = CallBudget(RUN / a.ledger, *EXTRA_LIMITS)
+    enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
+    answerer = None
+    per_q: dict = {}
+    for pool_name, sel in VERIFY_SETS:
+        sel = sel.format(ds=a.dataset)
+        meta = json.loads((pool_dir(a.dataset, pool_name).parent / "pools.json").read_text())
+        pools = [load_pool(pool_dir(a.dataset, pool_name), q) for q in meta["qa_ids"]]
+        qo = enc.embed_texts([p.question + " Options: " + ", ".join(p.options) for p in pools])
+        for p, e in zip(pools, qo, strict=True):
+            frames = select(p, sel, a.k, e)
+            key = request_key(p, frames, [], identity)
+            if key not in cache:
+                if not budget.reserve(1):
+                    print("budget reached; stopping cleanly")
+                    return
+                answerer = answerer or make_answerer(cfg)
+                t0 = time.perf_counter()
+                ans, _ = answerer.answer(AnswerRequest(p.question, p.options, [],
+                                                       [_as_frame(c) for c in sorted(frames, key=lambda c: c.time_s)]))
+                budget.charge(time.perf_counter() - t0)
+                cache[key] = {"key": key, "option": ans.option_index, "probs": ans.option_probs}
+                with open(path, "a", encoding="utf-8") as fh:
+                    fh.write(json.dumps(cache[key]) + "\n")
+            per_q.setdefault(p.qa_id, {"gold": p.gold_option_index, "video_id": p.video_id, "sets": []})
+            per_q[p.qa_id]["sets"].append(cache[key])
+        print(f"verify {a.dataset}: {pool_name}/{sel} done; calls {budget.calls}", flush=True)
+    for rule in ("max", "sum"):
+        for q, v in per_q.items():
+            sets = [s for s in v["sets"] if s["probs"]]
+            if rule == "max":
+                best = max(sets, key=lambda s: max(s["probs"]))
+                choice = int(np.argmax(best["probs"])) if best["option"] is None else best["option"]
+            else:
+                choice = int(np.argmax(np.sum([s["probs"] for s in sets], axis=0)))
+            row = {"dataset": a.dataset, "pool": "verify", "selector": rule, "k": a.k, "words": 0, "qa_id": q,
+                   "video_id": v["video_id"], "correct": choice == v["gold"], "pool_size": len(sets),
+                   "pool_hits_evidence": None, "chosen_hits_evidence": None, "pool_seconds": 0.0}
+            with open(RUN / "rows.jsonl", "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(row) + "\n")
+
+
 def stage_open(a) -> None:
     """Open-ended answers (no options shown) for one pool + selector; CG-Bench has short human references."""
     from videoqa.config import load_config  # noqa: PLC0415
@@ -324,7 +384,7 @@ def stage_report(a) -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("stage", choices=("pools", "answer", "open", "judge", "report"))
+    p.add_argument("stage", choices=("pools", "answer", "verify", "open", "judge", "report"))
     p.add_argument("--dataset", choices=tuple(DATASETS), default="cgbench")
     p.add_argument("--pool", choices=tuple(POOLS), default="v2")
     p.add_argument("--selectors", default="clip,clipopt,mmr,mmropt,relevance")
@@ -334,7 +394,7 @@ def main() -> None:
     p.add_argument("--ledger", default="budget.json", help="answer-call ledger (budget_2.json = the step-35 extension)")
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
-    {"pools": stage_pools, "answer": stage_answer, "open": stage_open, "judge": stage_judge,
+    {"pools": stage_pools, "answer": stage_answer, "verify": stage_verify, "open": stage_open, "judge": stage_judge,
      "report": stage_report}[a.stage](a)
 
 
