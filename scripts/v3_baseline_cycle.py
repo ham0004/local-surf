@@ -395,15 +395,18 @@ def stage_open(a) -> None:
     cfg = load_config(a.config)
     budget = CallBudget(RUN / "open_budget.json", *OPEN_LIMITS)
     cache = AnswerCache(RUN / "open_answers.jsonl", answerer_identity(cfg), None, budget)
-    qa = {it.qa.qa_id: it.qa for it in items(a.dataset)}
+    its = {it.qa.qa_id: it for it in items(a.dataset)}
+    qa = {q: it.qa for q, it in its.items()}
     for rule in a.selectors.split(","):
         for p, e in zip(pools, qo, strict=True):
-            frames = [_as_frame(c) for c in select(p, rule, a.k, e)]
-            ex = excerpt(p, a.words)
+            chosen = select(p, rule, a.k, e)
+            frames = [_as_frame(c) for c in chosen]
+            ex = transcript_for(a.tpolicy, a.words, p, its[p.qa_id].transcript.segments, chosen)
             if cache.get(p.question, ex, frames) is None and cache.answerer is None:
                 cache.answerer = make_open_answerer(cfg)
             rec = cache.answer(p.qa_id, p.question, ex, frames)
-            row = {"dataset": a.dataset, "pool": a.pool, "selector": rule, "k": a.k, "words": a.words,
+            row = {"dataset": a.dataset, "pool": a.pool,
+                   "selector": rule if a.tpolicy == "bm25" else f"{rule}|tp={a.tpolicy}", "k": a.k, "words": a.words,
                    "qa_id": p.qa_id, "question": p.question, "reference": qa[p.qa_id].gold_answer,
                    "answer": rec["text"]}
             with open(RUN / "open_rows.jsonl", "a", encoding="utf-8") as fh:
