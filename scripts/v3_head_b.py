@@ -45,6 +45,7 @@ RUN = Path("runs/v3_head_b")
 FEATURE_NAMES = ["sim_q", "sim_qo", "z_q", "z_qo", "rank_qo", "opt_max", "opt_mean", "opt_gap_mean", "opt_gap_2",
                  "is_A", "is_B", "is_both", "speech_z", "near_q", "position", "redund", "close10", "pool_n"]
 TAU = 50.0            # softmax temperature on MobileCLIP cosines for option profiles
+UTIL_TEMP = 0.05      # stage-2 target temperature; set from inner validation (research_log step 43)
 
 
 def pool_dir(dataset: str, pool: str) -> Path:
@@ -197,12 +198,92 @@ def stage_train(a) -> None:
     print(f"seed {a.seed}: inner validation recall@4 {best:.3f} (epoch {max(hist, key=lambda h: h['inner_val_recall@4'])['epoch']})")
 
 
-def learned_scores(v, pool: str, seeds=(0, 1, 2)) -> np.ndarray:
+def utility_targets(data: dict) -> dict:
+    """Per-candidate answerer utility from v3_head_b_labels.py: probability of the gold option, frame alone."""
+    util = {}
+    for line in (RUN / "frame_utility.jsonl").read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            r = json.loads(line)
+            if r["p_gold"] is not None:
+                util[(r["qa_id"], r["cand"])] = r["p_gold"]
+    out = {}
+    for q, v in data.items():
+        u = [util.get((q, i)) for i in v["ids"]]
+        if all(x is not None for x in u):
+            out[q] = np.asarray(u, np.float32)
+    return out
+
+
+def train_utility(data: dict, util: dict, seed: int, temp: float, epochs: int = 200, lr: float = 3e-3,
+                  wd: float = 1e-3):
+    """Listwise KL towards softmax(utility / temp) over each pool; inner validation = mean gold probability of
+    the top-ranked frame (higher is better)."""
+    import torch  # noqa: PLC0415
+
+    torch.manual_seed(seed)
+    keys = [q for q in data if q in util and np.ptp(util[q]) > 1e-3]       # ties carry no preference
+    tr = [q for q in keys if not inner_val(data[q]["video_id"])]
+    va = [q for q in util if inner_val(data[q]["video_id"])]
+    allf = np.concatenate([data[q]["f"] for q in tr])
+    mu, sd = allf.mean(0), allf.std(0) + 1e-6
+    net = build_scorer(allf.shape[1])
+    opt = torch.optim.AdamW(net.parameters(), lr=lr, weight_decay=wd)
+    T = []
+    for q in tr:
+        tgt = np.exp((util[q] - util[q].max()) / temp)
+        T.append((torch.as_tensor((data[q]["f"] - mu) / sd), torch.as_tensor(tgt / tgt.sum())))
+
+    def val_top1(net):
+        with torch.no_grad():
+            return float(np.mean([util[q][int(np.argmax(net(torch.as_tensor((data[q]["f"] - mu) / sd))[:, 0].numpy()))]
+                                  for q in va]))
+
+    best, state, hist = val_top1(net), {k: v.clone() for k, v in net.state_dict().items()}, []
+    for ep in range(epochs):
+        net.train()
+        for x, t in T:
+            logp = torch.log_softmax(net(x)[:, 0], 0)
+            loss = -(t * logp).sum()
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+        if ep % 10 == 9:
+            net.eval()
+            r = val_top1(net)
+            hist.append({"epoch": ep + 1, "inner_val_top1_p_gold": r})
+            if r > best:
+                best, state = r, {k: v.clone() for k, v in net.state_dict().items()}
+    net.load_state_dict(state)
+    net.eval()
+    return net, mu, sd, hist, best
+
+
+def stage_train_util(a) -> None:
+    import torch  # noqa: PLC0415
+
+    data = load_features("cgbench_train", a.pool)
+    util = utility_targets(data)
+    va = [q for q in util if inner_val(data[q]["video_id"])]
+    ref = {name: float(np.mean([util[q][int(np.argmax(data[q]["f"][:, FEATURE_NAMES.index(col)]))] for q in va]))
+           for name, col in (("top sim_q", "sim_q"), ("top sim_qo", "sim_qo"))}
+    ref["oracle"] = float(np.mean([util[q].max() for q in va]))
+    ref["mean frame"] = float(np.mean([util[q].mean() for q in va]))
+    print(f"labelled pools {len(util)}; inner validation {len(va)}; reference top-1 gold prob {ref}")
+    for temp in (0.05, 0.1, 0.2):
+        net, mu, sd, hist, best = train_utility(data, util, a.seed, temp)
+        (RUN / "ckpt").mkdir(parents=True, exist_ok=True)
+        torch.save({"state": net.state_dict(), "mu": mu, "sd": sd, "hist": hist, "inner_val": best, "temp": temp},
+                   RUN / "ckpt" / f"util_{a.pool}_t{temp}_{a.seed}.pt")
+        print(f"temp {temp} seed {a.seed}: inner validation top-1 gold prob {best:.3f}")
+
+
+def learned_scores(v, pool: str, seeds=(0, 1, 2), kind: str = "ev") -> np.ndarray:
     import torch  # noqa: PLC0415
 
     out = []
     for s in seeds:
-        ck = torch.load(RUN / "ckpt" / f"ev_{pool}_{s}.pt", map_location="cpu", weights_only=False)
+        name = f"ev_{pool}_{s}.pt" if kind == "ev" else f"util_{pool}_t{UTIL_TEMP}_{s}.pt"
+        ck = torch.load(RUN / "ckpt" / name, map_location="cpu", weights_only=False)
         net = build_scorer(len(ck["mu"]))
         net.load_state_dict(ck["state"])
         net.eval()
@@ -215,6 +296,9 @@ def choose(v, method: str, k: int, lam: float, mu: float, train_pool: str) -> li
     if method == "optset":
         rel = _z(v["f"][:, FEATURE_NAMES.index("sim_qo")])
         return greedy(rel, v["emb"], v["prof"], k, lam, mu)
+    if method in ("util", "util_set"):
+        rel = _z(learned_scores(v, train_pool, kind="util"))
+        return greedy(rel, v["emb"], v["prof"], k, lam if method == "util_set" else 0.0, mu)
     rel = _z(learned_scores(v, train_pool))
     if method == "ev":
         return greedy(rel, v["emb"], v["prof"], k, 0.0, mu)
@@ -252,11 +336,11 @@ def stage_tune(a) -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("stage", choices=("features", "train", "tune", "select"))
+    p.add_argument("stage", choices=("features", "train", "train_util", "tune", "select"))
     p.add_argument("--dataset", default="cgbench")
     p.add_argument("--pool", default="hybrid")
     p.add_argument("--train-pool", default="hybrid")
-    p.add_argument("--method", default="ev_set", choices=("optset", "ev", "ev_set"))
+    p.add_argument("--method", default="ev_set", choices=("optset", "ev", "ev_set", "util", "util_set"))
     p.add_argument("--k", type=int, default=4)
     p.add_argument("--lam", type=float, default=1.0)
     p.add_argument("--mu", type=float, default=0.3)
@@ -264,7 +348,8 @@ def main() -> None:
     p.add_argument("--tag", default="")
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
-    {"features": stage_features, "train": stage_train, "tune": stage_tune, "select": stage_select}[a.stage](a)
+    {"features": stage_features, "train": stage_train, "train_util": stage_train_util, "tune": stage_tune,
+     "select": stage_select}[a.stage](a)
 
 
 if __name__ == "__main__":

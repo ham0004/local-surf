@@ -528,3 +528,25 @@ Detailed results live in the linked reports; this log is the chronological index
 - Stage 2 data started (`scripts/v3_head_b_labels.py`): every candidate of every train pool answered alone
   (one frame, no transcript), keeping the full option-letter softmax (`Answer.option_probs`, new optional
   field) → per-frame utility = probability of the gold option. Ledger 5,000 calls / 3 GPU-hours.
+
+**Step 42. Video-MMMU Comprehension dev track added** (2026-10-10)
+- With 82 / 98 dev questions only differences of about 8–10 points are detectable, which is why the heads'
+  localisation gains (steps 39–40) cannot be confirmed in accuracy. The Video-MMMU Comprehension track (98
+  dev, 202 test questions, same videos and split) was already planned for the final test; it is now also a
+  dev set (`videommmu_comp`), doubling the lecture dev questions to 196.
+- Pools built (v2, frozen baseline, Head A). The first answer run was invalid: the start-up waiter launched
+  it while the CPU-bound Head B training (step 43) used every core, and the answerer slowed to ~5 minutes
+  per call (ledger `budget_comp.json`: 38 calls, 12,352 s). It is discarded and rerun alone on a fresh
+  ledger (`budget_comp2.json`); answer jobs are no longer started next to CPU-heavy training.
+
+**Step 43. Head B stage 2: the answerer's own judgement of each frame** (2026-10-10)
+- Labels (`scripts/v3_head_b_labels.py`, ledger `labels_budget.json`): all 4,203 candidates of the 373
+  CG-Bench train pools answered alone (one frame, no transcript); utility = the answerer's probability of
+  the gold option.
+- Scorer (`v3_head_b.py train_util`): the same 18 features, listwise KL towards softmax(utility / T), 3 seeds;
+  T ∈ {0.05, 0.1, 0.2} chosen on inner validation (67 questions, 20% of train videos). Inner validation,
+  gold probability of the top-ranked frame: random frame 0.276, top MobileCLIP (question) 0.298, top
+  MobileCLIP (question + options, the frozen rule's first pick) 0.333, **learned 0.357** (T = 0.05; seeds
+  0.361 / 0.350 / 0.359), best frame in the pool (oracle) 0.506.
+- Selection: `util` (learned utility + redundancy, μ = 1) and `util_set` (+ option-evidence term, λ = 2,
+  μ = 1, reused from step 41). Dev answers on all three dev sets are running (ledger `budget_headb2.json`).

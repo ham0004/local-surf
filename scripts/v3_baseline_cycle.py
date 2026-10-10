@@ -42,6 +42,8 @@ import numpy as np
 RUN = Path("runs/v3_baseline")
 OUT = Path("reports/v3_baseline")
 DATASETS = {"cgbench": ("data/cgbench", "dev", None), "videommmu": ("data/videommmu", "dev", "vmmmu:Perception:"),
+            # second Video-MMMU track (added in research_log step 42 to double the lecture dev set)
+            "videommmu_comp": ("data/videommmu", "dev", "vmmmu:Comprehension:"),
             # Head B training pools (CG-Bench train videos we hold; never used for selection decisions)
             "cgbench_train": ("data/cgbench", "train", None)}
 POOLS = {
@@ -62,7 +64,7 @@ POOLS = {
 }
 HEAD_A_CKPTS = [f"runs/v3_head_a/ckpt/light_dens_ens_human_{s}.pt" for s in range(3)]
 FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/features",
-            "cgbench_train": "data/cgbench/features"}
+            "cgbench_train": "data/cgbench/features", "videommmu_comp": "data/videommmu/features"}
 SELECTIONS = Path("runs/v3_head_b/selections")
 LIMITS = (4000, 4 * 3600.0)
 # second ledger, declared in research_log step 35 after the first was used up by stages 1-3
