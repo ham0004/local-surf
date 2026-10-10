@@ -693,3 +693,24 @@ Detailed results live in the linked reports; this log is the chronological index
   dense MobileCLIP top-4 and evenly spaced frames. Dev and test, multiple choice. Ledger `budget_4b.json`
   (5,000 calls / 5 GPU-hours). Not used to choose any setting (all settings were fixed on 2B dev).
 - Also the 2B test follow-up for the step-50 transcript policy (reported separately from the declared test).
+
+**Step 52. Stronger answerer (4B): partial results; second ledger** (2026-10-11)
+- The 4B answerer needs ~11 s per call (2B: ~1.3 s), so the 5-GPU-hour ledger (`budget_4b.json`) ended after
+  1,653 calls. Done: all dev runs, CG-Bench test (5 systems), Video-MMMU Perception test (v2, tuned; tuned +
+  frames + hybrid 600 for 144 / 202). Missing: the rest of Perception test and Comprehension test.
+
+  | 4B answerer | v2 default | tuned, no text | tuned + frames + hybrid 600 |
+  |---|---|---|---|
+  | CG-Bench dev | 36.6 | 36.6 | **40.2** |
+  | VMMMU Perception dev | 62.2 | 65.3 | **68.4** |
+  | VMMMU Comprehension dev | 37.8 | **39.8** | 38.8 |
+  | CG-Bench test | 38.2 | 41.8 | **49.1** (dense MobileCLIP 40.0, evenly spaced 27.3) |
+  | VMMMU Perception test | 60.9 | 62.9 | 68.1 (n = 144) |
+
+- 2B follow-up of the step-50 policy on test (not part of the declared comparison): CG-Bench 49.1,
+  Perception 49.0, Comprehension 31.7 (tuned without text: 50.9 / 48.0 / 32.2).
+- Reading: a stronger answerer uses the retrieved speech: with 4B, frames + hybrid 600 is the best setting on
+  4 of 5 sets, while with 2B it is roughly equal to no text. The selected speech carries information the
+  stronger model can read.
+- Second 4B ledger declared (`budget_4b_2.json`, same limits) to finish Perception test (tuned + text) and
+  Comprehension test (v2, tuned, tuned + text) and the external rules on both Video-MMMU test sets.
