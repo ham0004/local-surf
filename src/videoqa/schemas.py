@@ -357,6 +357,7 @@ class Answer:
     invalid_citations: list[str] = dataclasses.field(default_factory=list)   # cited times matching nothing supplied
     abstained: bool = False                # model said the evidence is insufficient
     forced_choice: bool = False            # no letter in the text; option = model's most likely letter
+    option_probs: list[float] | None = None  # softmax over the option letters at the first answer token
 
 
 @dataclasses.dataclass

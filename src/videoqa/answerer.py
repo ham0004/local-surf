@@ -158,6 +158,7 @@ def finalize_answer(text: str, options: list[str] | None, letter_probs: list[flo
     return Answer(text=text, option_index=option_index, confidence=confidence, citations_s=cited_f,
                   supplied_frame_times_s=supplied, cited_segment_ids=cited_s, invalid_citations=invalid,
                   abstained=abstained, forced_choice=forced,
+                  option_probs=list(letter_probs) if options and letter_probs else None,
                   missing_evidence="model reported insufficient evidence" if abstained else "")
 
 

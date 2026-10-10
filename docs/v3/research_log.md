@@ -498,3 +498,33 @@ Detailed results live in the linked reports; this log is the chronological index
   no end-to-end QA gain through the frozen selector, and a domain-transfer loss on lectures. Both Path A
   sources (baseline and Head A pools) go into the Head B cycle; the combined A + B step decides whether
   Head A is kept.
+
+**Step 41. Head B cycle, stage 1: rules and a learned evidence scorer** (2026-10-10; ledger `budget_headb.json`)
+- `scripts/v3_head_b.py`. Training pools: the frozen baseline's pools for the 373 CG-Bench train questions
+  (37 videos; 1.0 evidence candidate per pool on average). 18 label-free features per candidate (question /
+  question+options similarity, option profile over "question + option" texts, provenance, Path A speech
+  score, nearby speech, time, redundancy). Methods:
+  - `optset` (training-free, the proposed option-evidence ingredient): greedy set gain = relevance +
+    λ·Δ(decisiveness of the set's mean option profile) − μ·redundancy;
+  - `ev`: MLP evidence scorer (listwise loss towards candidates inside the human interval), 3 seeds averaged,
+    then greedy with redundancy;
+  - `ev_set`: `ev` + the option-evidence term; ablation without set context (μ = 0).
+- λ, μ chosen on the inner validation videos of train only (20%): `ev_set` λ = 2, μ = 1 (chosen-evidence
+  recall 38.8% vs 32.8% with λ = 0); `optset` flat over the grid (32.8% everywhere), declared defaults kept
+  (λ = 1, μ = 0.3). Scorer inner-validation recall@4 (pools with evidence): 0.73 / 0.73 / 0.79.
+- Dev (K = 4, no transcript; chosen-evidence recall on CG-Bench in brackets):
+
+  | Pool | Selector | CG-Bench | Video-MMMU |
+  |---|---|---|---|
+  | baseline | frozen mmropt | 40.2 (50.0) | 63.3 |
+  | baseline | optset / ev / ev_set / ev_set no set | 40.2 / 35.4 / 39.0 / 37.8 (47.6 / 48.8 / 48.8 / 48.8) | 63.3 / 62.2 / 62.2 / 60.2 |
+  | Head A | frozen mmropt | 39.0 (45.1) | 62.2 |
+  | Head A | optset / ev / ev_set / ev_set no set | **42.7** / 40.2 / 40.2 / 40.2 (48.8 / 47.6 / 47.6 / 47.6) | 60.2 / 62.2 / 62.2 / 62.2 |
+
+- Reading: learning "frames inside the human interval" does not improve the answers; all differences are
+  within dev noise (±8–10 points at n = 82 / 98). The best CG-Bench number (Head A pool + optset, 42.7) does
+  not hold on Video-MMMU (60.2). The human interval is a proxy for what the answerer needs; Head B stage 2
+  learns from the answerer itself.
+- Stage 2 data started (`scripts/v3_head_b_labels.py`): every candidate of every train pool answered alone
+  (one frame, no transcript), keeping the full option-letter softmax (`Answer.option_probs`, new optional
+  field) → per-frame utility = probability of the gold option. Ledger 5,000 calls / 3 GPU-hours.
