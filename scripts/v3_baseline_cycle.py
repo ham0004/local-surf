@@ -155,6 +155,70 @@ def excerpt(pool, words: int):
 _FILE_SELECTIONS: dict = {}
 
 
+_LINE_REL: dict = {}
+
+
+def _line_relevance(qa_id: str, question: str, segs) -> np.ndarray:
+    """Zero-shot MiniLM relevance of every transcript line (+1 neighbour each side), cached per question."""
+    if qa_id not in _LINE_REL:
+        from videoqa.v2.head_a import HotMomentScorer  # noqa: PLC0415
+
+        if "scorer" not in _LINE_REL:
+            _LINE_REL["scorer"] = HotMomentScorer(device="cuda", cache_dir="cache/hf/hub")
+        ctx = [" ".join(x.text for x in segs[max(0, i - 1): i + 2]) for i in range(len(segs))]
+        sc = _LINE_REL["scorer"]
+        _LINE_REL[qa_id] = (np.concatenate([sc.score(question, ctx[i:i + 256])[:, 1] for i in range(0, len(ctx), 256)])
+                            if ctx else np.zeros(0))
+    return _LINE_REL[qa_id]
+
+
+def _take(order, segs, words: int, have=None, neighbours: int = 0) -> list:
+    """Add lines (each with +/- neighbours) in the given priority order until the word budget is used."""
+    chosen, n = dict(have or {}), sum(len(s.text.split()) for s in (have or {}).values())
+    for i in order:
+        for j in range(max(0, i - neighbours), min(len(segs), i + neighbours + 1)):
+            if j in chosen:
+                continue
+            w = len(segs[j].text.split())
+            if n + w > words and chosen:
+                return chosen
+            chosen[j], n = segs[j], n + w
+    return chosen
+
+
+def transcript_for(policy: str, words: int, pool, segs, frames) -> list:
+    """The transcript given to the answerer (research_log step 47). Policies:
+    bm25   v2: the BM25 window excerpt (question + options as query), cut to ``words``
+    hybrid every line ranked by reciprocal-rank fusion of BM25 (question + options) and zero-shot MiniLM
+           relevance (meaning, not only shared words); best lines with one neighbour each side
+    frames the speech around the frames actually shown (nearest lines first, within 15 s)
+    frames+hybrid  half the budget each
+    full   the whole transcript in time order, cut to ``words``"""
+    from videoqa.retrieval import bm25_scores, tokenize  # noqa: PLC0415
+
+    if words <= 0 or not segs:
+        return []
+    if policy == "bm25":
+        return excerpt(pool, words)
+    if policy == "full":
+        return list(_take(range(len(segs)), segs, words).values())
+    chosen: dict = {}
+    if policy in ("frames", "frames+hybrid"):
+        ts = [c.time_s for c in frames]
+        dist = [min((0.0 if s.start_s <= t <= s.end_s else min(abs(t - s.start_s), abs(t - s.end_s))) for t in ts)
+                if ts else 1e9 for s in segs]
+        order = [i for i in np.argsort(dist, kind="stable") if dist[i] <= 15.0]
+        chosen = _take(order, segs, words if policy == "frames" else words // 2)
+    if policy in ("hybrid", "frames+hybrid"):
+        bm = np.asarray(bm25_scores(tokenize(pool.question + " " + " ".join(pool.options)),
+                                    [tokenize(s.text) for s in segs]))
+        rel = _line_relevance(pool.qa_id, pool.question, segs)
+        rb, rr = np.argsort(np.argsort(-bm, kind="stable")), np.argsort(np.argsort(-rel, kind="stable"))
+        fused = 1.0 / (60 + rb) + 1.0 / (60 + rr)
+        chosen = _take(np.argsort(-fused, kind="stable"), segs, words, have=chosen, neighbours=1)
+    return [chosen[i] for i in sorted(chosen)]
+
+
 def select(pool, rule: str, k: int, qo_emb):
     cands = list(pool.candidates)
     if rule == "none":                               # reference: question only, no frames
@@ -215,11 +279,12 @@ def stage_answer(a) -> None:
     cache = {json.loads(x)["key"]: json.loads(x) for x in cache_path.read_text().splitlines()} if cache_path.exists() else {}
     budget = CallBudget(RUN / a.ledger, *ledger_limits(a.ledger))
     answerer = None
-    qa = {it.qa.qa_id: it.qa for it in items(a.dataset)}
+    its = {it.qa.qa_id: it for it in items(a.dataset)}
+    qa = {q: it.qa for q, it in its.items()}
     for rule in a.selectors.split(","):
         for p, e in zip(pools, qo, strict=True):
             frames = select(p, rule, a.k, e)
-            ex = excerpt(p, a.words)
+            ex = transcript_for(a.tpolicy, a.words, p, its[p.qa_id].transcript.segments, frames)
             key = request_key(p, frames, ex, identity)
             if key not in cache:
                 if not budget.reserve(1):
@@ -239,7 +304,12 @@ def stage_answer(a) -> None:
                    "qa_id": p.qa_id, "video_id": p.video_id, "correct": cache[key]["option"] == p.gold_option_index,
                    "pool_size": len(p.candidates), "pool_hits_evidence": any(inside(c.time_s) for c in p.candidates) if iv else None,
                    "chosen_hits_evidence": any(inside(c.time_s) for c in frames) if iv else None,
-                   "pool_seconds": sum(p.timings.get(x, 0.0) for x in ("retrieval", "head_a", "decode", "clip"))}
+                   "pool_seconds": sum(p.timings.get(x, 0.0) for x in ("retrieval", "head_a", "decode", "clip")),
+                   "tp": a.tpolicy if a.words > 0 else "none", "text_words": sum(len(s.text.split()) for s in ex),
+                   "text_hit": (any(any(x - 10.0 <= s.end_s and s.start_s <= y + 10.0 for x, y in iv) for s in ex)
+                                if iv else None)}
+            if a.tpolicy != "bm25":                  # keep the row key unique per transcript policy
+                row["selector"] = f"{rule}|tp={a.tpolicy}"
             with open(rows_path, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(row) + "\n")
         print(f"{a.dataset}/{a.pool}/{rule} K={a.k} words={a.words}: done; calls {budget.calls}", flush=True)
@@ -382,6 +452,9 @@ def stage_report(a) -> None:
                       "accuracy": float(np.mean([r["correct"] for r in g])),
                       "pool_evidence_recall": float(np.mean(pe)) if pe else None,
                       "chosen_evidence_recall": float(np.mean(ev)) if ev else None,
+                      "text_hit": (float(np.mean([r["text_hit"] for r in g if r.get("text_hit") is not None]))
+                                   if any(r.get("text_hit") is not None for r in g) else None),
+                      "text_words_median": float(np.median([r.get("text_words", 0) for r in g])),
                       "pool_size_median": float(np.median([r["pool_size"] for r in g])),
                       "pool_seconds_median": float(np.median([r["pool_seconds"] for r in g]))})
     judged = RUN / "open_judged.jsonl"
@@ -411,6 +484,8 @@ def main() -> None:
     p.add_argument("--k", type=int, default=4)
     p.add_argument("--words", type=int, default=120)
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
+    p.add_argument("--tpolicy", default="bm25", choices=("bm25", "hybrid", "frames", "frames+hybrid", "full"),
+                   help="transcript given to the answerer (with --words > 0)")
     p.add_argument("--sets", type=int, default=4, choices=(4, 6), help="verify: number of candidate frame sets")
     p.add_argument("--ledger", default="budget.json", help="answer-call ledger (budget_2.json = the step-35 extension)")
     a = p.parse_args()
