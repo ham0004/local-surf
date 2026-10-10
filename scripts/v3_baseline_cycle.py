@@ -44,6 +44,10 @@ OUT = Path("reports/v3_baseline")
 DATASETS = {"cgbench": ("data/cgbench", "dev", None), "videommmu": ("data/videommmu", "dev", "vmmmu:Perception:"),
             # second Video-MMMU track (added in research_log step 42 to double the lecture dev set)
             "videommmu_comp": ("data/videommmu", "dev", "vmmmu:Comprehension:"),
+            # final frozen comparison (docs/v3/final_test_protocol.md); used once
+            "cgbench_test": ("data/cgbench", "test", None),
+            "videommmu_test": ("data/videommmu", "test", "vmmmu:Perception:"),
+            "videommmu_comp_test": ("data/videommmu", "test", "vmmmu:Comprehension:"),
             # Head B training pools (CG-Bench train videos we hold; never used for selection decisions)
             "cgbench_train": ("data/cgbench", "train", None)}
 POOLS = {
@@ -62,9 +66,14 @@ POOLS = {
     "hybrid_azs": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="zeroshot"),
     "hybrid_ahead": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="head"),
 }
+# external reference rules for the final comparison (no Path A, 4 frames, chosen by the "clip" selector):
+POOLS["uniform4"] = dict(n_path_a=0, n_path_b=4, scan_cap=4, scan_step_s=5.0, path_b_scope="video", stable_hamming=0)
+POOLS["dense4"] = dict(n_path_a=0, n_path_b=4, scan_cap=4, scan_step_s=5.0, path_b_scope="features")
 HEAD_A_CKPTS = [f"runs/v3_head_a/ckpt/light_dens_ens_human_{s}.pt" for s in range(3)]
 FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/features",
-            "cgbench_train": "data/cgbench/features", "videommmu_comp": "data/videommmu/features"}
+            "cgbench_train": "data/cgbench/features", "videommmu_comp": "data/videommmu/features",
+            "cgbench_test": "data/cgbench/features", "videommmu_test": "data/videommmu/features",
+            "videommmu_comp_test": "data/videommmu/features"}
 SELECTIONS = Path("runs/v3_head_b/selections")
 LIMITS = (4000, 4 * 3600.0)
 # second ledger, declared in research_log step 35 after the first was used up by stages 1-3
@@ -95,7 +104,7 @@ def stage_pools(a) -> None:
     settings = dict(POOLS[a.pool])
     path_a = settings.pop("path_a", "v2")
     cfg = PoolConfig(**settings, excerpt_words=300,
-                     features_dir=FEATURES[a.dataset] if a.pool == "dense" or a.pool.startswith("hybrid") else None)
+                     features_dir=FEATURES[a.dataset] if a.pool in ("dense", "dense4") or a.pool.startswith("hybrid") else None)
     enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
     head_a = HotMomentScorer(device="cuda", cache_dir="cache/hf/hub")
     if path_a == "zeroshot":
