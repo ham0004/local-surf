@@ -150,6 +150,8 @@ _FILE_SELECTIONS: dict = {}
 
 def select(pool, rule: str, k: int, qo_emb):
     cands = list(pool.candidates)
+    if rule == "none":                               # reference: question only, no frames
+        return []
     if rule.startswith("file:"):                     # a Head B method's saved choice (scripts/v3_head_b.py)
         path = SELECTIONS / f"{rule[5:]}.json"
         if path not in _FILE_SELECTIONS:
