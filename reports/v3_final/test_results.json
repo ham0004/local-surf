@@ -1,0 +1,463 @@
+{
+ "systems": {
+  "R1": {
+   "description": "question only",
+   "cgbench_test": {
+    "n": 55,
+    "accuracy": 0.2,
+    "evidence_recall": 0.0
+   },
+   "videommmu_test": {
+    "n": 202,
+    "accuracy": 0.2524752475247525,
+    "evidence_recall": null
+   },
+   "videommmu_comp_test": {
+    "n": 202,
+    "accuracy": 0.19801980198019803,
+    "evidence_recall": null
+   },
+   "pooled": {
+    "n": 459,
+    "accuracy": 0.2222222222222222
+   }
+  },
+  "R2": {
+   "description": "4 evenly spaced frames",
+   "cgbench_test": {
+    "n": 55,
+    "accuracy": 0.32727272727272727,
+    "evidence_recall": 0.05454545454545454
+   },
+   "videommmu_test": {
+    "n": 202,
+    "accuracy": 0.40594059405940597,
+    "evidence_recall": null
+   },
+   "videommmu_comp_test": {
+    "n": 202,
+    "accuracy": 0.3316831683168317,
+    "evidence_recall": null
+   },
+   "pooled": {
+    "n": 459,
+    "accuracy": 0.3638344226579521
+   }
+  },
+  "R3": {
+   "description": "dense MobileCLIP top-4",
+   "cgbench_test": {
+    "n": 55,
+    "accuracy": 0.41818181818181815,
+    "evidence_recall": 0.5818181818181818
+   },
+   "videommmu_test": {
+    "n": 202,
+    "accuracy": 0.40594059405940597,
+    "evidence_recall": null
+   },
+   "videommmu_comp_test": {
+    "n": 202,
+    "accuracy": 0.31683168316831684,
+    "evidence_recall": null
+   },
+   "pooled": {
+    "n": 459,
+    "accuracy": 0.3681917211328976
+   }
+  },
+  "S0": {
+   "description": "v2 default (starting framework)",
+   "cgbench_test": {
+    "n": 55,
+    "accuracy": 0.34545454545454546,
+    "evidence_recall": 0.34545454545454546
+   },
+   "videommmu_test": {
+    "n": 202,
+    "accuracy": 0.47029702970297027,
+    "evidence_recall": null
+   },
+   "videommmu_comp_test": {
+    "n": 202,
+    "accuracy": 0.30198019801980197,
+    "evidence_recall": null
+   },
+   "pooled": {
+    "n": 459,
+    "accuracy": 0.3812636165577342
+   }
+  },
+  "S1": {
+   "description": "frozen baseline (tuned rules)",
+   "cgbench_test": {
+    "n": 55,
+    "accuracy": 0.509090909090909,
+    "evidence_recall": 0.4727272727272727
+   },
+   "videommmu_test": {
+    "n": 202,
+    "accuracy": 0.4801980198019802,
+    "evidence_recall": null
+   },
+   "videommmu_comp_test": {
+    "n": 202,
+    "accuracy": 0.3217821782178218,
+    "evidence_recall": null
+   },
+   "pooled": {
+    "n": 459,
+    "accuracy": 0.4139433551198257
+   }
+  },
+  "S2": {
+   "description": "+ Head A",
+   "cgbench_test": {
+    "n": 55,
+    "accuracy": 0.41818181818181815,
+    "evidence_recall": 0.4909090909090909
+   },
+   "videommmu_test": {
+    "n": 202,
+    "accuracy": 0.4504950495049505,
+    "evidence_recall": null
+   },
+   "videommmu_comp_test": {
+    "n": 202,
+    "accuracy": 0.33663366336633666,
+    "evidence_recall": null
+   },
+   "pooled": {
+    "n": 459,
+    "accuracy": 0.39651416122004357
+   }
+  },
+  "S3": {
+   "description": "+ Head B (ev_set)",
+   "cgbench_test": {
+    "n": 55,
+    "accuracy": 0.4727272727272727,
+    "evidence_recall": 0.509090909090909
+   },
+   "videommmu_test": {
+    "n": 202,
+    "accuracy": 0.4801980198019802,
+    "evidence_recall": null
+   },
+   "videommmu_comp_test": {
+    "n": 202,
+    "accuracy": 0.3316831683168317,
+    "evidence_recall": null
+   },
+   "pooled": {
+    "n": 459,
+    "accuracy": 0.4139433551198257
+   }
+  },
+  "S4": {
+   "description": "Head A + Head B",
+   "cgbench_test": {
+    "n": 55,
+    "accuracy": 0.34545454545454546,
+    "evidence_recall": 0.5636363636363636
+   },
+   "videommmu_test": {
+    "n": 202,
+    "accuracy": 0.5198019801980198,
+    "evidence_recall": null
+   },
+   "videommmu_comp_test": {
+    "n": 202,
+    "accuracy": 0.32673267326732675,
+    "evidence_recall": null
+   },
+   "pooled": {
+    "n": 459,
+    "accuracy": 0.4139433551198257
+   }
+  },
+  "S5": {
+   "description": "answer-confidence selection (4 sets)",
+   "cgbench_test": {
+    "n": 55,
+    "accuracy": 0.4727272727272727,
+    "evidence_recall": null
+   },
+   "videommmu_test": {
+    "n": 202,
+    "accuracy": 0.5,
+    "evidence_recall": null
+   },
+   "videommmu_comp_test": {
+    "n": 202,
+    "accuracy": 0.3316831683168317,
+    "evidence_recall": null
+   },
+   "pooled": {
+    "n": 459,
+    "accuracy": 0.4226579520697168
+   }
+  }
+ },
+ "comparisons": [
+  {
+   "a": "S1",
+   "b": "S0",
+   "kind": "primary",
+   "pooled": {
+    "diff": 0.032679738562091505,
+    "ci": [
+     -0.0069124423963133645,
+     0.07048595243753084
+    ],
+    "n": 459
+   },
+   "cgbench_test": {
+    "diff": 0.16363636363636364,
+    "ci": [
+     0.07017543859649122,
+     0.25925925925925924
+    ],
+    "n": 55
+   },
+   "videommmu_test": {
+    "diff": 0.009900990099009901,
+    "ci": [
+     -0.04950495049504951,
+     0.06930693069306931
+    ],
+    "n": 202
+   },
+   "videommmu_comp_test": {
+    "diff": 0.019801980198019802,
+    "ci": [
+     -0.0297029702970297,
+     0.06930693069306931
+    ],
+    "n": 202
+   }
+  },
+  {
+   "a": "S2",
+   "b": "S1",
+   "kind": "secondary",
+   "pooled": {
+    "diff": -0.017429193899782137,
+    "ci": [
+     -0.044492823034238044,
+     0.010549640635056838
+    ],
+    "n": 459
+   },
+   "cgbench_test": {
+    "diff": -0.09090909090909091,
+    "ci": [
+     -0.1568627450980392,
+     -0.034482758620689655
+    ],
+    "n": 55
+   },
+   "videommmu_test": {
+    "diff": -0.0297029702970297,
+    "ci": [
+     -0.07425742574257425,
+     0.01485148514851485
+    ],
+    "n": 202
+   },
+   "videommmu_comp_test": {
+    "diff": 0.01485148514851485,
+    "ci": [
+     -0.024752475247524754,
+     0.054455445544554455
+    ],
+    "n": 202
+   }
+  },
+  {
+   "a": "S3",
+   "b": "S1",
+   "kind": "secondary",
+   "pooled": {
+    "diff": 0.0,
+    "ci": [
+     -0.030372455266668697,
+     0.030635218405515863
+    ],
+    "n": 459
+   },
+   "cgbench_test": {
+    "diff": -0.03636363636363636,
+    "ci": [
+     -0.11538461538461539,
+     0.04081632653061224
+    ],
+    "n": 55
+   },
+   "videommmu_test": {
+    "diff": 0.0,
+    "ci": [
+     -0.04950495049504951,
+     0.04455445544554455
+    ],
+    "n": 202
+   },
+   "videommmu_comp_test": {
+    "diff": 0.009900990099009901,
+    "ci": [
+     -0.034653465346534656,
+     0.054455445544554455
+    ],
+    "n": 202
+   }
+  },
+  {
+   "a": "S4",
+   "b": "S1",
+   "kind": "secondary",
+   "pooled": {
+    "diff": 0.0,
+    "ci": [
+     -0.031007751937984496,
+     0.03296832884097033
+    ],
+    "n": 459
+   },
+   "cgbench_test": {
+    "diff": -0.16363636363636364,
+    "ci": [
+     -0.19642857142857142,
+     -0.12962962962962962
+    ],
+    "n": 55
+   },
+   "videommmu_test": {
+    "diff": 0.039603960396039604,
+    "ci": [
+     -0.0049504950495049506,
+     0.08415841584158416
+    ],
+    "n": 202
+   },
+   "videommmu_comp_test": {
+    "diff": 0.0049504950495049506,
+    "ci": [
+     -0.039603960396039604,
+     0.04950495049504951
+    ],
+    "n": 202
+   }
+  },
+  {
+   "a": "S5",
+   "b": "S1",
+   "kind": "secondary",
+   "pooled": {
+    "diff": 0.008714596949891068,
+    "ci": [
+     -0.01598173515981735,
+     0.03472373188405795
+    ],
+    "n": 459
+   },
+   "cgbench_test": {
+    "diff": -0.03636363636363636,
+    "ci": [
+     -0.07692307692307693,
+     0.0
+    ],
+    "n": 55
+   },
+   "videommmu_test": {
+    "diff": 0.019801980198019802,
+    "ci": [
+     -0.019801980198019802,
+     0.0594059405940594
+    ],
+    "n": 202
+   },
+   "videommmu_comp_test": {
+    "diff": 0.009900990099009901,
+    "ci": [
+     -0.0297029702970297,
+     0.04950495049504951
+    ],
+    "n": 202
+   }
+  },
+  {
+   "a": "S1",
+   "b": "R3",
+   "kind": "secondary",
+   "pooled": {
+    "diff": 0.0457516339869281,
+    "ci": [
+     0.01312910284463895,
+     0.07843339815264946
+    ],
+    "n": 459
+   },
+   "cgbench_test": {
+    "diff": 0.09090909090909091,
+    "ci": [
+     0.019230769230769232,
+     0.15625
+    ],
+    "n": 55
+   },
+   "videommmu_test": {
+    "diff": 0.07425742574257425,
+    "ci": [
+     0.024752475247524754,
+     0.12871287128712872
+    ],
+    "n": 202
+   },
+   "videommmu_comp_test": {
+    "diff": 0.0049504950495049506,
+    "ci": [
+     -0.039603960396039604,
+     0.054455445544554455
+    ],
+    "n": 202
+   }
+  },
+  {
+   "a": "S1",
+   "b": "R2",
+   "kind": "secondary",
+   "pooled": {
+    "diff": 0.05010893246187364,
+    "ci": [
+     0.01089147780324251,
+     0.08928571428571429
+    ],
+    "n": 459
+   },
+   "cgbench_test": {
+    "diff": 0.18181818181818182,
+    "ci": [
+     0.08771929824561403,
+     0.2727272727272727
+    ],
+    "n": 55
+   },
+   "videommmu_test": {
+    "diff": 0.07425742574257425,
+    "ci": [
+     0.01485148514851485,
+     0.13861386138613863
+    ],
+    "n": 202
+   },
+   "videommmu_comp_test": {
+    "diff": -0.009900990099009901,
+    "ci": [
+     -0.06435643564356436,
+     0.04455445544554455
+    ],
+    "n": 202
+   }
+  }
+ ]
+}

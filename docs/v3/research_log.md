@@ -628,3 +628,13 @@ Detailed results live in the linked reports; this log is the chronological index
   doubles coverage at the same budget, and the whole transcript (short enough for the answerer's context)
   loses nothing. Next, after the final test frees the GPU: answer accuracy (multiple choice, three dev sets)
   and open-ended correctness (CG-Bench) for these policies, to see which gives better answers.
+
+**Step 48. Final frozen comparison on test** (2026-10-10; `docs/v3/final_test_results.md`)
+- Run once as declared (9 systems × 459 test questions; 5,370 calls). Pooled accuracy: question only 22.2;
+  evenly spaced 36.4; dense MobileCLIP 36.8; v2 default 38.1; **tuned baseline 41.4**; + Head A 39.7;
+  + Head B 41.4; Head A + B 41.4; answer-confidence selection 42.3.
+- Tuned baseline − v2: CG-Bench **+16.4 (+7.0..+25.9)**, pooled +3.3 (−0.7..+7.0). Tuned baseline vs dense
+  MobileCLIP **+4.6 (+1.3..+7.8)**, vs evenly spaced **+5.0 (+1.1..+8.9)**. Heads vs tuned baseline: all CIs
+  include 0.
+- The declared open-ended check on CG-Bench test (S0, S1, R3) runs after the transcript-policy trials
+  (step 49), which were requested next and are already queued on the GPU.

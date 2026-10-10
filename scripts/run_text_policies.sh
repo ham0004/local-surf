@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Transcript policies on dev (research_log step 48): frozen baseline frames (hybrid pool, mmropt, K = 4),
+# Transcript policies on dev (research_log step 49): frozen baseline frames (hybrid pool, mmropt, K = 4),
 # only the transcript changes. Multiple choice on three dev sets.
 set -u
 export PYTHONIOENCODING=utf-8 HF_HUB_OFFLINE=1
