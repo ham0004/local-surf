@@ -78,7 +78,14 @@ SELECTIONS = Path("runs/v3_head_b/selections")
 LIMITS = (4000, 4 * 3600.0)
 # second ledger, declared in research_log step 35 after the first was used up by stages 1-3
 EXTRA_LIMITS = (1500, 2 * 3600.0)
+TEST_LIMITS = (6000, 4 * 3600.0)   # final comparison ledger, declared in docs/v3/final_test_protocol.md
 OPEN_LIMITS = (1500, 4 * 3600.0)
+
+
+def ledger_limits(name: str) -> tuple:
+    if name == "budget.json":
+        return LIMITS
+    return TEST_LIMITS if name.startswith("budget_test") else EXTRA_LIMITS
 JUDGE = "nvidia/nemotron-3-ultra-550b-a55b"
 JUDGE_LIMITS = (3000, 4 * 3600.0)
 
@@ -206,7 +213,7 @@ def stage_answer(a) -> None:
     RUN.mkdir(parents=True, exist_ok=True)
     cache_path, rows_path = RUN / "answers.jsonl", RUN / "rows.jsonl"
     cache = {json.loads(x)["key"]: json.loads(x) for x in cache_path.read_text().splitlines()} if cache_path.exists() else {}
-    budget = CallBudget(RUN / a.ledger, *(LIMITS if a.ledger == "budget.json" else EXTRA_LIMITS))
+    budget = CallBudget(RUN / a.ledger, *ledger_limits(a.ledger))
     answerer = None
     qa = {it.qa.qa_id: it.qa for it in items(a.dataset)}
     for rule in a.selectors.split(","):
@@ -258,7 +265,7 @@ def stage_verify(a) -> None:
     identity = answerer_identity(cfg)
     path = RUN / "answers_probs.jsonl"
     cache = {json.loads(x)["key"]: json.loads(x) for x in path.read_text().splitlines()} if path.exists() else {}
-    budget = CallBudget(RUN / a.ledger, *EXTRA_LIMITS)
+    budget = CallBudget(RUN / a.ledger, *ledger_limits(a.ledger))
     enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
     answerer = None
     per_q: dict = {}

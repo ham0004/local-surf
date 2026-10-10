@@ -42,3 +42,8 @@ Head A and Head B checkpoints are the ones evaluated on dev (3 seeds averaged); 
 ## Dev results these systems were chosen on (pooled over 278 dev questions, vs S1)
 S0 −5.8 (−10.2..−1.0); S2 −0.4; S3 −0.4; S4 −0.7; S5 +1.1 (−1.7..+3.8). Expected on test: S1 > S0; heads
 and S5 within a few points of S1.
+
+## Budget
+One ledger for the whole comparison, `runs/v3_baseline/budget_test.json`: 6,000 answer calls / 4 GPU-hours
+(about 12 calls per question × 459 questions: 8 single-set systems + 4 sets for S5). Open-ended answers and
+judge verdicts use their existing ledgers.
