@@ -657,3 +657,31 @@ Detailed results live in the linked reports; this log is the chronological index
   words) and helps the comprehension questions (+3.1 over no text with frames + hybrid 600), but in multiple
   choice the 2B answerer still does best on frame-dependent sets without text. Open-ended answers (the primary
   objective) are measured next for none, hybrid 300, frames + hybrid 600 and full 2,500.
+
+**Step 50. Transcript policy chosen by open-ended correctness (CG-Bench)** (2026-10-11)
+- Capped full transcript, multiple choice: 1,500 words CG-Bench 40.2 / Perception 60.2 / Comprehension 33.7
+  (mean 44.7, vs 45.0 without text); 2,500 words runs out of GPU memory on the longest CG-Bench transcripts
+  (Perception 61.2, Comprehension 32.7).
+- Open-ended correctness, CG-Bench dev (82; judge as in step 36; 4 of 663 verdicts failed after retries and
+  are excluded pairwise):
+
+  | Transcript | Open-ended | MC | speech near evidence kept |
+  |---|---|---|---|
+  | v2 default (BM25 pool, clip, BM25 120) | 13.4 | 28.0 | 28.0 |
+  | frozen frames + BM25 120 | 17.1 | 35.4 | 28.0 |
+  | frozen frames, no text | 19.5 | **40.2** | 0 |
+  | frozen frames + full 1,500 | 19.2 | **40.2** | 65.9 |
+  | frozen frames + hybrid 300 | 20.7 | 37.8 | 62.2 |
+  | **frozen frames + frames + hybrid 600** | **22.0** | 37.8 | **68.3** |
+
+  Paired (10,000 resamples over videos): frames + hybrid 600 − v2 **+8.5 (+3.5..+14.7)**; − BM25 120
+  **+4.9 (+1.3..+8.3)**; − no text +2.4 (−2.2..+6.9). Hybrid 300 − no text +1.2 (−6.0..+8.1); full 1,500 − no
+  text +0.0.
+- Decision (the requirement: better answers and less lost text): the framework's transcript policy becomes
+  **frames + hybrid, 600 words**: speech around the frames shown plus the best lines by BM25 + meaning fusion.
+  It gives the best open-ended answers, keeps 68% of the evidence speech (BM25 120: 28%), and costs 0.8
+  points of multiple-choice mean on dev (within noise). This changes the framework after the declared test;
+  its test numbers will be reported separately as a follow-up, not as part of the declared comparison.
+- Declared open-ended check on CG-Bench test (55): v2 18.2, tuned framework (no text) 23.6, dense MobileCLIP
+  25.5; tuned − v2 +5.5 (−7.3..+20.8), tuned − dense −1.8 (−8.9..+3.3): 6 test videos are too few to separate
+  these.
