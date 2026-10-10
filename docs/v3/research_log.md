@@ -550,3 +550,33 @@ Detailed results live in the linked reports; this log is the chronological index
   0.361 / 0.350 / 0.359), best frame in the pool (oracle) 0.506.
 - Selection: `util` (learned utility + redundancy, μ = 1) and `util_set` (+ option-evidence term, λ = 2,
   μ = 1, reused from step 41). Dev answers on all three dev sets are running (ledger `budget_headb2.json`).
+
+**Step 44. Head B stage 2 results and the combined A + B grid on three dev sets** (2026-10-10)
+- Dev accuracy (K = 4, no transcript); Video-MMMU Comprehension added (step 42). "base" = frozen baseline
+  pool, "HA" = Head A pool.
+
+  | Pool + selector | CG-Bench | VMMMU Perception | VMMMU Comprehension | pooled − frozen baseline (95% CI, n = 278) |
+  |---|---|---|---|---|
+  | v2 default (BM25-window pool, clip, 120 words) | 28.0 | 56.1 | 32.7 | −5.8 (−10.2..−1.0) |
+  | **frozen baseline (base + mmropt)** | **40.2** | **63.3** | 31.6 | — |
+  | base + optset / ev / ev_set | 40.2 / 35.4 / 39.0 | 63.3 / 62.2 / 62.2 | 27.6 / 32.7 / 32.7 | −1.4 / −1.4 / −0.4 |
+  | base + util / util_set (answerer labels) | 39.0 / 39.0 | 53.1 / 52.0 | 32.7 / 32.7 | −3.6 (−7.6..+0.4) / −4.0 (−8.2..+0.0) |
+  | HA + mmropt (Head A only) | 39.0 | 62.2 | 32.7 | −0.4 (−3.3..+2.9) |
+  | HA + optset / ev / ev_set | 42.7 / 40.2 / 40.2 | 60.2 / 62.2 / 62.2 | 29.6 / 30.6 / 30.6 | −1.1 / −0.7 / −0.7 |
+  | HA + util / util_set (A + B) | 41.5 / 40.2 | 55.1 / 55.1 | 34.7 / 34.7 | −1.4 / −1.8 |
+
+  Comprehension with 120 transcript words: frozen pool 33.7 (vs 31.6 without), v2 32.7. Path A only on
+  Comprehension: base 29.6, HA 32.7.
+- Findings:
+  - The tuned rule baseline is the strongest system on dev: +5.8 points over the v2 default pooled over 278
+    questions (CI excludes 0).
+  - No Head A / Head B variant or combination beats it; every pooled difference is within −4.0..−0.4 and its
+    CI includes 0 (the answerer-utility selector is the worst, mainly on lectures: 52–55 vs 63 on Perception).
+  - Both heads are trained on CG-Bench only (the only labelled training source with frames); what they learn
+    helps on CG-Bench in places (HA + optset 42.7, HA + util 41.5 vs 40.2) and hurts on Video-MMMU lectures.
+    The supervision does not cover the lecture domain, and the dev sets are too small to confirm the
+    CG-Bench gains (+1 to +2.5 points).
+  - Comprehension questions depend less on frames (all settings 28–35%) and slightly more on the transcript.
+- Selection headroom remains: in the pool, the best single frame gives the answerer 0.51 gold probability
+  vs 0.33 for the frozen rule's first pick (train inner validation), and frames inside the human evidence
+  lift CG-Bench to 63.4% (gate) vs 40.2%.
