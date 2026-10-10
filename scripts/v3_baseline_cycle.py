@@ -229,6 +229,8 @@ def stage_answer(a) -> None:
 
 VERIFY_SETS = [("hybrid", "mmropt"), ("hybrid_ahead", "mmropt"), ("hybrid", "file:{ds}_hybrid_optset"),
                ("hybrid_ahead", "file:{ds}_hybrid_ahead_optset")]
+# step 46: two more candidate sets (the learned Head B selections) -> m = 6
+VERIFY_SETS_6 = VERIFY_SETS + [("hybrid", "file:{ds}_hybrid_ev_set"), ("hybrid_ahead", "file:{ds}_hybrid_ahead_util")]
 
 
 def stage_verify(a) -> None:
@@ -249,7 +251,7 @@ def stage_verify(a) -> None:
     enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
     answerer = None
     per_q: dict = {}
-    for pool_name, sel in VERIFY_SETS:
+    for pool_name, sel in (VERIFY_SETS_6 if a.sets == 6 else VERIFY_SETS):
         sel = sel.format(ds=a.dataset)
         meta = json.loads((pool_dir(a.dataset, pool_name).parent / "pools.json").read_text())
         pools = [load_pool(pool_dir(a.dataset, pool_name), q) for q in meta["qa_ids"]]
@@ -280,7 +282,7 @@ def stage_verify(a) -> None:
                 choice = int(np.argmax(best["probs"])) if best["option"] is None else best["option"]
             else:
                 choice = int(np.argmax(np.sum([s["probs"] for s in sets], axis=0)))
-            row = {"dataset": a.dataset, "pool": "verify", "selector": rule, "k": a.k, "words": 0, "qa_id": q,
+            row = {"dataset": a.dataset, "pool": "verify" if a.sets == 4 else f"verify{a.sets}", "selector": rule, "k": a.k, "words": 0, "qa_id": q,
                    "video_id": v["video_id"], "correct": choice == v["gold"], "pool_size": len(sets),
                    "pool_hits_evidence": None, "chosen_hits_evidence": None, "pool_seconds": 0.0}
             with open(RUN / "rows.jsonl", "a", encoding="utf-8") as fh:
@@ -391,6 +393,7 @@ def main() -> None:
     p.add_argument("--k", type=int, default=4)
     p.add_argument("--words", type=int, default=120)
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
+    p.add_argument("--sets", type=int, default=4, choices=(4, 6), help="verify: number of candidate frame sets")
     p.add_argument("--ledger", default="budget.json", help="answer-call ledger (budget_2.json = the step-35 extension)")
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
