@@ -605,3 +605,26 @@ Detailed results live in the linked reports; this log is the chronological index
   Perception max 63.3 (−3.1 vs four sets); sum 40.2 / 61.2. More sets add more confidently wrong answers.
   Comprehension stopped at the ledger cap and was not extended (already worse on the other two sets).
   Four sets are kept.
+
+**Step 47. Transcript coverage: how much relevant speech each policy keeps** (2026-10-10)
+- Requirement: the answerer should not lose information the transcript holds. v2 gave a 120-word BM25
+  excerpt; the frozen baseline gives none (it scored better in multiple choice, steps 34/36).
+- New transcript policies in the runner (`transcript_for`, `--tpolicy`): `hybrid` (every line ranked by
+  reciprocal-rank fusion of BM25 on question + options and zero-shot MiniLM relevance; best lines with one
+  neighbour), `frames` (speech around the frames actually shown, nearest first, within 15 s),
+  `frames+hybrid` (half each), `full` (whole transcript in time order up to the budget).
+- Coverage on CG-Bench dev (82 questions; "included" = the text contains speech within 10 s of a human clue
+  interval; median transcript 1,570 words; frames from the frozen baseline):
+
+  | Policy | Budget | Included |
+  |---|---|---|
+  | BM25 (v2) | 120 / 300 | 28.0 / 50.0 |
+  | hybrid | 120 / 300 / 600 | 50.0 / 62.2 / 62.2 |
+  | frames | 120 / 300 | 46.3 / 48.8 |
+  | frames + hybrid | 300 / 600 | 65.9 / 68.3 |
+  | full | 1,500 / 4,000 / all | 65.9 / 79.3 / **80.5** (ceiling: 19.5% have no speech near the evidence) |
+
+- Reading: v2's 120-word excerpt dropped the relevant speech for 72% of questions. Meaning-based fusion
+  doubles coverage at the same budget, and the whole transcript (short enough for the answerer's context)
+  loses nothing. Next, after the final test frees the GPU: answer accuracy (multiple choice, three dev sets)
+  and open-ended correctness (CG-Bench) for these policies, to see which gives better answers.
