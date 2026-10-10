@@ -1,0 +1,9 @@
+# Stronger frozen answerer for the generality check (research_log step 51): Qwen3-VL-4B on the 16 GB GPU.
+inherit: gpu_12gb.yaml
+answerer:
+  backend: hf_vlm
+  model_id: Qwen/Qwen3-VL-4B-Instruct
+  # Pinned Hub revision (the one used in the EduVidQA 4B gate, scripts/v3_gate_frames.py).
+  revision: ebb281ec70b05090aa6165b016eac8ec08e71b17
+  dtype: bfloat16
+  frame_max_side: 640

@@ -85,6 +85,8 @@ OPEN_LIMITS = (1500, 4 * 3600.0)
 def ledger_limits(name: str) -> tuple:
     if name == "budget.json":
         return LIMITS
+    if name.startswith("budget_4b"):                # stronger-answerer check, research_log step 51
+        return (5000, 5 * 3600.0)
     if name.startswith("budget_text"):              # transcript-policy trials, research_log step 49
         return (2500, 4 * 3600.0)
     return TEST_LIMITS if name.startswith("budget_test") else EXTRA_LIMITS
@@ -312,6 +314,8 @@ def stage_answer(a) -> None:
                                 if iv else None)}
             if a.tpolicy != "bm25":                  # keep the row key unique per transcript policy
                 row["selector"] = f"{rule}|tp={a.tpolicy}"
+            if a.tag:                                # e.g. another answerer: "ans=4b"
+                row["selector"] += f"|{a.tag}"
             with open(rows_path, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(row) + "\n")
         print(f"{a.dataset}/{a.pool}/{rule} K={a.k} words={a.words}: done; calls {budget.calls}", flush=True)
@@ -489,6 +493,7 @@ def main() -> None:
     p.add_argument("--k", type=int, default=4)
     p.add_argument("--words", type=int, default=120)
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
+    p.add_argument("--tag", default="", help="suffix for the row's selector label (e.g. ans=4b)")
     p.add_argument("--tpolicy", default="bm25", choices=("bm25", "hybrid", "frames", "frames+hybrid", "full"),
                    help="transcript given to the answerer (with --words > 0)")
     p.add_argument("--sets", type=int, default=4, choices=(4, 6), help="verify: number of candidate frame sets")
