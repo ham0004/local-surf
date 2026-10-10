@@ -685,3 +685,11 @@ Detailed results live in the linked reports; this log is the chronological index
 - Declared open-ended check on CG-Bench test (55): v2 18.2, tuned framework (no text) 23.6, dense MobileCLIP
   25.5; tuned − v2 +5.5 (−7.3..+20.8), tuned − dense −1.8 (−8.9..+3.3): 6 test videos are too few to separate
   these.
+
+**Step 51. Declared: does the framework's gain hold with a stronger answerer?** (2026-10-11)
+- The 2B answerer caps every number (frames inside the human evidence: 63.4% on CG-Bench dev). Same pools and
+  selections, answerer swapped to Qwen3-VL-4B-Instruct (revision ebb281e, `configs/gpu_16gb_4b.yaml`):
+  v2 default, tuned framework (no text), tuned framework + frames + hybrid 600 (step 50), and on test also
+  dense MobileCLIP top-4 and evenly spaced frames. Dev and test, multiple choice. Ledger `budget_4b.json`
+  (5,000 calls / 5 GPU-hours). Not used to choose any setting (all settings were fixed on 2B dev).
+- Also the 2B test follow-up for the step-50 transcript policy (reported separately from the declared test).
