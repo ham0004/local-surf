@@ -46,3 +46,29 @@ over videos, 10,000 resamples. CG-Bench test has only 6 videos, so its CIs are u
   rules overall.
 - Not supported: that the learned Head A or Head B improve end-to-end accuracy. Head A improves moment
   localisation (dev recall +8.5, significant) without an accuracy gain.
+
+## Follow-ups after the declared test (reported separately)
+Both follow-ups were declared in the research log before they were run (steps 50–52); the transcript policy was
+chosen on dev only, but after the declared test had been seen, so these are follow-up results, not part of the
+declared comparison. Pooled over the same 459 test questions; 95% CIs, 10,000 resamples over videos.
+
+| Answerer | v2 default | tuned, no text | tuned + speech (frames + hybrid, 600 words) |
+|---|---|---|---|
+| Qwen3-VL-2B | 38.1 | 41.4 | 41.4 |
+| Qwen3-VL-4B | 50.3 | 52.7 | **55.6** |
+
+| Comparison | 2B | 4B |
+|---|---|---|
+| tuned − v2 | +3.3 (−0.7..+7.1) | +2.4 (−1.7..+6.6) |
+| tuned + speech − v2 | +3.3 (−0.8..+7.2) | **+5.2 (+1.0..+9.5)** |
+| tuned + speech − tuned | +0.0 (−2.7..+2.7) | **+2.8 (+0.2..+5.6)** |
+
+Per set with 4B, tuned + speech − v2: CG-Bench +10.9 (−1.9..+24.6), Perception **+6.9 (+0.5..+13.9)**,
+Comprehension +2.0 (−3.5..+7.4). 4B external rules on CG-Bench test: dense MobileCLIP 40.0, evenly spaced
+27.3; on Perception test dense MobileCLIP 54.8 (188 of 202; the ledger ended before the remaining reference
+runs, which were not extended).
+
+Reading: the selected speech (68% of the evidence speech kept, vs 28% for v2's BM25 excerpt) is information a
+stronger answerer uses: with 4B the full framework beats the v2 pipeline significantly over all 459 test
+questions, and the speech adds a significant +2.8 on top of the tuned frames. With 2B the speech neither helps
+nor hurts multiple choice (it helped open-ended answers on dev, step 50).

@@ -714,3 +714,12 @@ Detailed results live in the linked reports; this log is the chronological index
   stronger model can read.
 - Second 4B ledger declared (`budget_4b_2.json`, same limits) to finish Perception test (tuned + text) and
   Comprehension test (v2, tuned, tuned + text) and the external rules on both Video-MMMU test sets.
+
+**Step 53. 4B results complete; summary of the follow-ups** (2026-10-11; `docs/v3/final_test_results.md`)
+- Second 4B ledger (`budget_4b_2.json`): 852 calls; it ran 7,323 s past its time limit on the last block
+  before stopping (the check is made before each call), and the external-rule runs on Video-MMMU test were
+  left incomplete rather than extended.
+- Test, pooled 459 questions: 4B v2 50.3, tuned 52.7, **tuned + speech 55.6**; tuned + speech − v2
+  **+5.2 (+1.0..+9.5)**, − tuned **+2.8 (+0.2..+5.6)**. 2B: 38.1 / 41.4 / 41.4.
+- Conclusion of the transcript work: keeping the important speech (frames + hybrid, 600 words) loses no
+  accuracy with 2B and adds a significant gain with 4B; it is the framework's transcript policy from here on.
