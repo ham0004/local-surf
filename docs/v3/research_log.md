@@ -723,3 +723,10 @@ Detailed results live in the linked reports; this log is the chronological index
   **+5.2 (+1.0..+9.5)**, − tuned **+2.8 (+0.2..+5.6)**. 2B: 38.1 / 41.4 / 41.4.
 - Conclusion of the transcript work: keeping the important speech (frames + hybrid, 600 words) loses no
   accuracy with 2B and adds a significant gain with 4B; it is the framework's transcript policy from here on.
+
+**Step 54. Declared: the full combination grid** (2026-10-17)
+- Not yet run: the heads together with the speech text and with the 4B answerer. The grid now covers every
+  combination of answer model {2B, 4B} × speech text {none, frames + hybrid 600 words} × {best framework,
+  + Head A, + Head B (ev_set), + Head A + Head B}; the 7 missing combinations run on all dev and test sets
+  (`scripts/run_full_grid.sh`, ledgers `budget_grid_2b.json`, `budget_grid_4b.json`, 8,000 calls / 24 h
+  each). No setting changes; test numbers are follow-ups, reported apart from the declared comparison.
