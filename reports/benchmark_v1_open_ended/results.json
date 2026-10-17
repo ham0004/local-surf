@@ -1,0 +1,76 @@
+{
+  "judge": {
+    "model": "microsoft/Phi-4-mini-instruct",
+    "revision": "cfbefacb99257ffa30c83adab238a50856ac3083",
+    "decoding": "greedy",
+    "system_prompt": "You grade answers to questions about videos. Compare the CANDIDATE answer with the REFERENCE answer. The candidate is correct if its main answer means the same as the reference: paraphrases, synonyms and extra correct detail are fine. It is incorrect if it gives a different answer, contradicts the reference, or says it cannot tell. Reply with JSON only, no explanation: {\"correct\": true or false, \"score\": an integer 0-5 where 5 = fully matches and 0 = unrelated}."
+  },
+  "questions": 440,
+  "policies": {
+    "transcript_only": {
+      "n": 440,
+      "judge_accuracy": 0.4409090909090909,
+      "ci95": [
+        0.39068900448796406,
+        0.4911349206349205
+      ],
+      "mean_score_0_5": 2.2386363636363638,
+      "token_f1": 0.06804076504519839,
+      "frames_mean": 0.0,
+      "warm_ms_median": 1418.982049995975,
+      "judge_parse_failures": 0
+    },
+    "uniform": {
+      "n": 440,
+      "judge_accuracy": 0.3340909090909091,
+      "ci95": [
+        0.285375452843245,
+        0.3816994724025974
+      ],
+      "mean_score_0_5": 1.7977272727272726,
+      "token_f1": 0.08374318786955084,
+      "frames_mean": 5.995454545454545,
+      "warm_ms_median": 1636.017049986549,
+      "judge_parse_failures": 0
+    },
+    "retrieval": {
+      "n": 440,
+      "judge_accuracy": 0.32045454545454544,
+      "ci95": [
+        0.2750964296063873,
+        0.36616947447176285
+      ],
+      "mean_score_0_5": 1.7431818181818182,
+      "token_f1": 0.08281302223668488,
+      "frames_mean": 4.327272727272727,
+      "warm_ms_median": 1501.1234500016144,
+      "judge_parse_failures": 0
+    },
+    "scout_similarity": {
+      "n": 440,
+      "judge_accuracy": 0.32272727272727275,
+      "ci95": [
+        0.2788644513852739,
+        0.36892206905964237
+      ],
+      "mean_score_0_5": 1.75,
+      "token_f1": 0.08561592907187209,
+      "frames_mean": 5.995454545454545,
+      "warm_ms_median": 2851.0203499827185,
+      "judge_parse_failures": 0
+    },
+    "heuristic": {
+      "n": 440,
+      "judge_accuracy": 0.29772727272727273,
+      "ci95": [
+        0.2522512556804592,
+        0.34332704077983384
+      ],
+      "mean_score_0_5": 1.65,
+      "token_f1": 0.08240887537760094,
+      "frames_mean": 5.702272727272727,
+      "warm_ms_median": 1921.1482999926375,
+      "judge_parse_failures": 0
+    }
+  }
+}
