@@ -730,3 +730,30 @@ Detailed results live in the linked reports; this log is the chronological index
   + Head A, + Head B (ev_set), + Head A + Head B}; the 7 missing combinations run on all dev and test sets
   (`scripts/run_full_grid.sh`, ledgers `budget_grid_2b.json`, `budget_grid_4b.json`, 8,000 calls / 24 h
   each). No setting changes; test numbers are follow-ups, reported apart from the declared comparison.
+
+**Step 55. Full combination grid: results** (2026-10-19; ledgers `budget_grid_2b.json` 2,162 calls,
+`budget_grid_4b.json` 4,322 calls / 21.8 h)
+- Accuracy, 4 frames. dev = CG-Bench 82 / Perception 98 / Comprehension 98; test = 55 / 202 / 202.
+
+  | Answer model, speech text | Version | dev CG / Perc / Comp | test CG / Perc / Comp | test all 459 |
+  |---|---|---|---|---|
+  | 2B, none | best / +A / +B / +A+B | 40.2 63.3 31.6 / 39.0 62.2 32.7 / 39.0 62.2 32.7 / 40.2 62.2 30.6 | 50.9 48.0 32.2 / 41.8 45.0 33.7 / 47.3 48.0 33.2 / 34.5 52.0 32.7 | 41.4 / 39.7 / 41.4 / 41.4 |
+  | 2B, 600 words | best / +A / +B / +A+B | 37.8 60.2 34.7 / 37.8 58.2 29.6 / 37.8 62.2 29.6 / 36.6 60.2 30.6 | 49.1 49.0 31.7 / 40.0 48.0 33.2 / 40.0 47.5 34.7 / 34.5 51.0 32.7 | 41.4 / 40.5 / 41.0 / 41.0 |
+  | 4B, none | best / +A / +B / +A+B | 36.6 65.3 39.8 / 45.1 65.3 36.7 / 40.2 64.3 43.9 / 47.6 66.3 41.8 | 41.8 62.9 45.5 / 41.8 65.8 45.5 / 38.2 64.4 48.5 / 34.5 66.3 49.0 | 52.7 / 54.0 / 54.2 / 54.9 |
+  | 4B, 600 words | best / +A / +B / +A+B | 40.2 68.4 38.8 / 51.2 65.3 37.8 / 46.3 67.3 38.8 / 50.0 70.4 40.8 | 49.1 67.8 45.0 / 47.3 66.8 47.0 / 43.6 64.9 45.5 / 45.5 66.8 45.5 | 55.6 / 55.8 / 53.8 / 54.9 |
+
+- Head versions − best framework (95% CI, bootstrap over videos):
+  - 4B, no speech text, Head A + Head B: dev +4.3 (+0.0..+8.4), test +2.2 (−1.3..+5.9), lecture test +3.5
+    (−0.2..+7.2); **dev and test together (737) +3.0 (+0.2..+5.7)**. Head A alone +1.4, Head B alone +1.8 (both
+    positive on dev and test, not significant).
+  - 4B, 600 words: Head A + Head B dev **+4.3 (+0.4..+8.2)**, test −0.7 (−4.1..+2.9); dev and test together +1.2
+    (−1.5..+3.9). Head A test +0.2, Head B test −1.7.
+  - 2B (both text settings): every head difference between −1.7 and +2.2, none significant.
+- Reading: the heads' better localisation starts to pay off with the stronger answerer. With 4B and no speech
+  text, all three head versions are above the best framework on dev and test, and Head A + Head B is significant
+  over the 737 dev + test questions (a pooled, after-the-fact view; the test set alone does not confirm it). When
+  the 600-word speech text is given, the speech already carries much of what the heads add, and the gain mostly
+  disappears on test. The 2B answerer cannot use the heads' frames.
+- Highest test accuracy overall: 4B + 600 words + Head A 55.8 vs 55.6 for the best framework (not
+  significant). The recommended system stays the best framework + 600 words + 4B; Head A + Head B is the best
+  choice when no speech text is given to the 4B answerer.
