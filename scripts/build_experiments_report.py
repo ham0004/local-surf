@@ -286,8 +286,12 @@ answer model and with or without speech text.</p>
         rows = [[v] + [acc(last, ds, pool, sel + suffix, words, n) for ds, n in cols] for v, pool, sel in versions]
         P.append(table(["Version", "Long videos dev", "Long videos TEST", "Screen-reading dev", "Screen-reading TEST",
                         "Understanding dev", "Understanding TEST"], rows))
-    P.append('<p class="note">&ldquo;running&rdquo; = still being computed (research log step 54). Test numbers in this grid beyond the '
+    P.append('<p class="note">All combinations completed (research log steps 54&ndash;55). Test numbers in this grid beyond the '
              'declared comparison of section 7 are follow-up results.</p>')
+    P.append('<div class="box">With the <b>4B</b> model and no speech text, all three head versions score above the best framework on '
+             'dev and test; Head A + Head B: dev +4.3, test +2.2, and <b>+3.0 over dev and test together (737 questions, confirmed)</b>. '
+             'With the 600-word speech text the gain mostly disappears on test (+1.2 over dev and test, not confirmed). '
+             'With the 2B model no head version differs reliably from the best framework.</div>')
 
     # ---------------- 11. summary
     P.append("""<h2>11 &middot; Summary: what gave what</h2>""")
@@ -298,9 +302,10 @@ answer model and with or without speech text.</p>
         ["Speech-text selection", "keeps 68% of the important speech (v2: 28%); open-ended +8.5 (confirmed)", "long videos, dev"],
         ["Head A (trained)", "finds the answer moment 36.6% vs 28.0% (+8.5, confirmed); right picture among candidates 64.6% vs 59.8% (confirmed); accuracy not improved", "long everyday videos"],
         ["Head B (trained)", "chosen pictures include the answer moment 50.9% vs 47.3% (with Head A: 56.4%); accuracy not improved", "long everyday videos, test"],
+        ["Head A + Head B with the 4B model, no speech text", "+3.0 over the best framework (dev and test together, 737 questions, confirmed); test alone 54.9% vs 52.7%", "all benchmarks; lectures test 57.7% vs 54.2%"],
         ["Confidence choice", "best 2B overall row, 42.3% vs 41.4% (not confirmed)", "all test questions"]], num_from=9))
     P.append('<div class="box">Best system for educational videos so far: <b>best framework + speech text + 4B answer model</b> '
-             '(67.8% screen-reading, 45.0% understanding, test). Whether Head A or Head B add to it is measured by the grid in section 10.</div>')
+             '(67.8% screen-reading, 45.0% understanding, test; 55.6% on all 459). The heads help the 4B model when it gets no speech text, but do not add to the best system once the speech text is given.</div>')
     return "\n".join(P)
 
 
