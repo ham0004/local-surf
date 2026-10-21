@@ -763,3 +763,17 @@ Detailed results live in the linked reports; this log is the chronological index
   `scripts/v3_ceiling.py` measures, on CG-Bench dev (82) and test (55), with the 2B and the 4B answer model: 4
   pictures spread over the human clue intervals with no transcript words (H0), and with the framework's 600-word
   speech text (H600). Reference only (uses gold locations). Ledger runs/v3_ceiling/budget.json, 1,000 calls / 4 h.
+
+**Step 57. Ceiling with human-marked pictures: results** (2026-10-21; `reports/v3_ceiling/summary.json`)
+- CG-Bench, 4 pictures spread over the human clue intervals; accuracy (questions):
+
+  | Answer model | dev, no words (82) | dev, 600-word speech text (82) | test, no words (55) | test, 600-word speech text (55) |
+  |---|---|---|---|---|
+  | Qwen3-VL-2B | 58.5 | 59.8 | 61.8 | 58.2 |
+  | Qwen3-VL-4B | 57.3 | 53.7 | 50.9 | 56.4 |
+
+- Median answer time per call: 2B 0.5 s without words, 1.8 s with 600 words; 4B 2.2 s without words, 27.8 s with
+  600 words.
+- Reading: on long everyday videos the larger model is not better even with perfect pictures; the earlier 63.4%
+  (step 3) included a 300-word BM25 excerpt and is not the same setup. Gap between the frameworks and this ceiling
+  on CG-Bench test: 2B best framework 50.9 vs 61.8; 4B best framework + speech text 49.1 vs 56.4.
