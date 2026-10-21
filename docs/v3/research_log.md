@@ -757,3 +757,9 @@ Detailed results live in the linked reports; this log is the chronological index
 - Highest test accuracy overall: 4B + 600 words + Head A 55.8 vs 55.6 for the best framework (not
   significant). The recommended system stays the best framework + 600 words + 4B; Head A + Head B is the best
   choice when no speech text is given to the 4B answerer.
+
+**Step 56. Declared: ceiling with human-marked pictures for both answer models** (2026-10-21)
+- The 63.4% ceiling (step 3 gate) was measured only for the 2B model, only on dev, and with a 300-word BM25 excerpt.
+  `scripts/v3_ceiling.py` measures, on CG-Bench dev (82) and test (55), with the 2B and the 4B answer model: 4
+  pictures spread over the human clue intervals with no transcript words (H0), and with the framework's 600-word
+  speech text (H600). Reference only (uses gold locations). Ledger runs/v3_ceiling/budget.json, 1,000 calls / 4 h.
