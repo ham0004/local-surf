@@ -777,3 +777,28 @@ Detailed results live in the linked reports; this log is the chronological index
 - Reading: on long everyday videos the larger model is not better even with perfect pictures; the earlier 63.4%
   (step 3) included a 300-word BM25 excerpt and is not the same setup. Gap between the frameworks and this ceiling
   on CG-Bench test: 2B best framework 50.9 vs 61.8; 4B best framework + speech text 49.1 vs 56.4.
+
+**Step 58. Head B v2: diagnosis and declared changes (dev only)** (2026-10-24)
+- Diagnosis from steps 41–55: (1) Head B was trained on pools built with the speech rule but deployed on
+  Head A pools (train/deploy mismatch); (2) it concentrates the 4 frames on one moment (86–89% speech-path frames
+  and 1.6–2.4 min time spread on lectures, step 54 analysis), which helps lecture screen-reading and hurts long
+  videos; (3) it was trained on 373 CG-Bench questions only. Related work: VSI (arXiv 2508.06869, training-free
+  subtitle + visual keyframe search), routing of frame-selection strategies by question type (arXiv 2609.12517),
+  adaptive greedy coverage selection (arXiv 2603.20180).
+- Changes, each judged on dev only:
+  - cross-fitted Head A pools for the training videos (`hybrid_ahead_cf`): Head A retrained in 4 video folds × 3
+    seeds (`v3_head_a_light.py --folds 4 --fold k`), each training video's moments come from copies that never saw
+    it; fold models reach dev evidence hit 0.34–0.39 (full Head A 0.366). Head B retrained on these pools;
+  - set constraints in the greedy selection: minimum time gap between chosen frames (`--gap`) and a cap on
+    speech-path frames (`--a-quota`); relaxed only when no candidate satisfies them.
+
+**Step 59. Large answer model through the NVIDIA API; fresh confirmation set** (2026-10-24)
+- `src/videoqa/answerer_api.py`, `configs/api_nemotron_vl.yaml`: Nemotron-3.5-Super-VL (120B parameters, ~12B
+  active), same prompt as the local answer models, 2,048-token budget (it reasons first; 512 tokens cut the
+  reasoning), option probabilities from the returned log-probabilities of the answer letter. Smoke test on 3
+  CG-Bench dev questions: 2 correct; reported confidence is near 1.0, so confidence-based selection has little to
+  work with for this model.
+- Fresh confirmation set (`scripts/research/fetch_lvb_fresh.py`): every LongVideoBench validation question on a
+  video not used by v1/v2: 501 videos, 897 questions, 19.5 GB; never used for any decision.
+- Repository cleaned: generated PDF/Excel reports untracked (rebuilt by `scripts/build_*.py`), history notes
+  moved to `docs/history/`, README rewritten.
