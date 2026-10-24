@@ -827,3 +827,9 @@ Detailed results live in the linked reports; this log is the chronological index
   50.4, 60 s gap 50.0 (unconstrained v1 52.2); 2B 41.7–43.5 (unconstrained 44.6). The constraints do not help v1.
 - Decision (dev): the confirmation run keeps Head B v1 (ev_set, λ 2, μ 1, trained on the speech-rule training
   pools, no constraints). Head B v2 and the constraints are reported as tried and not adopted.
+
+**Step 62. Confirmation protocol declared** (2026-10-24; `docs/v3/confirmation_protocol.md`)
+- Fresh LongVideoBench set (501 videos, 897 questions) with 2B, 4B and Nemotron-120B; systems S0, S1, S1t, S2,
+  S3, S4, S4t, R2, R3; primary hypotheses H1 (heads, 4B), H2 (heads, Nemotron), H3 and H4 (framework vs v2 design,
+  4B and Nemotron) with Holm correction; settings frozen at step 61. Drivers `scripts/run_confirmation.sh`
+  (local) and `scripts/run_confirmation_api.sh` (API, plus the follow-up on the existing test sets).

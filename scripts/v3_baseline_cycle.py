@@ -48,6 +48,8 @@ DATASETS = {"cgbench": ("data/cgbench", "dev", None), "videommmu": ("data/videom
             "cgbench_test": ("data/cgbench", "test", None),
             "videommmu_test": ("data/videommmu", "test", "vmmmu:Perception:"),
             "videommmu_comp_test": ("data/videommmu", "test", "vmmmu:Comprehension:"),
+            # fresh confirmation set (docs/v3/confirmation_protocol.md): LongVideoBench videos never used before
+            "lvb_fresh": ("data/lvb_fresh", "test", None),
             # Head B training pools (CG-Bench train videos we hold; never used for selection decisions)
             "cgbench_train": ("data/cgbench", "train", None)}
 POOLS = {
@@ -75,7 +77,7 @@ HEAD_A_CKPTS = [f"runs/v3_head_a/ckpt/light_dens_ens_human_{s}.pt" for s in rang
 FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/features",
             "cgbench_train": "data/cgbench/features", "videommmu_comp": "data/videommmu/features",
             "cgbench_test": "data/cgbench/features", "videommmu_test": "data/videommmu/features",
-            "videommmu_comp_test": "data/videommmu/features"}
+            "videommmu_comp_test": "data/videommmu/features", "lvb_fresh": "data/lvb_fresh/features"}
 SELECTIONS = Path("runs/v3_head_b/selections")
 LIMITS = (4000, 4 * 3600.0)
 # second ledger, declared in research_log step 35 after the first was used up by stages 1-3
@@ -87,6 +89,8 @@ OPEN_LIMITS = (1500, 4 * 3600.0)
 def ledger_limits(name: str) -> tuple:
     if name == "budget.json":
         return LIMITS
+    if name.startswith("budget_confirm"):           # confirmation run, docs/v3/confirmation_protocol.md
+        return (20000, 72 * 3600.0)
     if name.startswith("budget_headb_v2"):          # Head B v2 dev screen, research_log step 60
         return (4000, 8 * 3600.0)
     if name.startswith("budget_grid"):              # full combination grid, research_log step 54
