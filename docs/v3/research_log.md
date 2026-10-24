@@ -844,3 +844,15 @@ Detailed results live in the linked reports; this log is the chronological index
   first run's answers are kept in `runs/v3_ceiling/answers_nemotron_first_run.jsonl`; the ceiling is re-run with
   the fix on a separate ledger (`budget_api.json`). The confirmation run's API part had not started and uses the
   fixed answerer.
+
+**Step 64. Large-model ceiling with the reply fix** (2026-10-25; ledger `runs/v3_ceiling/budget_api.json`)
+- Nemotron-120B with 4 pictures from the human-marked answer seconds (CG-Bench):
+
+  | | dev, no words (82) | dev, 600-word speech text (82) | test, no words (55) | test, 600-word speech text (55) |
+  |---|---|---|---|---|
+  | Nemotron-3.5-Super-VL 120B | 59.8 | 63.4 | 65.5 | 69.1 |
+  | Qwen3-VL-4B (step 57) | 57.3 | 53.7 | 50.9 | 56.4 |
+  | Qwen3-VL-2B (step 57) | 58.5 | 59.8 | 61.8 | 58.2 |
+
+- Replies without an option letter: 11 of 274 (4%) after the fix (13% before). The large model is the only one
+  whose ceiling clearly gains from the speech text and from perfect pictures on test (69.1).

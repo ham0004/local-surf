@@ -30,5 +30,21 @@
  "Qwen3-VL-4B-Instruct test H600": {
   "accuracy": 56.4,
   "n": 55
+ },
+ "nemotron-3.5-super-vl-120b-a12b dev H0": {
+  "accuracy": 59.8,
+  "n": 82
+ },
+ "nemotron-3.5-super-vl-120b-a12b dev H600": {
+  "accuracy": 63.4,
+  "n": 82
+ },
+ "nemotron-3.5-super-vl-120b-a12b test H0": {
+  "accuracy": 65.5,
+  "n": 55
+ },
+ "nemotron-3.5-super-vl-120b-a12b test H600": {
+  "accuracy": 69.1,
+  "n": 55
  }
 }
