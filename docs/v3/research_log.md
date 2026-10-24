@@ -833,3 +833,14 @@ Detailed results live in the linked reports; this log is the chronological index
   S3, S4, S4t, R2, R3; primary hypotheses H1 (heads, 4B), H2 (heads, Nemotron), H3 and H4 (framework vs v2 design,
   4B and Nemotron) with Holm correction; settings frozen at step 61. Drivers `scripts/run_confirmation.sh`
   (local) and `scripts/run_confirmation_api.sh` (API, plus the follow-up on the existing test sets).
+
+**Step 63. Large-model ceiling: first run, a reply problem, and the fix** (2026-10-24)
+- First ceiling run with Nemotron-120B (human-marked pictures, CG-Bench): dev 58.5 without words, 59.8 with the
+  600-word speech text (82 questions; the same totals as 2B by coincidence: the two models disagree on 37–42 of
+  82 questions); test stopped at 24 of 55 questions when the ceiling ledger (1,000 calls) was used up.
+- 28 of 212 replies (13%) carried no option letter (scored as wrong). Re-asking the same requests returned valid
+  letters, so these are replies whose reasoning ended without a final answer, not wrong answers. Fix
+  (`answerer_api.py`): when a multiple-choice reply has no letter, ask once more with twice the token budget. The
+  first run's answers are kept in `runs/v3_ceiling/answers_nemotron_first_run.jsonl`; the ceiling is re-run with
+  the fix on a separate ledger (`budget_api.json`). The confirmation run's API part had not started and uses the
+  fixed answerer.
