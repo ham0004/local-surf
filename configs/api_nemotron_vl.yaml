@@ -1,0 +1,14 @@
+# Large frozen answer model through the NVIDIA NIM free API (research_log step 59).
+# Nemotron-3.5-Super-VL: 120B parameters, about 12B active per token; reasons before answering, so the
+# generation budget leaves room for the reasoning. The key stays in ~/.nvidia_api_key.
+inherit: gpu_12gb.yaml
+answerer:
+  backend: api_vlm
+  model_id: nvidia/nemotron-3.5-super-vl-120b-a12b
+  base_url: https://integrate.api.nvidia.com/v1
+  key_file: .nvidia_api_key
+  max_new_tokens: 2048
+  frame_max_side: 640
+  min_interval_s: 1.6
+  revision: null
+  dtype: api

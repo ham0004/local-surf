@@ -282,4 +282,11 @@ def make_answerer(cfg: dict) -> Answerer:
         return HFVLMAnswerer(model_id=a["model_id"], device=cfg.get("device", "cuda"),
                              dtype=a.get("dtype", "bfloat16"), max_new_tokens=a.get("max_new_tokens", 64),
                              revision=a.get("revision"), cache_dir=cache_dir)
+    if backend == "api_vlm":
+        from .answerer_api import APIVLMAnswerer  # noqa: PLC0415
+
+        a = cfg["answerer"]
+        return APIVLMAnswerer(model_id=a["model_id"], base_url=a.get("base_url", "https://integrate.api.nvidia.com/v1"),
+                              key_file=a.get("key_file", ".nvidia_api_key"), max_tokens=a.get("max_new_tokens", 2048),
+                              frame_max_side=a.get("frame_max_side", 640), min_interval_s=a.get("min_interval_s", 1.6))
     raise ValueError(f"unknown answerer backend {backend!r}")
