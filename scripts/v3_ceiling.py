@@ -47,7 +47,7 @@ def stage_answer(a) -> None:
     out_path = RUN / "answers.jsonl"
     done = {(json.loads(x)["model"], json.loads(x)["qa_id"], json.loads(x)["condition"])
             for x in out_path.read_text(encoding="utf-8").splitlines() if x.strip()} if out_path.exists() else set()
-    budget = CallBudget(RUN / "budget.json", 1000, 4 * 3600.0)
+    budget = CallBudget(RUN / a.ledger, 1000, 4 * 3600.0)
     answerer = None
     for ds, split in SETS.items():
         its = {it.qa.qa_id: it for it in C.items(ds)}
@@ -92,6 +92,7 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("stage", choices=("answer", "report"))
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
+    p.add_argument("--ledger", default="budget.json", help="budget_api.json = the step-63 API ledger")
     a = p.parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     {"answer": stage_answer, "report": stage_report}[a.stage](a)

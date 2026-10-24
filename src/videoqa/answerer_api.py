@@ -99,12 +99,19 @@ class APIVLMAnswerer:
         return None
 
     def answer(self, req: AnswerRequest):
-        body = {"model": self.model_id, "messages": self._messages(req), "temperature": 0,
-                "max_tokens": self.max_tokens, "logprobs": True, "top_logprobs": self.top_logprobs}
-        out = self._post(body)
-        choice = out["choices"][0]
-        text = (choice["message"].get("content") or "").strip()
-        u = out.get("usage") or {}
-        usage = AnswerUsage(text_tokens=int(u.get("prompt_tokens", 0)), generated_tokens=int(u.get("completion_tokens", 0)))
-        probs = self.letter_probs(choice.get("logprobs"), len(req.options or []))
-        return finalize_answer(text, req.options, probs, req.frames, req.excerpt), usage
+        """One request; when a multiple-choice reply carries no option letter (about 13% of first replies: the
+        reasoning used the whole budget and no final answer was written), ask again once with twice the budget."""
+        messages = self._messages(req)
+        for budget in (self.max_tokens, 2 * self.max_tokens):
+            body = {"model": self.model_id, "messages": messages, "temperature": 0,
+                    "max_tokens": budget, "logprobs": True, "top_logprobs": self.top_logprobs}
+            out = self._post(body)
+            choice = out["choices"][0]
+            text = (choice["message"].get("content") or "").strip()
+            u = out.get("usage") or {}
+            usage = AnswerUsage(text_tokens=int(u.get("prompt_tokens", 0)), generated_tokens=int(u.get("completion_tokens", 0)))
+            probs = self.letter_probs(choice.get("logprobs"), len(req.options or []))
+            ans = finalize_answer(text, req.options, probs, req.frames, req.excerpt)
+            if not req.options or ans.option_index is not None or ans.abstained:
+                break
+        return ans, usage
