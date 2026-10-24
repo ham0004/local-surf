@@ -802,3 +802,22 @@ Detailed results live in the linked reports; this log is the chronological index
   video not used by v1/v2: 501 videos, 897 questions, 19.5 GB; never used for any decision.
 - Repository cleaned: generated PDF/Excel reports untracked (rebuilt by `scripts/build_*.py`), history notes
   moved to `docs/history/`, README rewritten.
+
+**Step 60. Head B v2 dev screen** (2026-10-24; ledgers `budget_headb_v2*.json`)
+- Head B v2 = ev_set retrained on the cross-fitted Head A training pools (3 seeds; inner validation recall@4
+  0.76 / 0.76 / 0.81), deployed on Head A pools. CG-Bench dev evidence hit: cap 4 / no gap 48.8, cap 2 52.4 (v1:
+  47.6); gaps of 15–60 s lower it to 45–48.
+- Dev accuracy, 278 questions, no speech text (vs best framework; vs Head A + Head B v1):
+
+  | Setting | 2B | 4B |
+  |---|---|---|
+  | best framework | 45.3 | 47.8 |
+  | Head A + Head B v1 | 44.6 | **52.2** (+4.3, −0.3..+8.4) |
+  | v2, cap 4, no gap | 45.0 | 48.6 (vs v1 −3.6, −6.5..−0.8) |
+  | v2, cap 2, no gap | 43.9 | 47.8 (vs v1 −4.3, −7.8..−0.7) |
+  | v2, cap 2, 30 s gap | 42.8 | 49.3 |
+  | v2, cap 2, 60 s gap | 42.4 | 51.1 (vs v1 −1.1, −4.3..+2.1) |
+
+- Reading: training on deployment-matched pools did not help (v2 below v1); the time gap and speech-path cap
+  help v2 with 4B (48.6 → 51.1). Next: the same constraints on Head B v1 (dev), then the choice of the Head B used
+  in the confirmation run.
