@@ -201,3 +201,16 @@ class LearnedMoments(ZeroShotMoments):
         if self.method == "light":
             return nms([float(x) for x in line_times(rec)[np.argsort(-rel, kind="stable")[:64]]], 1.0)[:n]
         return density_moments(rec, rel, off)[:n]
+
+
+class FoldedMoments:
+    """Cross-fitted Head A for training videos: each video uses the copies trained without its fold."""
+
+    def __init__(self, by_fold: dict, fold_of) -> None:
+        self.by_fold, self.fold_of = by_fold, fold_of     # fold -> LearnedMoments; video_id -> fold
+
+    def score(self, question: str, texts: list[str], options=None) -> np.ndarray:
+        return next(iter(self.by_fold.values())).score(question, texts, options)
+
+    def moments(self, qa, segs, duration: float, n: int) -> list[float]:
+        return self.by_fold[self.fold_of(qa.video_id)].moments(qa, segs, duration, n)

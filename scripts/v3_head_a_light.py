@@ -90,6 +90,12 @@ def stage_features(a) -> None:
     print(f"features for {len(out)} questions ({a.feature_set})")
 
 
+def fold_of(video_id: str, folds: int) -> int:
+    import hashlib  # noqa: PLC0415
+
+    return int(hashlib.sha256(f"heada-fold:{video_id}".encode()).hexdigest(), 16) % folds
+
+
 def stage_train(a) -> None:
     import torch  # noqa: PLC0415
 
@@ -98,6 +104,8 @@ def stage_train(a) -> None:
     z = np.load(RUN / f"light_features{'' if a.feature_set == 'base' else '_' + a.feature_set}.npz")
     feats = {k.replace("__", ":"): z[k] for k in z.files}
     train = [r for r in load("train") if len(r["lines"]) and (not r["weak"] or not a.no_weak)]
+    if a.folds:                       # cross-fitting: leave out the videos of one fold (research_log step 58)
+        train = [r for r in train if fold_of(r["video_id"], a.folds) != a.fold]
     tr = [r for r in train if not inner_val(r["video_id"])]
     va = [r for r in train if inner_val(r["video_id"]) and not r["weak"]]
     dev = load("dev")
@@ -166,7 +174,8 @@ def stage_train(a) -> None:
            "chosen_epoch": max(hist, key=lambda h: h["inner_val_recall@6"])["epoch"], "history": hist,
            "dev": evaluate(dev)}
     if a.save:
-        ck = RUN / "ckpt" / f"{a.method}_{a.feature_set}_{'weak' if not a.no_weak else 'human'}_{a.seed}.pt"
+        fold = f"_fold{a.fold}of{a.folds}" if a.folds else ""
+        ck = RUN / "ckpt" / f"{a.method}_{a.feature_set}_{'weak' if not a.no_weak else 'human'}_{a.seed}{fold}.pt"
         ck.parent.mkdir(parents=True, exist_ok=True)
         torch.save({"method": a.method, "feature_set": a.feature_set, "width": a.width, "mu": mu, "sd": sd,
                     "state": net.state_dict(), "dev": {k: v for k, v in res["dev"].items() if k != "_hits6"}}, ck)
@@ -210,6 +219,8 @@ def main() -> None:
     p.add_argument("--wd", type=float, default=1e-3)
     p.add_argument("--off-weight", type=float, default=0.5)
     p.add_argument("--save", action="store_true", help="write the trained head to runs/v3_head_a/ckpt/")
+    p.add_argument("--folds", type=int, default=0, help="cross-fitting: number of video folds (0 = off)")
+    p.add_argument("--fold", type=int, default=0, help="cross-fitting: the fold left out of training")
     a = p.parse_args()
     {"bge": stage_bge, "features": stage_features, "train": stage_train, "report": stage_report}[a.stage](a)
 

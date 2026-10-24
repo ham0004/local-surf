@@ -108,7 +108,8 @@ def stage_features(a) -> None:
         lab = np.array([any(x - 1.0 <= c.time_s <= y + 1.0 for x, y in iv) for c in p.candidates], np.float32)
         E = np.stack([np.asarray(c.emb, np.float32) for c in p.candidates])
         out[qid] = {"ids": [c.id for c in p.candidates], "f": f, "prof": prof, "label": lab, "emb": E,
-                    "video_id": p.video_id, "gold": p.gold_option_index}
+                    "video_id": p.video_id, "gold": p.gold_option_index,
+                    "t": np.array([c.time_s for c in p.candidates]), "isA": np.array(["A" in c.paths for c in p.candidates])}
     RUN.mkdir(parents=True, exist_ok=True)
     np.save(RUN / f"features_{a.dataset}_{a.pool}.npy", out, allow_pickle=True)
     print(f"{len(out)} pools; evidence candidates per pool {np.mean([v['label'].sum() for v in out.values()]):.2f}")
@@ -125,17 +126,32 @@ def decisiveness(prof_rows: np.ndarray) -> float:
     return float(s[0] - (s[1] if len(s) > 1 else 0.0))
 
 
-def greedy(rel: np.ndarray, emb: np.ndarray, prof: np.ndarray, k: int, lam: float, mu: float) -> list[int]:
+GAP_S, A_QUOTA = 0.0, 4          # Head B v2 constraints (research_log step 58); set from --gap / --a-quota
+
+
+def greedy(rel: np.ndarray, emb: np.ndarray, prof: np.ndarray, k: int, lam: float, mu: float,
+           times=None, is_a=None) -> list[int]:
     chosen: list[int] = []
     rest = list(range(len(rel)))
+
+    def allowed(i):
+        if times is not None and GAP_S > 0 and any(abs(times[i] - times[j]) < GAP_S for j in chosen):
+            return False
+        return not (is_a is not None and is_a[i] and sum(bool(is_a[j]) for j in chosen) >= A_QUOTA)
     while rest and len(chosen) < k:
+        ok = [i for i in rest if allowed(i)]
+        if ok:                       # constraints are relaxed only when nothing satisfies them
+            rest_now = ok
+        else:
+            rest_now = rest
+        rest, full_rest = rest_now, rest
         def gain(i):
             red = max((float(emb[i] @ emb[j]) for j in chosen), default=0.0)
             dec = decisiveness(prof[chosen + [i]]) - (decisiveness(prof[chosen]) if chosen else 0.0)
             return rel[i] + lam * dec - mu * red
         best = max(rest, key=gain)
         chosen.append(best)
-        rest.remove(best)
+        rest = [i for i in full_rest if i != best]
     return chosen
 
 
@@ -295,15 +311,15 @@ def learned_scores(v, pool: str, seeds=(0, 1, 2), kind: str = "ev") -> np.ndarra
 def choose(v, method: str, k: int, lam: float, mu: float, train_pool: str) -> list[int]:
     if method == "optset":
         rel = _z(v["f"][:, FEATURE_NAMES.index("sim_qo")])
-        return greedy(rel, v["emb"], v["prof"], k, lam, mu)
+        return greedy(rel, v["emb"], v["prof"], k, lam, mu, v.get("t"), v.get("isA"))
     if method in ("util", "util_set"):
         rel = _z(learned_scores(v, train_pool, kind="util"))
-        return greedy(rel, v["emb"], v["prof"], k, lam if method == "util_set" else 0.0, mu)
+        return greedy(rel, v["emb"], v["prof"], k, lam if method == "util_set" else 0.0, mu, v.get("t"), v.get("isA"))
     rel = _z(learned_scores(v, train_pool))
     if method == "ev":
-        return greedy(rel, v["emb"], v["prof"], k, 0.0, mu)
+        return greedy(rel, v["emb"], v["prof"], k, 0.0, mu, v.get("t"), v.get("isA"))
     if method == "ev_set":
-        return greedy(rel, v["emb"], v["prof"], k, lam, mu)
+        return greedy(rel, v["emb"], v["prof"], k, lam, mu, v.get("t"), v.get("isA"))
     raise ValueError(method)
 
 
@@ -346,7 +362,11 @@ def main() -> None:
     p.add_argument("--mu", type=float, default=0.3)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--tag", default="")
+    p.add_argument("--gap", type=float, default=0.0, help="minimum seconds between chosen pictures (v2)")
+    p.add_argument("--a-quota", type=int, default=4, help="maximum speech-path pictures among the chosen (v2)")
     a = p.parse_args()
+    global GAP_S, A_QUOTA
+    GAP_S, A_QUOTA = a.gap, a.a_quota
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     {"features": stage_features, "train": stage_train, "train_util": stage_train_util, "tune": stage_tune,
      "select": stage_select}[a.stage](a)

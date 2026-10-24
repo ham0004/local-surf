@@ -65,6 +65,8 @@ POOLS = {
     # learned Head A (light residual head, density moments, bge features; 3 seeds averaged; research_log step 39)
     "hybrid_azs": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="zeroshot"),
     "hybrid_ahead": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="head"),
+    # Head B v2 training pools: Head A cross-fitted over 4 video folds (research_log step 58)
+    "hybrid_ahead_cf": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="head_cf"),
 }
 # external reference rules for the final comparison (no Path A, 4 frames, chosen by the "clip" selector):
 POOLS["uniform4"] = dict(n_path_a=0, n_path_b=4, scan_cap=4, scan_step_s=5.0, path_b_scope="video", stable_hamming=0)
@@ -130,6 +132,16 @@ def stage_pools(a) -> None:
 
         from videoqa.v3.head_a import LearnedMoments  # noqa: PLC0415
         head_a = LearnedMoments(head_a, HEAD_A_CKPTS, bge=Reranker(BGE))
+    elif path_a == "head_cf":
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from v3_head_a_eval import Reranker  # noqa: PLC0415
+        from v3_head_a_light import BGE, fold_of  # noqa: PLC0415
+
+        from videoqa.v3.head_a import FoldedMoments, LearnedMoments  # noqa: PLC0415
+        bge, scorer = Reranker(BGE), head_a
+        head_a = FoldedMoments({k: LearnedMoments(scorer, [f"runs/v3_head_a/ckpt/light_dens_ens_human_{s}_fold{k}of4.pt"
+                                                            for s in range(3)], bge=bge) for k in range(4)},
+                               lambda vid: fold_of(vid, 4))
     out = pool_dir(a.dataset, a.pool)
     out.mkdir(parents=True, exist_ok=True)
     done = {p.name for p in out.iterdir()}
