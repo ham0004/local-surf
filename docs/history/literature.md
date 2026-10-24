@@ -57,7 +57,7 @@ So for each paper we asked: (1) is anything trained? (2) are subtitles/transcrip
 | X1 | BCEA — [2606.16667](https://arxiv.org/abs/2606.16667) | preprint | pdf-only | Budgeted conformal acquire/answer/abstain. We make **no** conformal claim. |
 | D7 | CourseTimeQA — [2512.00360](https://arxiv.org/abs/2512.00360) | **WITHDRAWN** 2026-06-02 (per PDF) | pdf-only | Do not use its numbers. |
 
-Papers the user already reviewed (`video-QA/papers.md`): T*, LongVideo-R1, HAVEN-style audiovisual
+Papers the user already reviewed (`docs/history/papers.md`): T*, LongVideo-R1, HAVEN-style audiovisual
 entity cohesion, WorldMM, MemDreamer, LensWalk, Symphony, Think-Then-Verify, TRACE. They fall
 in the two families noted there (memory-then-iterate; hypothesis-then-agentic-search). None of the
 ones checked here trains on transcript damage.

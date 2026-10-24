@@ -22,3 +22,10 @@ checkpoints/
 # --- Editor noise ---
 .vscode/
 .idea/
+
+# --- Generated reports (rebuild with scripts/build_*.py) ---
+docs/report/*.pdf
+docs/report/*.html
+docs/report/*.xlsx
+/*.pdf
+/*.xlsx

@@ -1,6 +1,6 @@
 # Head A and Head B: proposed original designs (v3)
 
-Written 2026-10-09, before implementation, following `FRAMEWORK_HANDOFF.md` (Head A: learn *where* visual
+Written 2026-10-09, before implementation, following `docs/history/FRAMEWORK_HANDOFF.md` (Head A: learn *where* visual
 evidence is from timed speech; Head B: choose a frame *set* from both paths using question, image
 features, nearby speech, provenance and the already-selected frames). Supersedes the whole-video visual
 scorer of steps 18–21, which is re-assigned to Path B. No novelty is claimed before results and a final

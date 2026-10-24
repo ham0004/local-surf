@@ -1,7 +1,7 @@
 # v3 research plan: learned temporal proposals, multimodal set selection, open-ended answers
 
 Written 2026-10-05, before any v3 implementation, labelling or training. Follows
-`FRAMEWORK_HANDOFF.md` and `FRAMEWORK_2_EVIDENCE_REVIEW_2026-10-05.md`.
+`docs/history/FRAMEWORK_HANDOFF.md` and `FRAMEWORK_2_EVIDENCE_REVIEW_2026-10-05.md`.
 Nothing here is a result. Every number marked *(measured)* comes from committed reports;
 everything else is a plan or a hypothesis.
 
