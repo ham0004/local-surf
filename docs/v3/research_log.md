@@ -821,3 +821,9 @@ Detailed results live in the linked reports; this log is the chronological index
 - Reading: training on deployment-matched pools did not help (v2 below v1); the time gap and speech-path cap
   help v2 with 4B (48.6 → 51.1). Next: the same constraints on Head B v1 (dev), then the choice of the Head B used
   in the confirmation run.
+
+**Step 61. Constraints on Head B v1; Head B choice for confirmation** (2026-10-24)
+- Head A + Head B v1 with the step-58 constraints, dev 278, no speech text: 4B 60 s gap + cap 2 50.0, 30 s gap
+  50.4, 60 s gap 50.0 (unconstrained v1 52.2); 2B 41.7–43.5 (unconstrained 44.6). The constraints do not help v1.
+- Decision (dev): the confirmation run keeps Head B v1 (ev_set, λ 2, μ 1, trained on the speech-rule training
+  pools, no constraints). Head B v2 and the constraints are reported as tried and not adopted.
