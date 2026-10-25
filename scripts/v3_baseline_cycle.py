@@ -285,6 +285,12 @@ def request_key(pool, frames, ex, identity) -> str:
 
 
 def stage_answer(a) -> None:
+    """Answer every question of a pool with each selector. Pools are loaded one question at a time (holding all
+    pools with their images used too much memory on the 894-question set, research_log step 65); API answer
+    models are called by 4 threads (paced inside the answerer to the free tier's limit)."""
+    import threading  # noqa: PLC0415
+    from concurrent.futures import ThreadPoolExecutor  # noqa: PLC0415
+
     from videoqa.answerer import AnswerRequest, make_answerer  # noqa: PLC0415
     from videoqa.config import load_config  # noqa: PLC0415
     from videoqa.v2.budget import CallBudget  # noqa: PLC0415
@@ -293,36 +299,50 @@ def stage_answer(a) -> None:
     from videoqa.v2.teacher import _as_frame, answerer_identity  # noqa: PLC0415
 
     meta = json.loads((pool_dir(a.dataset, a.pool).parent / "pools.json").read_text())
-    pools = [load_pool(pool_dir(a.dataset, a.pool), q) for q in meta["qa_ids"]]
-    enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
-    qo = enc.embed_texts([p.question + " Options: " + ", ".join(p.options) for p in pools])
+    qids = meta["qa_ids"]
     cfg = load_config(a.config)
     identity = answerer_identity(cfg)
+    is_api = cfg["answerer"].get("backend") == "api_vlm"
+    its = {it.qa.qa_id: it for it in items(a.dataset)}
+    qa = {q: it.qa for q, it in its.items()}
+    enc = FrozenEncoders(device="cpu" if is_api else "cuda", cache_dir="cache/open_clip", use_ocr=False)
+    qo = dict(zip(qids, enc.embed_texts([qa[q].question + " Options: " + ", ".join(qa[q].options) for q in qids]),
+                  strict=True))
+    del enc
     RUN.mkdir(parents=True, exist_ok=True)
     cache_path, rows_path = RUN / "answers.jsonl", RUN / "rows.jsonl"
     cache = {json.loads(x)["key"]: json.loads(x) for x in cache_path.read_text().splitlines()} if cache_path.exists() else {}
     budget = CallBudget(RUN / a.ledger, *ledger_limits(a.ledger))
-    answerer = None
-    its = {it.qa.qa_id: it for it in items(a.dataset)}
-    qa = {q: it.qa for q, it in its.items()}
-    for rule in a.selectors.split(","):
-        for p, e in zip(pools, qo, strict=True):
-            frames = select(p, rule, a.k, e)
-            ex = transcript_for(a.tpolicy, a.words, p, its[p.qa_id].transcript.segments, frames)
+    workers = 4 if is_api else 1
+    lock = threading.Lock()
+    state = {"answerer": None, "stop": False}
+    rules = a.selectors.split(",")
+
+    def one(qid: str) -> None:
+        if state["stop"]:
+            return
+        p = load_pool(pool_dir(a.dataset, a.pool), qid)
+        for rule in rules:
+            frames = select(p, rule, a.k, qo[qid])
+            ex = transcript_for(a.tpolicy, a.words, p, its[qid].transcript.segments, frames)
             key = request_key(p, frames, ex, identity)
             if key not in cache:
-                if not budget.reserve(1):
-                    print("budget reached; stopping cleanly")
-                    return
-                answerer = answerer or make_answerer(cfg)
+                with lock:
+                    if state["stop"] or not budget.reserve(1):
+                        state["stop"] = True
+                        return
+                    state["answerer"] = state["answerer"] or make_answerer(cfg)
+                    model = state["answerer"]
                 t0 = time.perf_counter()
-                ans, _ = answerer.answer(AnswerRequest(p.question, p.options, ex,
-                                                       [_as_frame(c) for c in sorted(frames, key=lambda c: c.time_s)]))
-                budget.charge(time.perf_counter() - t0)
-                cache[key] = {"key": key, "option": ans.option_index, "seconds": time.perf_counter() - t0}
-                with open(cache_path, "a", encoding="utf-8") as fh:
-                    fh.write(json.dumps(cache[key]) + "\n")
-            iv = qa[p.qa_id].evidence_intervals_s
+                ans, _ = model.answer(AnswerRequest(p.question, p.options, ex,
+                                                    [_as_frame(c) for c in sorted(frames, key=lambda c: c.time_s)]))
+                spent = time.perf_counter() - t0
+                with lock:
+                    budget.charge(spent / workers)
+                    cache[key] = {"key": key, "option": ans.option_index, "seconds": spent}
+                    with open(cache_path, "a", encoding="utf-8") as fh:
+                        fh.write(json.dumps(cache[key]) + "\n")
+            iv = qa[qid].evidence_intervals_s
             inside = lambda t: any(x - 1.0 <= t <= y + 1.0 for x, y in iv)  # noqa: E731
             row = {"dataset": a.dataset, "pool": a.pool, "selector": rule, "k": a.k, "words": a.words,
                    "qa_id": p.qa_id, "video_id": p.video_id, "correct": cache[key]["option"] == p.gold_option_index,
@@ -336,8 +356,19 @@ def stage_answer(a) -> None:
                 row["selector"] = f"{rule}|tp={a.tpolicy}"
             if a.tag:                                # e.g. another answerer: "ans=4b"
                 row["selector"] += f"|{a.tag}"
-            with open(rows_path, "a", encoding="utf-8") as fh:
+            with lock, open(rows_path, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(row) + "\n")
+
+    if workers == 1:
+        for q in qids:
+            one(q)
+    else:
+        with ThreadPoolExecutor(workers) as pool_ex:
+            list(pool_ex.map(one, qids))
+    if state["stop"]:
+        print("budget reached; stopping cleanly")
+        return
+    for rule in rules:
         print(f"{a.dataset}/{a.pool}/{rule} K={a.k} words={a.words}: done; calls {budget.calls}", flush=True)
 
 
