@@ -865,3 +865,14 @@ Detailed results live in the linked reports; this log is the chronological index
 - Fix: pools are loaded one question at a time; API answer models are called by 4 threads (paced to the free
   tier); query embeddings for API runs on the CPU. Re-running a finished system reproduces it exactly (0 new calls,
   same accuracy). Both drivers restarted; finished answers come from the cache. No setting changed.
+
+**Step 66. Oracle ceiling declared; experiments index; audit loop** (2026-10-25)
+- The ceiling so far places the 4 pictures evenly inside the human-marked seconds; it does not search for the
+  placement that helps the answer model most. Oracle ceiling (`v3_ceiling.py --oracle`): 5 placements (shifted
+  grids) inside the marked seconds, a question counts as answerable if any placement is answered correctly; 2B,
+  4B and Nemotron-120B, with and without the speech text, CG-Bench dev and test (`scripts/run_oracle_ceiling.sh`),
+  queued after the confirmation runs.
+- `docs/EXPERIMENTS.md`: index of all experiments (question, script, result file, outcome) and how to run the
+  best framework.
+- An external auditor reviews claims, novelty and benchmarks through a local log; its notes and the replies are
+  summarised here when they change a decision.
