@@ -856,3 +856,12 @@ Detailed results live in the linked reports; this log is the chronological index
 
 - Replies without an option letter: 11 of 274 (4%) after the fix (13% before). The large model is the only one
   whose ceiling clearly gains from the speech text and from perfect pictures on test (69.1).
+
+**Step 65. Confirmation run: memory failure and restart** (2026-10-25)
+- First pass: all 2B systems without speech text finished on the 894 fresh questions; the 2B speech-text runs
+  stopped at 658; with 4B only the two reference rules finished; the API run reached 449 answers at ~33 s each.
+  Cause: the answer stage held every pool with its images in memory, and with the API run in parallel the machine
+  ran out of RAM ("paging file too small") and GPU memory.
+- Fix: pools are loaded one question at a time; API answer models are called by 4 threads (paced to the free
+  tier); query embeddings for API runs on the CPU. Re-running a finished system reproduces it exactly (0 new calls,
+  same accuracy). Both drivers restarted; finished answers come from the cache. No setting changed.
