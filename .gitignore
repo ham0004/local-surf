@@ -29,3 +29,6 @@ docs/report/*.html
 docs/report/*.xlsx
 /*.pdf
 /*.xlsx
+
+# --- Local collaboration files (builder <-> auditor), never pushed ---
+collab/
