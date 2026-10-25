@@ -37,7 +37,7 @@ Accuracy is multiple choice. "Confirmed" means the 95% paired bootstrap interval
   untrained counterpart (confirmed). Its effect on accuracy is under confirmation on new data (see
   `docs/v3/research_log.md`).
 
-Every result, one per row (system, data, split, model, measure, comparison, plain-language reading):
+Index of every experiment with its script and result: [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md). Every result, one per row:
 [`docs/report/all_results.csv`](docs/report/all_results.csv). Full chronological record of every
 experiment and decision: [`docs/v3/research_log.md`](docs/v3/research_log.md).
 
