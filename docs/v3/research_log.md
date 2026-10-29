@@ -876,3 +876,30 @@ Detailed results live in the linked reports; this log is the chronological index
   best framework.
 - An external auditor reviews claims, novelty and benchmarks through a local log; its notes and the replies are
   summarised here when they change a decision.
+
+**Step 67. Audit corrections: bootstrap clusters, wording, memory skip** (2026-10-30)
+- The pooled test interval treated the two Video-MMMU tracks of the same lecture as different videos (410
+  clusters instead of the 208 real source videos), which makes intervals too narrow. Both tracks now share one
+  cluster per source video, and every interval uses the declared 10,000 resamples. Recomputed from cached answers
+  (no model calls), 459 test questions:
+
+  | Comparison | Difference (points) | Interval, 410 clusters | Interval, 208 clusters | Verdict |
+  |---|---|---|---|---|
+  | 4B tuned + speech text minus 4B starting framework | +5.2 | +1.0 to +9.4 | +1.1 to +9.4 | confirmed |
+  | 4B tuned + speech text minus 4B tuned without text | +2.8 | +0.2 to +5.6 | 0.0 to +5.6 | not confirmed (borderline) |
+  | 2B tuned minus 2B starting framework | +3.3 | −0.7 to +7.0 | −0.4 to +6.8 | not confirmed |
+  | 4B tuned minus 4B starting framework | +2.4 | −1.5 to +6.4 | −1.6 to +6.3 | not confirmed |
+
+- Wording fixed in the README: the 4B and speech-text rows are follow-ups after the original frozen 2B
+  comparison; Head A's 36.6% is the share of 164 CG-Bench dev questions where one of its 6 proposed moments falls on
+  the marked moment; the speech figure is the share of questions with a chosen line within 10 s of the marked
+  moment, at different word budgets.
+- On the fresh set both 4B speech-text systems stopped at 839 of 894: one music video (TMe7oXMJoSM_0) has its 600
+  words in 261 short segments, each with a timestamp, and the prompt runs out of GPU memory with 4B. The answer
+  stage now records such a question in `runs/v3_baseline/skipped.jsonl` and continues; skipped questions are
+  reported as exclusions, and paired comparisons use identical question sets.
+- The results table (`docs/report/all_results.csv`, now 557 rows with the Nemotron runs on the test sets) was
+  rebuilt with the corrected clusters and 10,000 resamples. 10 "confirmed?" cells changed, all near the edge of
+  their interval (for example 2B speech text minus starting framework on CG-Bench dev, gain to not confirmed; on
+  CG-Bench test, not confirmed to gain; Head A + Head B minus starting framework on both Video-MMMU tracks together,
+  not confirmed to gain). The 4B headline (+5.2 over all 459) is unchanged.

@@ -15,11 +15,15 @@ Two trained components target the core problem, going from what is *said* to whe
   answer should be visible (1,889 trained parameters over frozen MiniLM and BGE rerankers).
 - **Head B, the frame-set selector:** chooses the final set of frames from both proposal paths.
 
-## Main results (locked test set, declared before running)
+## Main results (locked test set)
 
-459 test questions never used for any decision: CG-Bench (long everyday videos), 55; Video-MMMU
+The original frozen comparison (2B answer model, systems declared in
+[`docs/v3/final_test_protocol.md`](docs/v3/final_test_protocol.md)) was run once on 459 test questions. The 4B and
+speech-text rows are **follow-ups** run afterwards on the same questions; the speech policy was changed on dev after the
+original test had been seen (research log step 50). Question sets: CG-Bench (long everyday videos), 55; Video-MMMU
 Perception (lectures, reading the screen), 202; Video-MMMU Comprehension (lectures, understanding), 202.
-Accuracy is multiple choice. "Confirmed" means the 95% paired bootstrap interval over videos excludes zero.
+Accuracy is multiple choice. "Confirmed" means the 95% paired bootstrap interval excludes zero (10,000 resamples of
+whole source videos, 208 videos; both Video-MMMU tracks of one lecture count as one video).
 
 | System | Answer model | All 459 | Long videos | Lecture screen-reading | Lecture understanding |
 |---|---|---|---|---|---|
@@ -28,13 +32,17 @@ Accuracy is multiple choice. "Confirmed" means the 95% paired bootstrap interval
 | Starting framework (v2 design) | Qwen3-VL-4B | 50.3 | 38.2 | 60.9 | 43.1 |
 | Tuned framework + selected speech | Qwen3-VL-4B | **55.6** | 49.1 | **67.8** | 45.0 |
 
-- Tuned vs starting framework, long videos, 2B: **+16.4 points (confirmed)**.
-- Tuned framework + selected speech vs starting framework, 4B: **+5.2 points over all 459 (confirmed)**;
-  lecture screen-reading **+6.9 (confirmed)**.
-- The selected speech keeps 68% of the speech near the human-marked answer moment, against 28% for a
-  BM25 excerpt. With 4B it adds +2.8 points (confirmed).
-- Head A finds the human-marked answer moment for 36.6% of unseen questions, against 28.0% for its
-  untrained counterpart (confirmed). Its effect on accuracy is under confirmation on new data (see
+- Tuned vs starting framework, long videos, 2B: **+16.4 points (confirmed, but only 6 test videos)**. Over all 459
+  questions the 2B gain is +3.3 (not confirmed).
+- Tuned framework + selected speech vs starting framework, 4B (follow-up): **+5.2 points over all 459 (confirmed)**;
+  lecture screen-reading **+6.9 (confirmed)**. This changes pictures and text together, so it does not isolate the
+  picture choice.
+- Selected speech (600 words): for 68% of CG-Bench dev questions at least one chosen speech line lies within 10 s of
+  the human-marked answer moment, against 28% for the 120-word BM25 excerpt (different word budgets). With 4B it adds
+  +2.8 points (interval 0.0 to +5.6: borderline, not confirmed).
+- Head A: one of its 6 proposed moments falls on the human-marked answer moment for 36.6% of 164 CG-Bench dev
+  questions (17 videos), against 28.0% for its untrained counterpart (confirmed; the method family was chosen on
+  these questions). Its effect on accuracy is under confirmation on new data (see
   `docs/v3/research_log.md`).
 
 Index of every experiment with its script and result: [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md). Every result, one per row:

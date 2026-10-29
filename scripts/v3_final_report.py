@@ -32,6 +32,11 @@ COMPARISONS = [("S1", "S0", "primary"), ("S2", "S1", "secondary"), ("S3", "S1", 
 B = 10_000
 
 
+def family(ds: str) -> str:
+    """Bootstrap cluster namespace: both Video-MMMU tracks use the same lecture videos, so they share one cluster."""
+    return "videommmu" if ds.startswith("videommmu") else ds.replace("_test", "")
+
+
 def load() -> dict:
     last = {}
     for line in ROWS.read_text(encoding="utf-8").splitlines():
@@ -69,7 +74,7 @@ def main() -> None:
         for ds in SETS:
             rows = system_rows(last, sid, ds)
             for q, r in rows.items():
-                allrows[(ds, q)] = {**r, "_v": ds + ":" + r["video_id"]}
+                allrows[(ds, q)] = {**r, "_v": family(ds) + ":" + r["video_id"]}
             acc = float(np.mean([r["correct"] for r in rows.values()])) if rows else None
             ev = [r["chosen_hits_evidence"] for r in rows.values() if r.get("chosen_hits_evidence") is not None]
             res["systems"][sid][ds] = {"n": len(rows), "accuracy": acc,

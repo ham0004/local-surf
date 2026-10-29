@@ -334,8 +334,18 @@ def stage_answer(a) -> None:
                     state["answerer"] = state["answerer"] or make_answerer(cfg)
                     model = state["answerer"]
                 t0 = time.perf_counter()
-                ans, _ = model.answer(AnswerRequest(p.question, p.options, ex,
-                                                    [_as_frame(c) for c in sorted(frames, key=lambda c: c.time_s)]))
+                try:
+                    ans, _ = model.answer(AnswerRequest(p.question, p.options, ex,
+                                                        [_as_frame(c) for c in sorted(frames, key=lambda c: c.time_s)]))
+                except RuntimeError as e:            # GPU out of memory on one very long prompt: record it, go on
+                    if "out of memory" not in str(e):
+                        raise
+                    import torch  # noqa: PLC0415
+                    torch.cuda.empty_cache()
+                    with lock, open(RUN / "skipped.jsonl", "a", encoding="utf-8") as fh:
+                        fh.write(json.dumps({"dataset": a.dataset, "pool": a.pool, "selector": rule, "words": a.words,
+                                             "tag": a.tag, "qa_id": qid, "reason": "gpu out of memory"}) + "\n")
+                    continue
                 spent = time.perf_counter() - t0
                 with lock:
                     budget.charge(spent / workers)

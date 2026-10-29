@@ -21,7 +21,12 @@ import numpy as np
 
 OUT = Path("docs/report")
 RUN = Path("runs/v3_baseline")
-B = 4000
+B = 10_000                     # as declared in docs/v3/final_test_protocol.md
+
+
+def family(ds: str) -> str:
+    """Bootstrap cluster namespace: both Video-MMMU tracks use the same lecture videos, so they share one cluster."""
+    return "videommmu" if ds.startswith("videommmu") else ds.replace("_test", "")
 
 COLS = ["No.", "Stage", "Experiment", "System (plain name)", "Speech path (Path A)", "Picture search (Path B)",
         "Picker of the final pictures", "Pictures shown", "Text given to the answer model", "Answer model",
@@ -170,7 +175,7 @@ def load_rows():
     groups = collections.defaultdict(dict)
     for (d, p, s, k, w, q), r in last.items():
         if k == 4:
-            groups[(d, p, s, w)][(d, q)] = {**r, "_v": d.replace("_test", "") + ":" + r["video_id"]}
+            groups[(d, p, s, w)][(d, q)] = {**r, "_v": family(d) + ":" + r["video_id"]}
     return groups
 
 
