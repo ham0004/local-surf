@@ -1038,8 +1038,8 @@ memory) counts as wrong; one question failed in each 4B speech-text system.
 |---|---|---|---|
 | H1: heads (S4) − best framework (S1), Qwen3-VL-4B | −0.2 (−3.0..+2.7) | 0.92 | not supported |
 | H2: heads (S4) − best framework (S1), Nemotron-120B | +2.1 (−0.8..+5.1) | 0.34 | not supported |
-| H3: best framework + speech text (S1t) − starting framework (S0), 4B | +8.9 (+5.7..+12.2) | <0.0001 | supported |
-| H4: S1t − S0, Nemotron-120B | +8.3 (+4.8..+11.8) | <0.0001 | supported |
+| H3: best framework + speech text (S1t) − starting framework (S0), 4B | +8.9 (+5.7..+12.2) | ≈0.0008 (≈0.0002 before correction; approximate bootstrap-tail estimates) | supported |
+| H4: S1t − S0, Nemotron-120B | +8.3 (+4.8..+11.8) | ≈0.0008 (≈0.0002 before correction; approximate bootstrap-tail estimates) | supported |
 
 - Reading: the improved pipeline (whole-video visual search matched to question and options, plus selected
   speech text) beats the starting design on unseen questions with both a 4B and a 120B answer model. The learned
@@ -1053,3 +1053,121 @@ memory) counts as wrong; one question failed in each 4B speech-text system.
 - Human check of the 100 M3AV test questions (step 71, item 2): the owner decided that the builder and the GPT
   auditor check them independently instead of a person; a question is kept only if both confirm its answer key
   from the slide. This is a protocol change from "checked by a person" and is reported as such.
+- Update (same day): a person will also check the 100 test questions, after the project's runs are finished. To
+  keep this honest, the test questions are frozen (file hash recorded) before any system is run on test, results
+  are reported on all frozen questions, and the person's check is reported as a second analysis (questions the
+  person marks wrong are dropped and the results recomputed); both are published.
+
+## Step 73 (2026-11-01): auditor round 3 (summary only; its note was cut off by its usage limit)
+The auditor's run stopped before it wrote the full note. Its summary said: Phase 1 is not complete, so Phase 2 has
+not started; the confirmation is otherwise verified (894 questions in every primary contrast, the two 4B
+out-of-memory answers scored wrong, the Nemotron table labels fixed). Points and what was done:
+1. **"Holm p < 0.0001" overstated.** With 10,000 resamples and none crossing zero, p cannot be shown to be below
+   about 2/10,000. Fixed: p = (resamples on the other side of zero + 1) / (10,000 + 1), two-sided. H3 and H4: p ≈
+   0.0002, Holm-adjusted 0.0008. H1 0.92, H2 0.34 (Holm). The conclusions do not change. Earlier "<0.0001" entries
+   (step 70) are superseded by this.
+2. **Phase 1 still open:** per-question loss trace on CG-Bench dev, head ablations (Head A without its residual,
+   Head B without its option term) and a true matched-budget speech control are still only planned. They are
+   done next, before any Phase 2 work.
+3. **M3AV visibility check.** The question is written from the slide image saved at the end of a slide segment;
+   with slide builds (bullets that appear one by one), the fact may be visible only at the end of the segment.
+   Rule: sample the segment at 1 frame per second and keep as the evidence moment only the seconds whose frame
+   matches the saved slide image (same picture after downscaling; threshold set on dev by looking at 20 segments
+   with builds). A question whose visible span is shorter than 2 s is dropped.
+4. **Independent and blind reviews.** The builder and the auditor each review the 100 test questions from the
+   question, options, answer key and slide image only, without seeing the other's verdicts or any system's
+   answers. The later human review gets the same material in random order, blind to results, and cannot change
+   any method: all methods and settings are frozen (and the question file hashed) before the test run.
+
+## Step 74 (2026-11-01): Phase 1 checks declared before running (matched-budget speech, H3 decomposition, head ablations)
+All on the fresh LongVideoBench set (894 questions, 500 videos), Qwen3-VL-4B, K = 4, run once
+(`scripts/run_phase1.sh`, ledger `budget_phase1_4b.json`, at most 9,000 calls / 24 h). These are follow-up
+analyses on the confirmation set, after its results were seen: reported as secondary, with paired bootstrap
+intervals over videos and no claim of confirmation.
+1. **Matched-budget speech text.** Same pictures (best framework), 600 words each, every arm built from the whole
+   transcript, words given recorded per question: `frames+hybrid` (speech near the shown pictures + word/meaning
+   search, = S1t, already run), `bm25full` (new: the v2 BM25 ranking over every line, not the 300-word pool
+   excerpt), `hybrid` (word/meaning search only), `frames` (speech near the pictures only). Question: does the
+   speech selection policy matter once the budget is equal?
+2. **H3 decomposition.** H3 changes the pictures, the text policy and the word budget at once. Two arms split it:
+   best-framework pictures + the v2 120-word BM25 excerpt; v2 pictures + the S1t 600-word text.
+3. **Head B without its option term.** The confirmed Head B setting (`ev_set`, λ = 2, μ = 1) with λ = 0, on both
+   pools (compared with S3 and S4).
+4. **Head A without its learned residual.** New pool `hybrid_azs`: the untrained MiniLM scorer over the whole
+   transcript in place of Head A (compared with S2).
+
+## Step 75 (2026-11-01): per-question loss trace on CG-Bench dev (auditor P28-P30)
+`scripts/v3_loss_trace.py` → `reports/v3_loss_trace/summary.md` (82 dev questions; no model calls). Each question
+is counted once, at the first step where its answer is lost: **pool miss** (no candidate frame inside the
+human-marked seconds), **choice miss** (the pool has one, the 4 chosen frames do not), **reading miss** (a chosen
+frame is inside, the answer is wrong, but the same model is right with at least one of the 5 oracle placements),
+**model limit** (wrong even with every oracle placement), and the two kinds of right answer.
+
+| 4B | pool miss | choice miss | reading miss | model limit | right, hit | right, miss |
+|---|---|---|---|---|---|---|
+| S0 starting design | 39 (48%) | 4 (5%) | 4 (5%) | 5 (6%) | 11 | 19 |
+| S1 best framework | 23 (28%) | 8 (10%) | 13 (16%) | 8 (10%) | 20 | 10 |
+| S1t + speech text | 21 (26%) | 8 (10%) | 12 (15%) | 8 (10%) | 21 | 12 |
+| S4 Head A + Head B | 20 (24%) | 5 (6%) | 11 (13%) | 7 (9%) | 21 | 18 |
+
+(2B: same pattern; S1 24 / 3 / 10 / 12.)
+- The finite checklist of where answers are lost, largest first:
+  1. **Pool miss, about a quarter of questions** even for the best framework: the search never puts a candidate
+     inside the marked seconds. This is the largest loss and is a search problem, not a selection problem.
+  2. **Reading miss, 11-16%:** an evidence frame is shown, but one frame among four at one instant is not enough;
+     frames placed across the marked seconds do succeed. Candidate fix: spend part of the budget around the best
+     hit (local refinement), so more than one shown frame covers the moment.
+  3. **Model limit, about 10%:** not fixable by choosing frames.
+  4. **Choice miss, only 4-10%:** when the pool contains the moment, the plain rule already picks it most of the
+     time. This explains why Head B (a better chooser) cannot add much: the stage it improves loses the fewest
+     answers.
+- Caveats: the oracle counts a question as solvable if any of 5 placements is right, which is lenient (some
+  "reading misses" are luck); 82 questions; "right, miss" (10-23%) shows that many right answers do not need the
+  marked moment, so accuracy is a noisy measure of localisation. This is why the M3AV pilot uses evidence hit as
+  its primary measure.
+- Consequence for the plan: improving recall of the search (pool) and covering the found moment with more than one
+  frame are the two stages with room; this is input for Phase 2 and the head redesigns.
+
+## Step 76 (2026-11-01): Nemotron confirmation complete; all comparisons final
+The API run finished (ledger `budget_confirm_api.json`: 10,199 calls). The last two secondary comparisons are final:
+best framework − dense MobileCLIP top-4 with Nemotron −1.1 (−4.1..+1.8), p 0.48; best framework − 4 evenly spaced
+frames +5.4 (+2.0..+8.8), p 0.002. With every answer model (2B, 4B, Nemotron) the best framework shows no demonstrated advantage over dense
+MobileCLIP top-4 (−0.8, −0.1, −1.1) and beats evenly spaced frames (+7.5, +8.6, +5.4). H1-H4 unchanged.
+
+## Step 77 (2026-11-01): auditor P38 fixes to the Phase 1 runs; reordered; dev first
+- **Head A ablation repaired.** `hybrid_azs` (step 74, item 4) is not a residual-only ablation: it takes the top
+  line times with 1-second suppression, while the trained Head A turns scores into moments by density voting
+  (σ = 4 s). New pool `hybrid_ahead_r0`: the same checkpoints and the same density-voting moments with the learned
+  residual zeroed (`LearnedMoments(zero_residual=True)`), so only the residual differs from S2. `hybrid_azs` is kept
+  and named a broader zero-shot baseline.
+- **Dev first.** Any choice is made on CG-Bench dev (82 questions): Head A residual zeroed, the zero-shot pool, and
+  the matched-budget speech arms. The fresh-set runs stay exploratory follow-ups (results already seen); no setting
+  is chosen from them.
+- **Order and time.** A 600-word call with 4B takes about 20 s (confirmation: 12 s per call on average), so the
+  step-74 runs need about 30 hours. The run was stopped after 361 calls (all cached) and restarted in this order:
+  dev items; fresh-set no-text ablations (Head A residual zeroed, Head B λ = 0); fresh-set speech arms last. The
+  ledger's time limit was raised from 24 to 40 hours (same 9,000 calls), declared here before the restart.
+- Naming (P38): `bm25full` is line-level BM25 with one neighbour each side, not the v2 window packing; "S0 pictures +
+  S1t text" recomputes the frame-conditioned text around the v2 pictures, so it tests the text policy, not
+  identical text. Realized words per question are recorded (`text_words`) and will be reported with the results.
+
+## Step 78 (2026-11-01): loss trace made unconditional (auditor P37)
+`scripts/v3_loss_trace.py` now also reports stage coverage over all 82 CG-Bench dev questions and writes per-question
+flags (pool, Path A, Path B, chosen inside the marked seconds; correct). Step 75's "pool miss 28%" was wrong answers
+whose pool had no candidate inside; over all questions the best framework's pool has none for 40% (10 of them still
+answered correctly).
+
+| 4B | pool inside | Path A (speech) inside | Path B (visual) inside | chosen inside | accuracy | acc., chosen inside | acc., chosen outside |
+|---|---|---|---|---|---|---|---|
+| S0 starting design | 33% | 26% | 18% | 24% | 37% | 55% | 31% |
+| S1 best framework | 60% | 26% | 49% | 50% | 37% | 49% | 24% |
+| S4 Head A + Head B | 65% | 33% | 49% | 48% | 48% | 54% | 42% |
+
+- The speech path reaches the marked seconds for only a quarter of questions (Head A raises it from 26% to 33%);
+  the visual search for half. Accuracy is about 25 points higher when a chosen frame is inside, but many right
+  answers do not need the marked moment.
+- Still descriptive: the classes and coverage do not say which intervention recovers the most accuracy. S0 is
+  compared with an oracle whose text differs; "model limit" means 5 placements failed.
+- Owner (2026-11-01, auditor P44): the 100 checked questions are a **random audit sample** of the full generated
+  M3AV test cohort, not the whole test set; every accepted test question is used. The sample is drawn with a fixed
+  seed, stratified by lecture (at most one question per lecture first), after the cohort is frozen.

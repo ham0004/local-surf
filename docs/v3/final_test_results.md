@@ -26,6 +26,11 @@ over videos, 10,000 resamples. CG-Bench test has only 6 videos, so its CIs are u
 | S1 − R3 | secondary | +9.1 (+1.9..+15.6) | +7.4 (+2.5..+12.9) | +0.5 (-4.0..+5.4) | +4.6 (+1.3..+7.8) |
 | S1 − R2 | secondary | +18.2 (+8.8..+27.3) | +7.4 (+1.5..+13.9) | -1.0 (-6.4..+4.5) | +5.0 (+1.1..+8.9) |
 
+The Pooled intervals in these two tables are from the original run, which counted the two Video-MMMU tracks of a
+lecture as different videos; the canonical pooled intervals (208 source-video clusters) are in
+`docs/report/all_results.csv` and, for the follow-ups, below (research log step 67). Per-set intervals are unaffected.
+The later confirmation on fresh LongVideoBench questions is reported separately in `reports/v3_confirmation/summary.md`.
+
 ## What the test shows
 - **Primary (S1 − S0):** the tuned framework beats the starting v2 framework by +3.3 points pooled over 459
   test questions (CI −0.7..+7.0, just short of significance); the gain is large on long videos (CG-Bench

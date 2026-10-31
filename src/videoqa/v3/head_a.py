@@ -160,8 +160,10 @@ class ZeroShotMoments:
 class LearnedMoments(ZeroShotMoments):
     """The trained light residual head (checkpoint from scripts/v3_head_a_light.py --save)."""
 
-    def __init__(self, scorer, checkpoints, bge=None) -> None:
-        """checkpoints: one path or several (same method/features; their scores are averaged, e.g. 3 seeds)."""
+    def __init__(self, scorer, checkpoints, bge=None, zero_residual: bool = False) -> None:
+        """checkpoints: one path or several (same method/features; their scores are averaged, e.g. 3 seeds).
+        zero_residual: ablation that keeps the checkpoint's moment rule (density voting) but drops the learned
+        residual, so the score is the frozen zero-shot relevance alone (research_log step 77)."""
         import torch  # noqa: PLC0415
 
         super().__init__(scorer)
@@ -175,6 +177,9 @@ class LearnedMoments(ZeroShotMoments):
             self.heads.append((net, np.asarray(ck["mu"]), np.asarray(ck["sd"])))
             self.method, self.feature_set = ck["method"], ck["feature_set"]
         self.bge = bge                             # a reranker with .score(query, texts) for feature_set "ens"
+        self.zero_residual = zero_residual
+        if zero_residual and self.method == "light_off":
+            raise ValueError("zero_residual would also drop the learned offsets of a light_off checkpoint")
         if self.feature_set == "ens" and bge is None:
             raise ValueError("this checkpoint needs the bge-reranker-base scorer")
 
@@ -182,6 +187,8 @@ class LearnedMoments(ZeroShotMoments):
         import torch  # noqa: PLC0415
 
         z = self.relevance(rec)
+        if self.zero_residual:
+            return z, None
         f = line_features(rec, z)
         if self.feature_set == "ens":
             q = rec["question"] + (" Options: " + " | ".join(rec["options"]) if rec["options"] else "")

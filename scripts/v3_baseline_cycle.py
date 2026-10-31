@@ -67,6 +67,8 @@ POOLS = {
     # learned Head A (light residual head, density moments, bge features; 3 seeds averaged; research_log step 39)
     "hybrid_azs": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="zeroshot"),
     "hybrid_ahead": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="head"),
+    # Head A ablation: the same checkpoints and density-voting moments with the learned residual zeroed (step 77)
+    "hybrid_ahead_r0": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="head_r0"),
     # Head B v2 training pools: Head A cross-fitted over 4 video folds (research_log step 58)
     "hybrid_ahead_cf": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="head_cf"),
 }
@@ -91,6 +93,8 @@ def ledger_limits(name: str) -> tuple:
         return LIMITS
     if name.startswith("budget_confirm"):           # confirmation run, docs/v3/confirmation_protocol.md
         return (20000, 72 * 3600.0)
+    if name.startswith("budget_phase1"):            # matched-budget speech and head ablations, research_log step 74
+        return (9000, 40 * 3600.0)                   # raised from 24 h in step 77 (600-word calls ~20 s)
     if name.startswith("budget_headb_v2"):          # Head B v2 dev screen, research_log step 60
         return (4000, 8 * 3600.0)
     if name.startswith("budget_grid"):              # full combination grid, research_log step 54
@@ -131,13 +135,13 @@ def stage_pools(a) -> None:
     if path_a == "zeroshot":
         from videoqa.v3.head_a import ZeroShotMoments  # noqa: PLC0415
         head_a = ZeroShotMoments(head_a)
-    elif path_a == "head":
+    elif path_a in ("head", "head_r0"):
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         from v3_head_a_eval import Reranker  # noqa: PLC0415
         from v3_head_a_light import BGE  # noqa: PLC0415
 
         from videoqa.v3.head_a import LearnedMoments  # noqa: PLC0415
-        head_a = LearnedMoments(head_a, HEAD_A_CKPTS, bge=Reranker(BGE))
+        head_a = LearnedMoments(head_a, HEAD_A_CKPTS, bge=Reranker(BGE), zero_residual=path_a == "head_r0")
     elif path_a == "head_cf":
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         from v3_head_a_eval import Reranker  # noqa: PLC0415
@@ -217,7 +221,9 @@ def transcript_for(policy: str, words: int, pool, segs, frames) -> list:
            relevance (meaning, not only shared words); best lines with one neighbour each side
     frames the speech around the frames actually shown (nearest lines first, within 15 s)
     frames+hybrid  half the budget each
-    full   the whole transcript in time order, cut to ``words``"""
+    full   the whole transcript in time order, cut to ``words``
+    bm25full  every line of the whole transcript ranked by BM25 (question + options), one neighbour each side;
+           the v2 ranking at any budget (``bm25`` is limited to the 300-word excerpt saved in the pool)"""
     from videoqa.retrieval import bm25_scores, tokenize  # noqa: PLC0415
 
     if words <= 0 or not segs:
@@ -226,6 +232,11 @@ def transcript_for(policy: str, words: int, pool, segs, frames) -> list:
         return excerpt(pool, words)
     if policy == "full":
         return list(_take(range(len(segs)), segs, words).values())
+    if policy == "bm25full":
+        bm = np.asarray(bm25_scores(tokenize(pool.question + " " + " ".join(pool.options)),
+                                    [tokenize(s.text) for s in segs]))
+        chosen = _take(np.argsort(-bm, kind="stable"), segs, words, neighbours=1)
+        return [chosen[i] for i in sorted(chosen)]
     chosen: dict = {}
     if policy in ("frames", "frames+hybrid"):
         ts = [c.time_s for c in frames]
@@ -555,7 +566,7 @@ def main() -> None:
     p.add_argument("--words", type=int, default=120)
     p.add_argument("--config", default="configs/gpu_12gb.yaml")
     p.add_argument("--tag", default="", help="suffix for the row's selector label (e.g. ans=4b)")
-    p.add_argument("--tpolicy", default="bm25", choices=("bm25", "hybrid", "frames", "frames+hybrid", "full"),
+    p.add_argument("--tpolicy", default="bm25", choices=("bm25", "bm25full", "hybrid", "frames", "frames+hybrid", "full"),
                    help="transcript given to the answerer (with --words > 0)")
     p.add_argument("--sets", type=int, default=4, choices=(4, 6), help="verify: number of candidate frame sets")
     p.add_argument("--ledger", default="budget.json", help="answer-call ledger (budget_2.json = the step-35 extension)")

@@ -62,7 +62,8 @@ def paired(a: dict, b: dict, qs: list) -> dict:
     boots = np.array([np.mean(np.concatenate([byv[vids[i]] for i in rng.choice(len(vids), len(vids))]))
                       for _ in range(B)])
     d = float(np.mean([float(a[q]["correct"]) - float(b[q]["correct"]) for q in qs]))
-    p = min(1.0, 2 * min(np.mean(boots <= 0), np.mean(boots >= 0)))
+    # (count + 1) / (B + 1): never 0; with no resample crossing zero the two-sided p is at most about 2 / B
+    p = min(1.0, 2 * (min(np.sum(boots <= 0), np.sum(boots >= 0)) + 1) / (B + 1))
     return {"diff": round(100 * d, 1), "lo": round(100 * np.percentile(boots, 2.5), 1),
             "hi": round(100 * np.percentile(boots, 97.5), 1), "p": round(float(p), 4), "n": len(qs), "videos": len(vids)}
 
@@ -120,12 +121,13 @@ def main() -> None:
         q = v["primary"]
         cs = v.get("common_success")
         extra = f"; without failures {cs['diff']:+.1f} ({cs['lo']:+.1f}..{cs['hi']:+.1f}), n {cs['n']}" if cs else ""
-        return (f"| {name} | {v['status']} | {q['diff']:+.1f} ({q['lo']:+.1f}..{q['hi']:+.1f}) | {q['p'] or '<0.0001'} | "
-                f"{'<0.0001' if v.get('p_holm') == 0 else v.get('p_holm', '')} | n {q['n']}, videos {q['videos']}, failed {v['failed']}{extra} |")
+        return (f"| {name} | {v['status']} | {q['diff']:+.1f} ({q['lo']:+.1f}..{q['hi']:+.1f}) | {q['p']} | "
+                f"{v.get('p_holm', '')} | n {q['n']}, videos {q['videos']}, failed {v['failed']}{extra} |")
 
     md = ["# Confirmation on fresh LongVideoBench questions", "",
           f"Primary analysis on the {N_ELIGIBLE} eligible questions; failed answers count as wrong. Holm-adjusted "
-          "p-values are final only when all four hypotheses are final.", "",
+          "p-values are final only when all four hypotheses are final. p = (resamples on the other side of zero + 1) / "
+          "(10,000 + 1), two-sided, so the smallest reportable p is about 0.0002.", "",
           "| Hypothesis | Status | Difference (95% interval) | p | p (Holm) | Questions |", "|---|---|---|---|---|---|"]
     md += [line(f"{h}: {v['contrast']}, {v['model']}", v) for h, v in summary["primary"].items()]
     md += ["", "## Secondary (no correction)", "", "| Comparison | Status | Difference (95% interval) | p | | Questions |",
