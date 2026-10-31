@@ -39,7 +39,7 @@ whole source videos, 208 videos; both Video-MMMU tracks of one lecture count as 
   picture choice.
 - Selected speech (600 words): for 68% of CG-Bench dev questions at least one chosen speech line lies within 10 s of
   the human-marked answer moment, against 28% for the 120-word BM25 excerpt (different word budgets). With 4B it adds
-  +2.8 points (interval 0.0 to +5.6: borderline, not confirmed).
+  +2.8 points (interval +0.0 to +5.5: borderline, not confirmed).
 - Head A: one of its 6 proposed moments falls on the human-marked answer moment for 36.6% of 164 CG-Bench dev
   questions (17 videos), against 28.0% for its untrained counterpart (confirmed; the method family was chosen on
   these questions). Its effect on accuracy is under confirmation on new data (see

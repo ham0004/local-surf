@@ -40,12 +40,16 @@ over videos, 10,000 resamples. CG-Bench test has only 6 videos, so its CIs are u
   (48–52%) than on dev (62–66%) for every system, a difference between the video sets, not between systems.
 
 ## Claims this supports (and does not)
-- Supported: on long videos, searching the whole video visually (instead of only BM25-retrieved windows),
-  matching frames to question + options, and dropping the BM25 excerpt for a small answerer give a large,
-  significant gain over the v2 pipeline; the tuned pipeline significantly beats standard frame-selection
-  rules overall.
-- Not supported: that the learned Head A or Head B improve end-to-end accuracy. Head A improves moment
-  localisation (dev recall +8.5, significant) without an accuracy gain.
+- Supported: on CG-Bench test (55 questions, only 6 videos), searching the whole video visually (instead of
+  only BM25-retrieved windows), matching frames to question + options, and dropping the BM25 excerpt for a small
+  answerer give a confirmed gain over the v2 pipeline (+16.4). Over all 459 test questions the 2B gain (+3.3) is
+  not confirmed.
+- Not supported: that the learned Head A or Head B improve end-to-end accuracy. Head A finds the marked moment
+  more often on 164 CG-Bench dev questions (one of 6 proposals on it: 36.6% vs 28.0%; the method family was chosen
+  on these questions) without an accuracy gain.
+- Note (2026-10-30): an earlier version of this section also said the tuned pipeline significantly beats standard
+  frame-selection rules overall; on the fresh LongVideoBench set there is no demonstrated advantage over dense
+  MobileCLIP top-4 (−0.1, −2.9..+2.7), so that statement is withdrawn.
 
 ## Follow-ups after the declared test (reported separately)
 Both follow-ups were declared in the research log before they were run (steps 50–52); the transcript policy was
@@ -59,16 +63,24 @@ declared comparison. Pooled over the same 459 test questions; 95% CIs, 10,000 re
 
 | Comparison | 2B | 4B |
 |---|---|---|
-| tuned − v2 | +3.3 (−0.7..+7.1) | +2.4 (−1.7..+6.6) |
-| tuned + speech − v2 | +3.3 (−0.8..+7.2) | **+5.2 (+1.0..+9.5)** |
-| tuned + speech − tuned | +0.0 (−2.7..+2.7) | **+2.8 (+0.2..+5.6)** |
+| tuned − v2 | +3.3 (−0.5..+6.9) | +2.4 (−1.7..+6.4) |
+| tuned + speech − v2 | +3.3 (−0.7..+7.0) | **+5.2 (+1.1..+9.4)** |
+| tuned + speech − tuned | +0.0 (−2.5..+2.6) | +2.8 (+0.0..+5.5), not confirmed |
 
-Per set with 4B, tuned + speech − v2: CG-Bench +10.9 (−1.9..+24.6), Perception **+6.9 (+0.5..+13.9)**,
-Comprehension +2.0 (−3.5..+7.4). 4B external rules on CG-Bench test: dense MobileCLIP 40.0, evenly spaced
+Intervals: paired bootstrap over the 208 source videos (both Video-MMMU tracks of a lecture are one cluster),
+10,000 resamples, seed 20261019 (`scripts/build_results_table.py`, canonical for every published number). These
+replace the intervals first written here, which counted the two Video-MMMU tracks as different videos (research
+log step 67). The 4B and speech-text rows are follow-ups after the original frozen 2B comparison; the speech
+policy was chosen on CG-Bench dev after that comparison (step 50).
+
+Per set with 4B, tuned + speech − v2: CG-Bench +10.9 (−1.9..+24.6), Perception **+6.9 (+0.5..+13.4)**,
+Comprehension +2.0 (−3.5..+7.9). 4B external rules on CG-Bench test: dense MobileCLIP 40.0, evenly spaced
 27.3; on Perception test dense MobileCLIP 54.8 (188 of 202; the ledger ended before the remaining reference
 runs, which were not extended).
 
-Reading: the selected speech (68% of the evidence speech kept, vs 28% for v2's BM25 excerpt) is information a
-stronger answerer uses: with 4B the full framework beats the v2 pipeline significantly over all 459 test
-questions, and the speech adds a significant +2.8 on top of the tuned frames. With 2B the speech neither helps
-nor hurts multiple choice (it helped open-ended answers on dev, step 50).
+Reading: with 4B, the tuned pictures plus the selected speech beat the v2 pipeline over all 459 test questions
+(+5.2, confirmed). The speech on top of the tuned pictures (+2.8) is not confirmed: its interval touches zero.
+The selected speech contains a line within 10 s of the human-marked moment for more dev questions than v2's
+BM25 excerpt, but at a different word budget (600 vs 120 words), so this does not isolate the selection policy;
+a matched-budget comparison is planned. With 2B the speech neither helps nor hurts multiple choice (it helped
+open-ended answers on dev, step 50).

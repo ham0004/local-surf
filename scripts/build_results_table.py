@@ -38,7 +38,15 @@ COLS = ["No.", "Stage", "Experiment", "System (plain name)", "Speech path (Path 
 
 STAGES = {1: "1. Version 1", 2: "2. Version 2", 3: "3. v3 benchmark check", 4: "4. v3 tuning (dev)",
           5: "5. Head A", 6: "6. Head B", 7: "7. Final locked test", 8: "8. Speech text", 9: "9. Larger answer model (4B)",
-          10: "10. Full combination grid", 11: "11. Pooled summaries"}
+          10: "10. Full combination grid", 11: "11. Pooled summaries", 12: "12. Large answer model (Nemotron, API follow-up)"}
+
+MODELS = {"": "Qwen3-VL-2B", "|ans=4b": "Qwen3-VL-4B", "|ans=nemo": "Nemotron-3.5-Super-VL-120B"}
+
+
+def ans(sel: str) -> str:
+    """Answer-model tag of a selector ('' = 2B); the tag is always last. References must use the same tag."""
+    tag = sel.split("|")[-1]
+    return "|" + tag if tag.startswith("ans=") else ""
 
 DATA = {  # dataset key: (benchmark, video type, question set)
     "cgbench": ("CG-Bench", "long everyday videos (10-80 min)", "dev"),
@@ -97,7 +105,7 @@ def describe(pool, selector, words):
     base = selector.split("|")[0]
     tags = selector.split("|")[1:]
     tp = next((t.split("=")[1] for t in tags if t.startswith("tp=")), None)
-    model = "Qwen3-VL-4B" if "ans=4b" in tags else "Qwen3-VL-2B"
+    model = MODELS[ans(selector)]
     if pool in ("verify", "verify6"):
         n = 4 if pool == "verify" else 6
         rule = "most confident answer" if base == "max" else "sum of option probabilities"
@@ -148,6 +156,8 @@ def stage_of(ds, pool, selector, words):
     tp = any(t.startswith("tp=") for t in tags)
     head = pool == "hybrid_ahead" or "ev_set" in selector or "_util" in selector or "_optset" in selector or "_ev" in selector
     test = ds.endswith("_test") or ds in ("ALL_TEST", "LECTURE_TEST")
+    if ans(selector) == "|ans=nemo":
+        return 12
     if four_b:
         return 10 if (head and (pool == "hybrid_ahead" or "ev_set" in selector)) else 9
     if pool in ("verify", "verify6"):
@@ -182,22 +192,22 @@ def load_rows():
 def v3_rows(groups):
     out = []
 
+    def ref_start_key(ds, sel):
+        """Starting framework with the same answer model (never a different one)."""
+        return (ds, "v2", "clip" + ans(sel), 120)
+
     def ref_start(ds, sel):
-        return groups.get((ds, "v2", "clip" + ("|ans=4b" if "ans=4b" in sel else ""), 120))
+        return groups.get(ref_start_key(ds, sel))
 
     def ref_best_key(ds, sel, words):
         """Best framework with the same answer model; with the 600-word speech text if this row uses it, else none."""
         tags = sel.split("|")[1:]
-        m4 = "|ans=4b" if "ans=4b" in tags else ""
         if "tp=frames+hybrid" in tags and words == 600:
-            return (ds, "hybrid", "mmropt|tp=frames+hybrid" + m4, 600)
-        return (ds, "hybrid", "mmropt" + m4, 0)
+            return (ds, "hybrid", "mmropt|tp=frames+hybrid" + ans(sel), 600)
+        return (ds, "hybrid", "mmropt" + ans(sel), 0)
 
     def ref_best(ds, sel, words):
         return groups.get(ref_best_key(ds, sel, words))
-
-    def ref_start_key(ds, sel):
-        return (ds, "v2", "clip" + ("|ans=4b" if "ans=4b" in sel else ""), 120)
 
     # pooled pseudo-datasets for test configurations present on all three test sets
     tests = ("cgbench_test", "videommmu_test", "videommmu_comp_test")
@@ -462,7 +472,7 @@ def main() -> None:
             ["Result (%)", "the value of 'What is measured' (FactQA rows use a 0-1 score, Head B screen rows are point differences)"],
             ["vs ... difference", "result minus the reference on the same questions, in percentage points"],
             ["95% interval / confirmed?", "paired bootstrap over videos; 'yes' when the interval excludes zero"],
-            ["Answer model", "frozen vision-language model that reads the pictures and answers (2B small, 4B larger)"],
+            ["Answer model", "frozen vision-language model that reads the pictures and answers (2B small, 4B larger, both local; Nemotron 120B through an API, a follow-up diagnostic). Every comparison uses the same answer model"],
             ["Pooled rows (stage 11)", "the same system over all 459 test questions, or over the 404 lecture test questions"]]:
         gl.append(line)
     gl.column_dimensions["A"].width, gl.column_dimensions["B"].width = 26, 120

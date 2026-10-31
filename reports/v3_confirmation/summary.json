@@ -1,0 +1,537 @@
+{
+ "eligible": 894,
+ "accuracy": {
+  "S0 2B": {
+   "answered": 894,
+   "correct": 397,
+   "failed": 0
+  },
+  "S1 2B": {
+   "answered": 894,
+   "correct": 454,
+   "failed": 0
+  },
+  "S1t 2B": {
+   "answered": 894,
+   "correct": 455,
+   "failed": 0
+  },
+  "S2 2B": {
+   "answered": 894,
+   "correct": 470,
+   "failed": 0
+  },
+  "S3 2B": {
+   "answered": 894,
+   "correct": 455,
+   "failed": 0
+  },
+  "S4 2B": {
+   "answered": 894,
+   "correct": 454,
+   "failed": 0
+  },
+  "S4t 2B": {
+   "answered": 894,
+   "correct": 450,
+   "failed": 0
+  },
+  "R2 2B": {
+   "answered": 894,
+   "correct": 387,
+   "failed": 0
+  },
+  "R3 2B": {
+   "answered": 894,
+   "correct": 461,
+   "failed": 0
+  },
+  "S0 4B": {
+   "answered": 894,
+   "correct": 432,
+   "failed": 0
+  },
+  "S1 4B": {
+   "answered": 894,
+   "correct": 500,
+   "failed": 0
+  },
+  "S1t 4B": {
+   "answered": 894,
+   "correct": 512,
+   "failed": 1
+  },
+  "S2 4B": {
+   "answered": 894,
+   "correct": 511,
+   "failed": 0
+  },
+  "S3 4B": {
+   "answered": 894,
+   "correct": 497,
+   "failed": 0
+  },
+  "S4 4B": {
+   "answered": 894,
+   "correct": 498,
+   "failed": 0
+  },
+  "S4t 4B": {
+   "answered": 894,
+   "correct": 498,
+   "failed": 1
+  },
+  "R2 4B": {
+   "answered": 894,
+   "correct": 423,
+   "failed": 0
+  },
+  "R3 4B": {
+   "answered": 894,
+   "correct": 501,
+   "failed": 0
+  },
+  "S0 Nemotron-120B": {
+   "answered": 894,
+   "correct": 441,
+   "failed": 0
+  },
+  "S1 Nemotron-120B": {
+   "answered": 894,
+   "correct": 505,
+   "failed": 0
+  },
+  "S1t Nemotron-120B": {
+   "answered": 894,
+   "correct": 515,
+   "failed": 0
+  },
+  "S2 Nemotron-120B": {
+   "answered": 894,
+   "correct": 530,
+   "failed": 0
+  },
+  "S3 Nemotron-120B": {
+   "answered": 894,
+   "correct": 512,
+   "failed": 0
+  },
+  "S4 Nemotron-120B": {
+   "answered": 894,
+   "correct": 524,
+   "failed": 0
+  },
+  "S4t Nemotron-120B": {
+   "answered": 894,
+   "correct": 537,
+   "failed": 0
+  },
+  "R2 Nemotron-120B": {
+   "answered": 430,
+   "correct": 218,
+   "failed": 0
+  },
+  "R3 Nemotron-120B": {
+   "answered": 436,
+   "correct": 253,
+   "failed": 0
+  }
+ },
+ "primary": {
+  "H1": {
+   "contrast": "S4 - S1",
+   "model": "4B",
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": -0.2,
+    "lo": -3.0,
+    "hi": 2.7,
+    "p": 0.9184,
+    "n": 894,
+    "videos": 500
+   },
+   "p_holm": 0.9184,
+   "holm_final": true
+  },
+  "H2": {
+   "contrast": "S4 - S1",
+   "model": "Nemotron-120B",
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": 2.1,
+    "lo": -0.8,
+    "hi": 5.1,
+    "p": 0.171,
+    "n": 894,
+    "videos": 500
+   },
+   "p_holm": 0.342,
+   "holm_final": true
+  },
+  "H3": {
+   "contrast": "S1t - S0",
+   "model": "4B",
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    1,
+    0
+   ],
+   "primary": {
+    "diff": 8.9,
+    "lo": 5.7,
+    "hi": 12.2,
+    "p": 0.0,
+    "n": 894,
+    "videos": 500
+   },
+   "common_success": {
+    "diff": 9.0,
+    "lo": 5.7,
+    "hi": 12.2,
+    "p": 0.0,
+    "n": 893,
+    "videos": 500
+   },
+   "p_holm": 0.0,
+   "holm_final": true
+  },
+  "H4": {
+   "contrast": "S1t - S0",
+   "model": "Nemotron-120B",
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": 8.3,
+    "lo": 4.8,
+    "hi": 11.8,
+    "p": 0.0,
+    "n": 894,
+    "videos": 500
+   },
+   "p_holm": 0.0,
+   "holm_final": true
+  }
+ },
+ "secondary": {
+  "S2 - S1 2B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": 1.8,
+    "lo": -0.6,
+    "hi": 4.1,
+    "p": 0.1374,
+    "n": 894,
+    "videos": 500
+   }
+  },
+  "S3 - S1 2B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": 0.1,
+    "lo": -2.0,
+    "hi": 2.2,
+    "p": 0.9728,
+    "n": 894,
+    "videos": 500
+   }
+  },
+  "S4t - S1t 2B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": -0.6,
+    "lo": -3.2,
+    "hi": 2.1,
+    "p": 0.7198,
+    "n": 894,
+    "videos": 500
+   }
+  },
+  "S1 - R3 2B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": -0.8,
+    "lo": -3.3,
+    "hi": 1.8,
+    "p": 0.561,
+    "n": 894,
+    "videos": 500
+   }
+  },
+  "S1 - R2 2B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": 7.5,
+    "lo": 4.3,
+    "hi": 10.8,
+    "p": 0.0,
+    "n": 894,
+    "videos": 500
+   }
+  },
+  "S2 - S1 4B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": 1.2,
+    "lo": -1.5,
+    "hi": 3.9,
+    "p": 0.3912,
+    "n": 894,
+    "videos": 500
+   }
+  },
+  "S3 - S1 4B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": -0.3,
+    "lo": -2.9,
+    "hi": 2.2,
+    "p": 0.837,
+    "n": 894,
+    "videos": 500
+   }
+  },
+  "S4t - S1t 4B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    1,
+    1
+   ],
+   "primary": {
+    "diff": -1.6,
+    "lo": -4.5,
+    "hi": 1.5,
+    "p": 0.3256,
+    "n": 894,
+    "videos": 500
+   },
+   "common_success": {
+    "diff": -1.6,
+    "lo": -4.5,
+    "hi": 1.5,
+    "p": 0.3256,
+    "n": 893,
+    "videos": 500
+   }
+  },
+  "S1 - R3 4B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": -0.1,
+    "lo": -2.9,
+    "hi": 2.6,
+    "p": 0.9552,
+    "n": 894,
+    "videos": 500
+   }
+  },
+  "S1 - R2 4B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": 8.6,
+    "lo": 5.1,
+    "hi": 12.2,
+    "p": 0.0,
+    "n": 894,
+    "videos": 500
+   }
+  },
+  "S2 - S1 Nemotron-120B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": 2.8,
+    "lo": 0.0,
+    "hi": 5.6,
+    "p": 0.0516,
+    "n": 894,
+    "videos": 500
+   }
+  },
+  "S3 - S1 Nemotron-120B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": 0.8,
+    "lo": -1.8,
+    "hi": 3.4,
+    "p": 0.5714,
+    "n": 894,
+    "videos": 500
+   }
+  },
+  "S4t - S1t Nemotron-120B": {
+   "status": "final",
+   "answered": [
+    894,
+    894
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": 2.5,
+    "lo": -0.7,
+    "hi": 5.6,
+    "p": 0.1356,
+    "n": 894,
+    "videos": 500
+   }
+  },
+  "S1 - R3 Nemotron-120B": {
+   "status": "PENDING",
+   "answered": [
+    894,
+    436
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": -0.7,
+    "lo": -5.1,
+    "hi": 3.8,
+    "p": 0.7984,
+    "n": 436,
+    "videos": 311
+   }
+  },
+  "S1 - R2 Nemotron-120B": {
+   "status": "PENDING",
+   "answered": [
+    894,
+    430
+   ],
+   "failed": [
+    0,
+    0
+   ],
+   "primary": {
+    "diff": 6.5,
+    "lo": 1.6,
+    "hi": 11.5,
+    "p": 0.0116,
+    "n": 430,
+    "videos": 310
+   }
+  }
+ }
+}

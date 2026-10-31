@@ -15,6 +15,7 @@ the free tier's per-minute limit, and transient errors are retried with backoff.
 from __future__ import annotations
 
 import base64
+import http.client
 import io
 import json
 import math
@@ -66,7 +67,9 @@ class APIVLMAnswerer:
     def _post(self, body: dict) -> dict:
         key = (Path.home() / self.key_file).read_text(encoding="utf-8-sig").strip()
         data = json.dumps(body).encode()
-        for attempt in range(8):
+        give_up = time.monotonic() + 6 * 3600       # wait through Wi-Fi drops and rate limits for up to 6 hours
+        attempt = 0
+        while True:
             self._pace()
             req = urllib.request.Request(f"{self.base_url}/chat/completions", data=data, method="POST",
                                          headers={"Content-Type": "application/json", "Authorization": "Bearer " + key})
@@ -74,16 +77,18 @@ class APIVLMAnswerer:
                 with urllib.request.urlopen(req, timeout=600) as r:
                     return json.loads(r.read())
             except urllib.error.HTTPError as e:
-                if e.code in (429, 500, 502, 503, 504) and attempt < 7:
-                    time.sleep(min(120, 10 * 2 ** attempt))
-                    continue
-                raise RuntimeError(f"API error {e.code}: {e.read()[:300]!r}") from e
-            except (TimeoutError, urllib.error.URLError, ConnectionError):
-                if attempt < 7:
-                    time.sleep(min(120, 10 * 2 ** attempt))
-                    continue
-                raise
-        raise RuntimeError("API kept failing")
+                if e.code not in (429, 500, 502, 503, 504) or time.monotonic() > give_up:
+                    raise RuntimeError(f"API error {e.code}: {e.read()[:300]!r}") from e
+                reason = f"HTTP {e.code}"
+            except (TimeoutError, urllib.error.URLError, ConnectionError, OSError,
+                    http.client.HTTPException, json.JSONDecodeError) as e:   # incl. a reply cut off mid-way
+                if time.monotonic() > give_up:
+                    raise
+                reason = type(e).__name__
+            wait = min(120, 10 * 2 ** min(attempt, 4))
+            print(f"API {reason}; retrying in {wait} s", flush=True)
+            time.sleep(wait)
+            attempt += 1
 
     @staticmethod
     def letter_probs(logprobs: dict | None, n_options: int) -> list[float] | None:

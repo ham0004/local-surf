@@ -903,3 +903,153 @@ Detailed results live in the linked reports; this log is the chronological index
   their interval (for example 2B speech text minus starting framework on CG-Bench dev, gain to not confirmed; on
   CG-Bench test, not confirmed to gain; Head A + Head B minus starting framework on both Video-MMMU tracks together,
   not confirmed to gain). The 4B headline (+5.2 over all 459) is unchanged.
+
+**Step 68. Second audit: answer-model labels, change list, summary wording** (2026-10-30)
+- The results table labelled every run without the 4B tag as Qwen3-VL-2B, so the 17 Nemotron-120B rows (11
+  accuracy, 6 CG-Bench evidence hit) were called 2B and compared with the 2B starting framework. Example: CG-Bench
+  test best framework with Nemotron, 33/55, was reported +25.5 (+13.6..+42.9, confirmed) because it subtracted 2B's
+  19/55. Fix (`scripts/build_results_table.py`): the answer model comes from the run's tag (2B, 4B or Nemotron),
+  every reference uses the same answer model, and Nemotron rows have their own stage 12 ("Large answer model,
+  API follow-up") instead of "Final locked test". Rebuilt from cached answers (no model calls), Nemotron against
+  Nemotron:
+
+  | Nemotron-120B, test | Correct | vs starting framework (same model) |
+  |---|---|---|
+  | CG-Bench, best framework | 33 / 55 | +10.9 (−3.4..+27.1), not confirmed |
+  | CG-Bench, best framework + speech text | 35 / 55 | +14.5 (+6.7..+24.5), confirmed |
+  | CG-Bench, Head A + Head B + speech text | 32 / 55 | +9.1 (+3.3..+16.3), confirmed |
+  | Video-MMMU Perception, best framework + speech text | 89 / 103 | +7.8 (−2.0..+17.6), not confirmed |
+
+  The Nemotron runs on the old test sets are incomplete (50–110 of the questions per system; Video-MMMU
+  Comprehension not yet run), and each comparison uses only the questions both systems answered; they are a
+  diagnostic, not part of the local claim. No 2B or 4B row changed. The table now has 562 rows: 17 relabelled rows
+  plus 5 rows from answers saved after the step 67 rebuild.
+- Change list for step 67, by comparing the committed tables before and after commit 3de2078 (489 and 557 rows):
+  **5** "confirmed?" cells changed, not 10 as written in step 67, and the CG-Bench test example given there was
+  wrong. The five: 2B Video-MMMU Perception dev tuning variant (3 inside windows + 3 dense) vs best, loss to not
+  confirmed; 2B CG-Bench dev best framework + 300-word speech text vs best, not confirmed to loss; 2B CG-Bench dev
+  best framework + 600-word speech text vs starting framework, gain to not confirmed; 2B CG-Bench dev 300-word best
+  lines vs starting framework, gain to not confirmed; 2B Head A + Head B on both Video-MMMU tracks vs starting
+  framework, not confirmed to gain.
+- One canonical source for published intervals: `scripts/build_results_table.py` (seed 20261019, 10,000
+  resamples, 208 source-video clusters for the 459 test questions). With it, 4B speech text minus 4B without text
+  is +2.8 (+0.0..+5.5), not confirmed; 2B +0.0 (−2.5..+2.6).
+- Summaries brought in line: `docs/v3/final_test_results.md` (corrected intervals; +2.8 no longer called
+  significant; "68% of evidence speech kept" replaced by the measured share at different word budgets; "beats
+  standard frame-selection rules overall" withdrawn with a note), `docs/EXPERIMENTS.md` (Head A figure is a dev
+  result on 164 questions; +16.4 on only 6 videos; "equal to dense MobileCLIP" replaced by "no demonstrated
+  advantage").
+- Two implementation facts found by the audit and checked: (1) pools keep a 300-word BM25 excerpt, so a BM25 policy
+  above 300 words would be cut to 300; earlier BM25 results used 120 or 300 words and are not affected, but the
+  planned matched-budget speech comparison must build every arm from the full transcript and record words, tokens
+  and lines actually given. (2) Head B's `speech_z` feature is the frozen speech scorer's relevance of the line
+  nearest the candidate, not Head A's learned relevance (`LearnedMoments.score` forwards the frozen scorer). It is
+  now described that way; whether Head A's relevance would be a better feature is untested.
+
+**Step 69. Target decided: CVPR 2027 main track; plan to the deadline; runs restarted** (2026-10-30)
+- Owner's decision: submit to CVPR 2027 (paper registration 10 Nov, full paper 16 Nov 2026, AoE). The auditor's
+  view (likely reject without lecture evidence) is recorded; the plan below aims at the missing piece, a
+  question-conditioned frame-selection result on unseen lectures against strong matched baselines.
+- Plan (dates are targets):
+  1. 30 Oct – 1 Nov: finish the confirmation run and the oracle ceiling; H1–H4 table with Holm correction on the
+     fixed 894 questions; per-question loss trace on CG-Bench dev (window → pool → chosen → answer).
+  2. 31 Oct – 4 Nov: lecture pilot on M3AV (speaker-disjoint official split, bounded subset, cached frozen
+     embeddings): train Head A on training speakers, measure on unseen speakers whether the chosen frames show the
+     slide that the speech refers to.
+  3. 4 – 8 Nov: matched comparisons on lectures and the existing sets (dense option-aware retrieval, a VSI-style
+     subtitle + visual search, Head A without its learned residual, Head B without the option term, matched-budget
+     speech text), same K, questions and answer model.
+  4. 8 – 10 Nov: freeze the claims; register the paper. 10 – 16 Nov: write, figures, supplementary.
+- Out-of-memory failures (P26): a question whose prompt runs out of GPU memory is now an answer that failed:
+  cached under its full request key (never retried), charged to the ledger and scored as wrong
+  (`scripts/v3_baseline_cycle.py`, row field `failed`). `runs/v3_baseline/skipped.jsonl` is kept as the record of
+  the earlier skips. The primary confirmation analysis uses all 894 questions; a common-success analysis is
+  secondary.
+- Oracle ledger (P27): `budget_oracle_4b.json` shows 604 calls and 47,094 s against an 8-hour limit. The answer
+  log shows one call of 34,045 s (median call 4.6 s): the machine hung or slept during one call; the ledger checks
+  its limit before a call, so that one call overshot it. The other 603 calls took 13,049 s. The oracle continues on
+  a new ledger with the same limits (`budget_oracle_4b_cont.json`), and its driver now stops at the first failing
+  step, so "DONE" is printed only after every step succeeded. The API confirmation run had stopped with Windows
+  process-creation errors (same period).
+- Restarted: local chain (4B oracle, then the remaining local confirmation answers) and API chain (Nemotron
+  confirmation, then Nemotron oracle). Finished answers come from the cache.
+
+**Step 70. Confirmation run: local part complete; H1–H3 final** (2026-10-31; `reports/v3_confirmation/summary.md`)
+- `scripts/v3_confirmation_report.py`: the declared analysis (two-sided paired bootstrap over videos, 10,000
+  resamples, Holm over H1–H4) on the fixed 894 eligible questions (500 videos); a failed answer counts as wrong; a
+  comparison is final only when both systems answered all 894. Sensitivity: the questions both answered without a
+  failure. All 2B and 4B systems are complete; one 4B speech-text question (TMe7oXMJoSM_0) ran out of GPU memory
+  in each speech-text system and is scored wrong.
+
+  | Hypothesis | Difference (95% interval) | p | Status |
+  |---|---|---|---|
+  | H1: Head A + Head B − best framework, 4B | −0.2 (−3.0..+2.7) | 0.92 | final: not supported |
+  | H2: Head A + Head B − best framework, Nemotron-120B | +2.1 (−0.8..+5.1) | 0.17 | final: not supported |
+  | H3: best framework + speech text − starting design, 4B | **+8.9 (+5.7..+12.2)** | <0.0001 | final: supported (Holm <0.0001) |
+  | H4: same, Nemotron-120B | +5.3 (+0.0..+10.4) on 414 questions | 0.05 | pending (Nemotron speech-text run at 414/894) |
+
+- Secondary, 4B: Head A alone +1.2 (−1.5..+3.9); Head B alone −0.3; speech text on Head A + B −1.6; best framework
+  vs dense MobileCLIP top-4 −0.1 (−2.9..+2.7); vs 4 evenly spaced pictures +8.6 (+5.1..+12.2). Nemotron: Head A
+  alone +2.8 (+0.0..+5.6, p 0.05).
+- Reading: on new data the framework's gain over the starting design is confirmed with 4B (H3), but it comes from
+  searching the whole video by picture: plain dense MobileCLIP top-4 is as good (no demonstrated difference). The
+  trained heads add no confirmed accuracy with either answer model (H1, H2). This matches the auditor's view that
+  the publishable contribution must come from the lecture evidence, not from the current heads on general videos.
+- 4B oracle ceiling complete (CG-Bench, any of 5 placements inside the marked seconds): dev 72.0 / 72.0 (no text /
+  600-word speech text), test 61.8 / 67.3; continuation ledger 492 calls, 15,053 s.
+
+**Step 71. Lecture pilot on M3AV: data checked, design declared before any question exists** (2026-10-31)
+- M3AV v1.0 (Chen et al., arXiv 2403.14168; CC BY-NC-SA 4.0, video rights with the owners): no-audio archive
+  (2.02 GB, SHA-256 matches the official list) and the official split by speaker (`set_split.json`): 901 train /
+  99 dev / 113 test lectures (CHI, NIH, Ubicomp, IPP, MLS talks). Per lecture: slide segments with start and end
+  time, one image per segment, its OCR text and the speech said during it (`ocr/seg_speech_ocr.json`), word-level
+  transcript (`speech/final+timestamps.json`), YouTube link. Train 19,883 slide segments (275.6 h), dev 2,014
+  (32.1 h), test 2,341 (34.3 h); median lecture 5 minutes, 14–15 slides. Sample test videos are still online.
+- Why this fills the gap: Video-MMMU has no marked evidence moments, so it cannot show that the right frames
+  were chosen. M3AV gives, for each slide, the seconds during which it is shown.
+- Declared design (fixed before any question is generated):
+  1. Questions: for each dev and test lecture, the large model (Nemotron-120B, API) writes multiple-choice
+     questions (4 options) about the content of one slide (its image and OCR), answerable only by seeing that
+     slide. Evidence moment = that slide's [start, end] seconds. The question generator never sees the other
+     slides' times, and the systems never see the evidence moment.
+  2. Filters, applied the same way to every question: drop a question that Qwen3-VL-4B answers correctly from the
+     question and options alone (no pictures, no transcript), and duplicates. A random sample of 100 test
+     questions is checked by a person (correct answer key; the slide is needed) before any system is run on test.
+  3. Videos: downloaded for dev and test lectures only (360p is enough for 4 frames of slides).
+  4. Measures: primary = evidence hit (one of the 4 shown frames lies inside the evidence moment), per question,
+     paired bootstrap over lectures; secondary = multiple-choice accuracy with Qwen3-VL-4B.
+  5. Systems: starting design, best framework (± speech text), Head A as trained on CG-Bench, Head A retrained on
+     M3AV train lectures (speech → slide moments, speaker-disjoint), Head B, 4 evenly spaced, dense MobileCLIP
+     top-4, dense option-aware top-4, and a VSI-style subtitle + visual search; all with K = 4 and the same answer
+     model. Settings are chosen on dev; test is run once.
+- Shortcut risk noted: a question that quotes the speech could be found by transcript search alone; this is a
+  legitimate route for the speech path, but the share of questions whose evidence is found by transcript search
+  alone is reported separately.
+- Videos (2026-10-31): 211 of the 212 dev and test lecture videos downloaded (360p). The one missing video is dev
+  lecture CHI-36F5D (YouTube tIEjZFlPwcw): YouTube asks for a signed-in account, so it is dropped from dev and its
+  questions are not generated. Test is complete (113 of 113 lectures).
+
+## Step 72 (2026-10-31): confirmation on fresh LongVideoBench questions, all four declared hypotheses final
+894 eligible questions on 500 videos; paired bootstrap over videos, 10,000 resamples, seed 20261024; Holm over
+H1-H4 (`scripts/v3_confirmation_report.py`, `reports/v3_confirmation/summary.md`). A failed answer (GPU out of
+memory) counts as wrong; one question failed in each 4B speech-text system.
+
+| Hypothesis | Difference (95% interval) | p (Holm) | Result |
+|---|---|---|---|
+| H1: heads (S4) − best framework (S1), Qwen3-VL-4B | −0.2 (−3.0..+2.7) | 0.92 | not supported |
+| H2: heads (S4) − best framework (S1), Nemotron-120B | +2.1 (−0.8..+5.1) | 0.34 | not supported |
+| H3: best framework + speech text (S1t) − starting framework (S0), 4B | +8.9 (+5.7..+12.2) | <0.0001 | supported |
+| H4: S1t − S0, Nemotron-120B | +8.3 (+4.8..+11.8) | <0.0001 | supported |
+
+- Reading: the improved pipeline (whole-video visual search matched to question and options, plus selected
+  speech text) beats the starting design on unseen questions with both a 4B and a 120B answer model. The learned
+  heads do not add accuracy over the best framework with either model.
+- Secondary (no correction): the best framework is no better than dense MobileCLIP top-4 (2B −0.8, 4B −0.1;
+  Nemotron pending, −0.7 on 436 questions) and clearly better than 4 evenly spaced frames (2B +7.5, 4B +8.6).
+  Head A alone with Nemotron: +2.8 (+0.0..+5.6), p 0.052, not significant.
+- So the paper cannot claim that frame selection beats a strong training-free rule; the confirmed result is the
+  pipeline against the starting design. This is why the lecture evidence (M3AV, step 71) comes next.
+- Pending: the Nemotron runs of the two standard rules (R2, R3), still filling in under the API rate limit.
+- Human check of the 100 M3AV test questions (step 71, item 2): the owner decided that the builder and the GPT
+  auditor check them independently instead of a person; a question is kept only if both confirm its answer key
+  from the slide. This is a protocol change from "checked by a person" and is reported as such.

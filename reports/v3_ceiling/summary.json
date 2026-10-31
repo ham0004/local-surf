@@ -3,15 +3,79 @@
   "accuracy": 58.5,
   "n": 82
  },
+ "Qwen3-VL-2B-Instruct dev H0_s0.1": {
+  "accuracy": 61.0,
+  "n": 82
+ },
+ "Qwen3-VL-2B-Instruct dev H0_s0.3": {
+  "accuracy": 57.3,
+  "n": 82
+ },
+ "Qwen3-VL-2B-Instruct dev H0_s0.7": {
+  "accuracy": 62.2,
+  "n": 82
+ },
+ "Qwen3-VL-2B-Instruct dev H0_s0.9": {
+  "accuracy": 58.5,
+  "n": 82
+ },
  "Qwen3-VL-2B-Instruct dev H600": {
   "accuracy": 59.8,
+  "n": 82
+ },
+ "Qwen3-VL-2B-Instruct dev H600_s0.1": {
+  "accuracy": 61.0,
+  "n": 82
+ },
+ "Qwen3-VL-2B-Instruct dev H600_s0.3": {
+  "accuracy": 59.8,
+  "n": 82
+ },
+ "Qwen3-VL-2B-Instruct dev H600_s0.7": {
+  "accuracy": 63.4,
+  "n": 82
+ },
+ "Qwen3-VL-2B-Instruct dev H600_s0.9": {
+  "accuracy": 56.1,
   "n": 82
  },
  "Qwen3-VL-2B-Instruct test H0": {
   "accuracy": 61.8,
   "n": 55
  },
+ "Qwen3-VL-2B-Instruct test H0_s0.1": {
+  "accuracy": 61.8,
+  "n": 55
+ },
+ "Qwen3-VL-2B-Instruct test H0_s0.3": {
+  "accuracy": 56.4,
+  "n": 55
+ },
+ "Qwen3-VL-2B-Instruct test H0_s0.7": {
+  "accuracy": 58.2,
+  "n": 55
+ },
+ "Qwen3-VL-2B-Instruct test H0_s0.9": {
+  "accuracy": 54.5,
+  "n": 55
+ },
  "Qwen3-VL-2B-Instruct test H600": {
+  "accuracy": 58.2,
+  "n": 55
+ },
+ "Qwen3-VL-2B-Instruct test H600_s0.1": {
+  "accuracy": 60.0,
+  "n": 55
+ },
+ "Qwen3-VL-2B-Instruct test H600_s0.3": {
+  "accuracy": 49.1,
+  "n": 55
+ },
+ "Qwen3-VL-2B-Instruct test H600_s0.7": {
+  "accuracy": 56.4,
+  "n": 55
+ },
+ "Qwen3-VL-2B-Instruct test H600_s0.9": {
   "accuracy": 58.2,
   "n": 55
  },
@@ -19,32 +83,208 @@
   "accuracy": 57.3,
   "n": 82
  },
+ "Qwen3-VL-4B-Instruct dev H0_s0.1": {
+  "accuracy": 52.4,
+  "n": 82
+ },
+ "Qwen3-VL-4B-Instruct dev H0_s0.3": {
+  "accuracy": 58.5,
+  "n": 82
+ },
+ "Qwen3-VL-4B-Instruct dev H0_s0.7": {
+  "accuracy": 58.5,
+  "n": 82
+ },
+ "Qwen3-VL-4B-Instruct dev H0_s0.9": {
+  "accuracy": 54.9,
+  "n": 82
+ },
  "Qwen3-VL-4B-Instruct dev H600": {
   "accuracy": 53.7,
+  "n": 82
+ },
+ "Qwen3-VL-4B-Instruct dev H600_s0.1": {
+  "accuracy": 53.7,
+  "n": 82
+ },
+ "Qwen3-VL-4B-Instruct dev H600_s0.3": {
+  "accuracy": 57.3,
+  "n": 82
+ },
+ "Qwen3-VL-4B-Instruct dev H600_s0.7": {
+  "accuracy": 62.2,
+  "n": 82
+ },
+ "Qwen3-VL-4B-Instruct dev H600_s0.9": {
+  "accuracy": 56.1,
   "n": 82
  },
  "Qwen3-VL-4B-Instruct test H0": {
   "accuracy": 50.9,
   "n": 55
  },
+ "Qwen3-VL-4B-Instruct test H0_s0.1": {
+  "accuracy": 50.9,
+  "n": 55
+ },
+ "Qwen3-VL-4B-Instruct test H0_s0.3": {
+  "accuracy": 50.9,
+  "n": 55
+ },
+ "Qwen3-VL-4B-Instruct test H0_s0.7": {
+  "accuracy": 58.2,
+  "n": 55
+ },
+ "Qwen3-VL-4B-Instruct test H0_s0.9": {
+  "accuracy": 56.4,
+  "n": 55
+ },
  "Qwen3-VL-4B-Instruct test H600": {
   "accuracy": 56.4,
+  "n": 55
+ },
+ "Qwen3-VL-4B-Instruct test H600_s0.1": {
+  "accuracy": 52.7,
+  "n": 55
+ },
+ "Qwen3-VL-4B-Instruct test H600_s0.3": {
+  "accuracy": 54.5,
+  "n": 55
+ },
+ "Qwen3-VL-4B-Instruct test H600_s0.7": {
+  "accuracy": 60.0,
+  "n": 55
+ },
+ "Qwen3-VL-4B-Instruct test H600_s0.9": {
+  "accuracy": 58.2,
   "n": 55
  },
  "nemotron-3.5-super-vl-120b-a12b dev H0": {
   "accuracy": 59.8,
   "n": 82
  },
+ "nemotron-3.5-super-vl-120b-a12b dev H0_s0.1": {
+  "accuracy": 68.3,
+  "n": 82
+ },
+ "nemotron-3.5-super-vl-120b-a12b dev H0_s0.3": {
+  "accuracy": 62.2,
+  "n": 82
+ },
+ "nemotron-3.5-super-vl-120b-a12b dev H0_s0.7": {
+  "accuracy": 69.5,
+  "n": 82
+ },
+ "nemotron-3.5-super-vl-120b-a12b dev H0_s0.9": {
+  "accuracy": 64.6,
+  "n": 82
+ },
  "nemotron-3.5-super-vl-120b-a12b dev H600": {
   "accuracy": 63.4,
+  "n": 82
+ },
+ "nemotron-3.5-super-vl-120b-a12b dev H600_s0.1": {
+  "accuracy": 68.3,
+  "n": 82
+ },
+ "nemotron-3.5-super-vl-120b-a12b dev H600_s0.3": {
+  "accuracy": 70.7,
+  "n": 82
+ },
+ "nemotron-3.5-super-vl-120b-a12b dev H600_s0.7": {
+  "accuracy": 69.5,
+  "n": 82
+ },
+ "nemotron-3.5-super-vl-120b-a12b dev H600_s0.9": {
+  "accuracy": 68.3,
   "n": 82
  },
  "nemotron-3.5-super-vl-120b-a12b test H0": {
   "accuracy": 65.5,
   "n": 55
  },
+ "nemotron-3.5-super-vl-120b-a12b test H0_s0.1": {
+  "accuracy": 70.9,
+  "n": 55
+ },
+ "nemotron-3.5-super-vl-120b-a12b test H0_s0.3": {
+  "accuracy": 65.5,
+  "n": 55
+ },
+ "nemotron-3.5-super-vl-120b-a12b test H0_s0.7": {
+  "accuracy": 65.5,
+  "n": 55
+ },
+ "nemotron-3.5-super-vl-120b-a12b test H0_s0.9": {
+  "accuracy": 61.8,
+  "n": 55
+ },
  "nemotron-3.5-super-vl-120b-a12b test H600": {
   "accuracy": 69.1,
+  "n": 55
+ },
+ "nemotron-3.5-super-vl-120b-a12b test H600_s0.1": {
+  "accuracy": 70.9,
+  "n": 55
+ },
+ "nemotron-3.5-super-vl-120b-a12b test H600_s0.3": {
+  "accuracy": 65.5,
+  "n": 55
+ },
+ "nemotron-3.5-super-vl-120b-a12b test H600_s0.7": {
+  "accuracy": 65.5,
+  "n": 55
+ },
+ "nemotron-3.5-super-vl-120b-a12b test H600_s0.9": {
+  "accuracy": 69.1,
+  "n": 55
+ },
+ "Qwen3-VL-2B-Instruct dev H0 ORACLE(any of 5 placements)": {
+  "accuracy": 70.7,
+  "n": 82
+ },
+ "Qwen3-VL-2B-Instruct dev H600 ORACLE(any of 5 placements)": {
+  "accuracy": 72.0,
+  "n": 82
+ },
+ "Qwen3-VL-2B-Instruct test H0 ORACLE(any of 5 placements)": {
+  "accuracy": 70.9,
+  "n": 55
+ },
+ "Qwen3-VL-2B-Instruct test H600 ORACLE(any of 5 placements)": {
+  "accuracy": 65.5,
+  "n": 55
+ },
+ "Qwen3-VL-4B-Instruct dev H0 ORACLE(any of 5 placements)": {
+  "accuracy": 72.0,
+  "n": 82
+ },
+ "Qwen3-VL-4B-Instruct dev H600 ORACLE(any of 5 placements)": {
+  "accuracy": 72.0,
+  "n": 82
+ },
+ "Qwen3-VL-4B-Instruct test H0 ORACLE(any of 5 placements)": {
+  "accuracy": 61.8,
+  "n": 55
+ },
+ "Qwen3-VL-4B-Instruct test H600 ORACLE(any of 5 placements)": {
+  "accuracy": 67.3,
+  "n": 55
+ },
+ "nemotron-3.5-super-vl-120b-a12b dev H0 ORACLE(any of 5 placements)": {
+  "accuracy": 79.3,
+  "n": 82
+ },
+ "nemotron-3.5-super-vl-120b-a12b dev H600 ORACLE(any of 5 placements)": {
+  "accuracy": 78.0,
+  "n": 82
+ },
+ "nemotron-3.5-super-vl-120b-a12b test H0 ORACLE(any of 5 placements)": {
+  "accuracy": 81.8,
+  "n": 55
+ },
+ "nemotron-3.5-super-vl-120b-a12b test H600 ORACLE(any of 5 placements)": {
+  "accuracy": 78.2,
   "n": 55
  }
 }

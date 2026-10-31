@@ -317,7 +317,6 @@ def stage_answer(a) -> None:
     lock = threading.Lock()
     state = {"answerer": None, "stop": False}
     rules = a.selectors.split(",")
-
     def one(qid: str) -> None:
         if state["stop"]:
             return
@@ -337,25 +336,26 @@ def stage_answer(a) -> None:
                 try:
                     ans, _ = model.answer(AnswerRequest(p.question, p.options, ex,
                                                         [_as_frame(c) for c in sorted(frames, key=lambda c: c.time_s)]))
-                except RuntimeError as e:            # GPU out of memory on one very long prompt: record it, go on
+                    failed = None
+                except RuntimeError as e:            # GPU out of memory on one very long prompt: a failed answer
                     if "out of memory" not in str(e):
                         raise
                     import torch  # noqa: PLC0415
                     torch.cuda.empty_cache()
-                    with lock, open(RUN / "skipped.jsonl", "a", encoding="utf-8") as fh:
-                        fh.write(json.dumps({"dataset": a.dataset, "pool": a.pool, "selector": rule, "words": a.words,
-                                             "tag": a.tag, "qa_id": qid, "reason": "gpu out of memory"}) + "\n")
-                    continue
+                    ans, failed = None, "gpu out of memory"
                 spent = time.perf_counter() - t0
-                with lock:
-                    budget.charge(spent / workers)
-                    cache[key] = {"key": key, "option": ans.option_index, "seconds": spent}
+                with lock:                           # a failure is cached under its full request key (never
+                    budget.charge(spent / workers)   # retried), charged to the ledger and scored as wrong
+                    cache[key] = {"key": key, "option": ans.option_index if ans else -1, "seconds": spent}
+                    if failed:
+                        cache[key]["failed"] = failed
                     with open(cache_path, "a", encoding="utf-8") as fh:
                         fh.write(json.dumps(cache[key]) + "\n")
             iv = qa[qid].evidence_intervals_s
             inside = lambda t: any(x - 1.0 <= t <= y + 1.0 for x, y in iv)  # noqa: E731
             row = {"dataset": a.dataset, "pool": a.pool, "selector": rule, "k": a.k, "words": a.words,
                    "qa_id": p.qa_id, "video_id": p.video_id, "correct": cache[key]["option"] == p.gold_option_index,
+                   "failed": cache[key].get("failed"),
                    "pool_size": len(p.candidates), "pool_hits_evidence": any(inside(c.time_s) for c in p.candidates) if iv else None,
                    "chosen_hits_evidence": any(inside(c.time_s) for c in frames) if iv else None,
                    "pool_seconds": sum(p.timings.get(x, 0.0) for x in ("retrieval", "head_a", "decode", "clip")),
