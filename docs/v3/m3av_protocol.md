@@ -1,0 +1,86 @@
+# Lecture study on M3AV: protocol (declared before any question is generated)
+
+Declared 2026-11-01 (research log step 79). Answers auditor notes P40–P41 of 2026-11-01. Changes after this date are
+appended at the end with a date and a reason; nothing above that line is edited.
+
+## Question
+On lectures by speakers never seen in training, does a question-conditioned frame selector put one of its 4 frames
+on the slide that answers the question more often than strong training-free rules, with the same frame budget?
+
+## Data
+- M3AV v1.0 (CC BY-NC-SA 4.0; source videos keep their own rights), official speaker-disjoint split: train 901,
+  dev 99, test 113 lectures. Slide segments come from `ocr/seg_speech_ocr.json` (start, end, OCR text, speech);
+  the saved slide image is the **last** frame of its segment.
+- Videos: dev and test only, 360p. Dev lecture CHI-36F5D is unavailable (YouTube sign-in) and is excluded; test is
+  complete (113 of 113).
+- Train lectures (no video) supply questions and speech for training Head A only.
+
+## Questions
+1. **Candidate slides.** A segment is eligible when it lasts at least 4 s and its OCR has at least 8 distinct words.
+   The first segment of a lecture (title slide) is not used.
+2. **Generation.** Nemotron-3.5-Super-VL-120B (NVIDIA API, temperature 0) sees the slide image and its OCR text,
+   never the speech or the times. It writes one multiple-choice question with 4 options and returns the exact slide
+   words that support the answer (`evidence_text`). It is told: answerable from this slide's visible content; not
+   about the title, authors, affiliations or slide numbers; not answerable from general knowledge. Prompt and
+   settings are saved with the questions.
+3. **Sampling.** Per lecture, eligible slides are taken in a fixed pseudo-random order (SHA-256 of
+   `m3av-protocol:<lecture>:<segment start>`) until the quota is met: train 4 questions on 300 lectures chosen by
+   the same hash; dev up to 6 per lecture; test up to 10 per lecture.
+4. **Automatic filters**, in this order, with the number removed by each reported per split and lecture:
+   - F1 format: 4 distinct non-empty options, key in range.
+   - F2 grounding: `evidence_text` matches the slide OCR (at least 80% of its words present).
+   - F3 occurrences: every segment of the lecture whose OCR contains `evidence_text` (same 80% rule) is a valid
+     evidence segment, so a repeated slide is not scored as a miss.
+   - F4 visibility (dev and test): within each valid segment, frames at 1 frame per second (360p) are compared with
+     the saved slide image (both reduced to 64 × 36 grey, normalised correlation). The **visible span** is the
+     seconds whose correlation is at least τ. τ is chosen on dev before test is generated, by looking at 20 dev
+     segments with slide builds, and is written here as an amendment. A question whose total visible span is under
+     2 s is dropped. This is a proxy for "the slide as saved is on screen"; it does not prove that the specific
+     fact is legible.
+   - No answer-model filter. Two labels are recorded for every question and used only in secondary analyses:
+     `q_only` (Qwen3-VL-4B answers correctly from the question and options alone) and `t_only` (Qwen3-VL-4B answers
+     correctly without pictures from 600 transcript words chosen by BM25 over the whole transcript).
+5. **Freeze.** The test cohort file (questions, options, keys, evidence text, valid segments, visible spans, filter
+   outcomes, generator prompt and settings, and this protocol's τ) is written once; its SHA-256 is recorded in the
+   research log before any system runs on test.
+
+## Measures
+- **Primary: source-slide interval hit@4**: 1 when at least one of the 4 frames given to the answer model lies inside
+  a visible span of a valid evidence segment (1 s tolerance), else 0. Named this way because the visible span is a
+  proxy, not checked fact visibility.
+- Secondary: multiple-choice accuracy with Qwen3-VL-4B (same prompt as all earlier work), on all questions and on
+  the subsets without `q_only` and without `t_only` (these subsets depend on Qwen and are labelled so).
+- Uncertainty: paired bootstrap over **lectures** (10,000 resamples, seed 20261101); questions and lecture counts are
+  both reported.
+
+## Systems (K = 4, the same answer model and prompt)
+S0 starting design; S1 best framework; S1t best framework + speech text; S2c Head A as trained on CG-Bench; **S2m Head
+A retrained on M3AV train lectures** (speech lines → evidence segments, same architecture and training recipe; no
+dev or test lecture used); S3 Head B; R2 4 evenly spaced frames; R3 dense MobileCLIP top-4; R4 dense option-aware
+MobileCLIP top-4; R5 a VSI-style subtitle + visual search (both paths, Gaussian spread of subtitle scores). Settings
+are chosen on dev only. Every method and setting is frozen (configs and checkpoints hashed in the research log)
+before the test cohort is generated.
+
+## Declared contrasts (primary measure, Holm over both)
+- **L1:** S2m − R3 (the trained lecture locator against the strongest training-free frame rule found so far).
+- **L2:** S2m − S1 (against the best framework).
+All other comparisons are secondary and uncorrected.
+
+## Question review
+- **Audit sample:** 100 test questions, one per lecture from 100 of the 113 lectures (lectures and questions picked
+  by SHA-256 of `m3av-review:<qa_id>`), drawn after the freeze.
+- **Packet per question** (no system names, outputs or results): question, options, key, `evidence_text`, the saved
+  slide image at full resolution, 3 frames from the visible span at 360p (the evaluation resolution), the proposed
+  visible span, the transcript lines inside it, and the other valid occurrences.
+- **Reviewers:** the builder and the GPT auditor, each alone, without seeing the other's verdicts, record for each
+  question: accept / reject / uncertain; key correct; one best answer; supported by the slide; fact legible at 360p
+  in the proposed span; shortcut (general knowledge, transcript alone); a reason code and a short note. The builder
+  reviews only after the method freeze, so nothing from the review can feed back into a method. A person later
+  reviews the same packet in random order, also blind to systems and results.
+- **Analyses:** primary = the whole frozen cohort. Secondary 1 = the cohort without questions rejected in the
+  review sample, with the same mask for every system (sample results are also reported with their rejection rate,
+  which estimates the cohort's error rate). Corrected keys or spans, if any, are a separate analysis. Neither
+  secondary analysis is promoted over the primary.
+
+## Amendments
+(none yet)
