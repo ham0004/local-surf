@@ -1181,3 +1181,36 @@ no answer-model filter, only labelled `q_only` / `t_only` subsets for secondary 
 declared contrasts L1 (Head A retrained on M3AV − dense MobileCLIP top-4) and L2 (− best framework), Holm over both;
 review of a 100-question sample by builder and auditor independently, then a blind human review; primary analysis
 on the whole frozen cohort.
+
+## Step 80 (2026-11-01): M3AV videos checked: complete and time-aligned
+`scripts/m3av_video_check.py` → `reports/m3av/video_check.json`. Without ffmpeg, yt-dlp kept the 360p picture
+stream (`<id>.f605.mp4`) and the sound separately; only the picture is used. For every dev/test lecture: decodable
+duration vs M3AV's last slide end, and the correlation (64 × 36 grey) between M3AV's saved slide image and our
+frame at the end of 5 segments.
+- Five picture streams were truncated (IPP-68329, MLS-ED58D, NIH-95F8B, NIH-B5E52, NIH-EFBA6: video shorter than
+  the slides); they were downloaded again and are now complete.
+- After that: 211 of 211 videos decode; median correlation 1.00 and no lecture below 0.5, so M3AV's slide times
+  fit our copies (no intro offset). Videos running past the last slide are talks with questions at the end.
+- Dev lecture NIH-F5E14 has no slide segments in M3AV, so it yields no questions (it has no eligible slide).
+
+## Step 81 (2026-11-01): M3AV dev questions generated; visibility measure replaced on dev (protocol amendment 2)
+`scripts/m3av_questions.py --split dev` → `data/m3av/questions_dev.jsonl`: 98 dev lectures, 1,705 eligible slides,
+703 asked (Nemotron), 27 failed F1 (format), 134 failed F2 (quoted words not on the slide), **542 kept**. 79 lectures
+reached the quota of 6; NIH-306B0 gave none (all 4 eligible slides failed F2) and NIH-F5E14 has no slides. The
+generator put the correct option first in 391 of 517 kept questions; after the fixed option shuffle (amendment 1)
+the key positions are 124 / 125 / 136 / 132.
+
+F4 (visibility): the declared 64 × 36 grey correlation could not separate a different slide with the same layout
+(up to 0.97) from the right slide under burned-in subtitles (0.58), seen on the 20 dev sheets. Replaced, on dev,
+by edge-map correlation at 256 × 144 with τ = 0.85 and a neighbour check (the frame must not match the previous or
+next segment's slide better). τ = 0.6 from the first set failed a second unseen set; 0.85 was then checked on a
+third unseen set of 20 segments (100 frames by eye): 0 of 22 other-slide frames counted visible, 62 of 62 complete-
+slide frames counted visible, 8 of 16 build-stage frames counted visible (the open weakness: an incomplete build
+can be in the span). Full record in `docs/v3/m3av_protocol.md`, amendment 2; sheets in `reports/m3av/sheets_*`.
+`scripts/m3av_visibility.py apply --split dev --tau 0.85` → `questions_dev_visible.jsonl`: **517 questions, 96
+lectures**, median visible time 30 s, 1.46 valid evidence segments per question.
+
+Train generation (for retraining Head A) stopped at its time cap after 156 calls: the ledger sums seconds over
+the parallel workers, including waits on API rate limits (HTTP 429), so 24 h of summed time ran out in a few hours
+of wall time. The cap was raised to 120 summed hours (`GEN_LIMITS`; the 6,000-call cap is unchanged) and the run
+resumed with 4 workers from the cache.

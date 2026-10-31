@@ -83,4 +83,23 @@ All other comparisons are secondary and uncorrected.
   secondary analysis is promoted over the primary.
 
 ## Amendments
-(none yet)
+- 2026-11-01, before any generation beyond a 2-lecture trial (dev CHI-003EC, CHI-051B1; 16 calls): the 4 options of
+  every question are put in a fixed order given by SHA-256 of `m3av-options:<qa_id>:<k>`, so the position of the
+  correct option does not follow the generator's habits; the generator's own position is kept as
+  `generated_answer_index`. Generation uses at most 3 × quota slides per lecture; the quota counts questions that
+  pass F1 and F2.
+- 2026-11-01, amendment 2, on dev only, before any test question exists (F4 measure and τ). The declared measure
+  (64 × 36 grey correlation) was looked at on 20 dev segments with builds (`reports/m3av/sheets_grey_set1/`) and could
+  not work with any τ: a different slide with the same layout scored up to 0.97 (dark-room NIH talks), while the
+  right slide under burned-in subtitles scored 0.58. F4 is therefore: **edge-map correlation** (grey 256 × 144,
+  Gaussian blur 1 px, absolute horizontal + vertical differences, normalised) between the frame and the saved
+  slide, **τ = 0.85**, and the frame must match its own saved slide at least as well as the saved slides of the
+  previous and next segments (a neighbour that is itself a valid evidence segment of the question, or has no saved
+  image, is not compared). How τ was set: 0.6 was proposed from set 1 and failed on a second unseen set of 20
+  (`sheets_edge_set2/`: a slide M3AV never saved scored 0.80-0.82); 0.85 was set from sets 1-2 and checked on a
+  third unseen set of 20 (`sheets_edge_set3/`, 100 frames judged by eye): different slide, speaker or intro shown,
+  22 frames, 0 counted visible; complete saved slide, 62 frames, 62 counted visible; earlier build stage of the
+  slide (part not yet shown), 16 frames, 8 counted visible. So a visible span can include a build stage whose missing
+  part may hold the fact; the question review's "fact legible in the proposed span" item measures this. Heavy
+  burned-in subtitles (correlation about 0.72) take those seconds out of the span (conservative: a frame on another
+  slide is not credited). Dev result: 542 → 517 questions (25 under 2 s visible), 96 lectures.

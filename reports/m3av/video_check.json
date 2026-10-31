@@ -1,0 +1,3142 @@
+[
+ {
+  "lecture": "CHI-003EC",
+  "split": "dev",
+  "video": "L-War8GOlk4.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.45,
+  "video_end": 304.3,
+  "corr": [
+   0.97,
+   0.92,
+   0.74,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-051B1",
+  "split": "dev",
+  "video": "R1K3ftXhZFs.f605.mp4",
+  "exists": true,
+  "m3av_end": 324.46,
+  "video_end": 324.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-0734A",
+  "split": "dev",
+  "video": "SuYs7CBK6HI.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.45,
+  "video_end": 303.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-08355",
+  "split": "dev",
+  "video": "bI31N9_yIIw.f605.mp4",
+  "exists": true,
+  "m3av_end": 298.0,
+  "video_end": 303.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-0B493",
+  "split": "test",
+  "video": "WMRpPDfg2_o.f605.mp4",
+  "exists": true,
+  "m3av_end": 265.0,
+  "video_end": 266.4,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-0E981",
+  "split": "test",
+  "video": "WtBmu3-HNhM.f605.mp4",
+  "exists": true,
+  "m3av_end": 255.45,
+  "video_end": 255.5,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-0ED44",
+  "split": "dev",
+  "video": "uTDfiGbQU78.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 304.0,
+  "corr": [
+   1.0,
+   0.79,
+   0.97,
+   0.88,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-11811",
+  "split": "dev",
+  "video": "Fvn_qjWJqwk.f605.mp4",
+  "exists": true,
+  "m3av_end": 302.45,
+  "video_end": 302.9,
+  "corr": [
+   1.0,
+   1.0,
+   0.44,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-167A9",
+  "split": "test",
+  "video": "CBLHNjdTf38.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 303.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-17856",
+  "split": "test",
+  "video": "1Cf7PXiPG_M.f605.mp4",
+  "exists": true,
+  "m3av_end": 282.0,
+  "video_end": 297.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-19422",
+  "split": "dev",
+  "video": "r-fda3BJkH0.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.45,
+  "video_end": 304.0,
+  "corr": [
+   0.99,
+   1.0,
+   1.0,
+   1.0,
+   0.56
+  ]
+ },
+ {
+  "lecture": "CHI-1B3EE",
+  "split": "dev",
+  "video": "o8qwzuFI9uY.f605.mp4",
+  "exists": true,
+  "m3av_end": 305.0,
+  "video_end": 305.5,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-1EE11",
+  "split": "dev",
+  "video": "SOtTRsHMxD8.f605.mp4",
+  "exists": true,
+  "m3av_end": 286.0,
+  "video_end": 286.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-214E5",
+  "split": "test",
+  "video": "0jbZ4gf7NzI.f605.mp4",
+  "exists": true,
+  "m3av_end": 293.0,
+  "video_end": 297.6,
+  "corr": [
+   1.0,
+   1.0,
+   0.99,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-218EE",
+  "split": "test",
+  "video": "U5C3XPQ1frg.f605.mp4",
+  "exists": true,
+  "m3av_end": 286.0,
+  "video_end": 298.5,
+  "corr": [
+   0.93,
+   0.96,
+   0.61,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-2231D",
+  "split": "test",
+  "video": "0iErmMi7Q5M.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.45,
+  "video_end": 303.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.85
+  ]
+ },
+ {
+  "lecture": "CHI-225B4",
+  "split": "test",
+  "video": "Uncl8VfYMY0.f605.mp4",
+  "exists": true,
+  "m3av_end": 299.45,
+  "video_end": 300.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-23C41",
+  "split": "test",
+  "video": "eL48dcsyPMc.f605.mp4",
+  "exists": true,
+  "m3av_end": 241.0,
+  "video_end": 304.0,
+  "corr": [
+   0.98,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-27037",
+  "split": "dev",
+  "video": "wWYoler_CPg.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.45,
+  "video_end": 304.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-27F3D",
+  "split": "test",
+  "video": "CYclaCYRnkc.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.45,
+  "video_end": 303.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.78
+  ]
+ },
+ {
+  "lecture": "CHI-2944C",
+  "split": "test",
+  "video": "XIujPZRca7Q.f605.mp4",
+  "exists": true,
+  "m3av_end": 313.45,
+  "video_end": 315.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-2DF60",
+  "split": "test",
+  "video": "bY82dGWywj8.f605.mp4",
+  "exists": true,
+  "m3av_end": 301.45,
+  "video_end": 301.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-2E0CA",
+  "split": "dev",
+  "video": "JWcH8uRRf6k.f605.mp4",
+  "exists": true,
+  "m3av_end": 290.45,
+  "video_end": 290.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.91
+  ]
+ },
+ {
+  "lecture": "CHI-2F08D",
+  "split": "test",
+  "video": "sJzGkogeUYI.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 303.8,
+  "corr": [
+   1.0,
+   0.98,
+   0.99,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-30F23",
+  "split": "dev",
+  "video": "0poelmDzPpg.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 303.6,
+  "corr": [
+   0.94,
+   1.0,
+   0.99,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-3422A",
+  "split": "dev",
+  "video": "-LumVZu7BT4.f605.mp4",
+  "exists": true,
+  "m3av_end": 302.45,
+  "video_end": 302.6,
+  "corr": [
+   1.0,
+   0.78,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-34D3C",
+  "split": "dev",
+  "video": "qRnrBDQo08w.f605.mp4",
+  "exists": true,
+  "m3av_end": 300.45,
+  "video_end": 301.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   0.89,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-3672F",
+  "split": "dev",
+  "video": "UtHz4bNhBBM.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 303.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-3755A",
+  "split": "dev",
+  "video": "_M14LJYDVqU.f605.mp4",
+  "exists": true,
+  "m3av_end": 302.0,
+  "video_end": 303.4,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-3A4DE",
+  "split": "dev",
+  "video": "t19SjXbM9Ro.f605.mp4",
+  "exists": true,
+  "m3av_end": 286.0,
+  "video_end": 287.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-46098",
+  "split": "dev",
+  "video": "eRjJvT_rBEY.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.45,
+  "video_end": 304.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-46FDD",
+  "split": "test",
+  "video": "KAjCiMAKf4I.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 304.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-47918",
+  "split": "dev",
+  "video": "kr7ntnsCLIc.f605.mp4",
+  "exists": true,
+  "m3av_end": 296.45,
+  "video_end": 296.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-4B63D",
+  "split": "test",
+  "video": "QLj1ZxJDsSE.f605.mp4",
+  "exists": true,
+  "m3av_end": 301.45,
+  "video_end": 301.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-4CFE6",
+  "split": "dev",
+  "video": "gC8_bgS2Hvw.f605.mp4",
+  "exists": true,
+  "m3av_end": 289.0,
+  "video_end": 290.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   0.94,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-4EB67",
+  "split": "test",
+  "video": "6aYe-0sczSc.f605.mp4",
+  "exists": true,
+  "m3av_end": 301.0,
+  "video_end": 303.6,
+  "corr": [
+   1.0,
+   1.0,
+   0.99,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-4F694",
+  "split": "dev",
+  "video": "RPmJihWWgik.f605.mp4",
+  "exists": true,
+  "m3av_end": 292.0,
+  "video_end": 292.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-56E9C",
+  "split": "dev",
+  "video": "g4Nrd5mv_Tk.f605.mp4",
+  "exists": true,
+  "m3av_end": 291.0,
+  "video_end": 298.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-57172",
+  "split": "dev",
+  "video": "0Ez7PzqGLBs.f605.mp4",
+  "exists": true,
+  "m3av_end": 233.0,
+  "video_end": 234.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-57F51",
+  "split": "test",
+  "video": "haN0CeasdJQ.f605.mp4",
+  "exists": true,
+  "m3av_end": 307.45,
+  "video_end": 307.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.99
+  ]
+ },
+ {
+  "lecture": "CHI-58264",
+  "split": "dev",
+  "video": "hVIdLtIIaqs.f605.mp4",
+  "exists": true,
+  "m3av_end": 299.47,
+  "video_end": 300.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.99
+  ]
+ },
+ {
+  "lecture": "CHI-5A304",
+  "split": "test",
+  "video": "cazb89NxkhU.f605.mp4",
+  "exists": true,
+  "m3av_end": 298.0,
+  "video_end": 298.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-5A73B",
+  "split": "test",
+  "video": "xzVhcomFmiE.f605.mp4",
+  "exists": true,
+  "m3av_end": 295.0,
+  "video_end": 299.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-606EC",
+  "split": "dev",
+  "video": "SMIvQ9yRmGA.f605.mp4",
+  "exists": true,
+  "m3av_end": 284.45,
+  "video_end": 285.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-61951",
+  "split": "dev",
+  "video": "st0cySL4w5E.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 304.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-62AB9",
+  "split": "dev",
+  "video": "mNW_i_vZJe8.f605.mp4",
+  "exists": true,
+  "m3av_end": 325.45,
+  "video_end": 326.4,
+  "corr": [
+   0.75,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-62E71",
+  "split": "dev",
+  "video": "2yrxiYbeu78.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 303.7,
+  "corr": [
+   0.99,
+   0.93,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-655DC",
+  "split": "test",
+  "video": "sfVUbD0xuUs.f605.mp4",
+  "exists": true,
+  "m3av_end": 289.45,
+  "video_end": 289.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-67576",
+  "split": "dev",
+  "video": "pBjIrX9H-Ns.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.45,
+  "video_end": 304.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-694FA",
+  "split": "dev",
+  "video": "DOFgZc92450.f605.mp4",
+  "exists": true,
+  "m3av_end": 298.0,
+  "video_end": 298.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-6B261",
+  "split": "test",
+  "video": "-x_wzLonbNI.f605.mp4",
+  "exists": true,
+  "m3av_end": 290.45,
+  "video_end": 290.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-6CF4B",
+  "split": "dev",
+  "video": "B46Q8ez5b1o.f605.mp4",
+  "exists": true,
+  "m3av_end": 300.4,
+  "video_end": 301.1,
+  "corr": [
+   0.73,
+   1.0,
+   1.0,
+   1.0,
+   0.96
+  ]
+ },
+ {
+  "lecture": "CHI-711FD",
+  "split": "test",
+  "video": "n2enrJJZdTs.f605.mp4",
+  "exists": true,
+  "m3av_end": 296.0,
+  "video_end": 297.0,
+  "corr": [
+   1.0,
+   0.92,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-72910",
+  "split": "dev",
+  "video": "GwXAvteY5xA.f605.mp4",
+  "exists": true,
+  "m3av_end": 289.0,
+  "video_end": 290.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   0.99,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-77EC8",
+  "split": "dev",
+  "video": "7VX7KTS1AQw.f605.mp4",
+  "exists": true,
+  "m3av_end": 300.0,
+  "video_end": 301.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-79C06",
+  "split": "test",
+  "video": "OzOghxXFr2s.f605.mp4",
+  "exists": true,
+  "m3av_end": 321.0,
+  "video_end": 322.1,
+  "corr": [
+   1.0,
+   0.96,
+   0.98,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-7AC32",
+  "split": "dev",
+  "video": "VwP9Lb60qZU.f605.mp4",
+  "exists": true,
+  "m3av_end": 280.45,
+  "video_end": 281.0,
+  "corr": [
+   1.0,
+   1.0,
+   0.99,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-828B0",
+  "split": "test",
+  "video": "CSVPi7VMmm8.f605.mp4",
+  "exists": true,
+  "m3av_end": 289.0,
+  "video_end": 290.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-846E6",
+  "split": "test",
+  "video": "4Ib3wAuv7AE.f605.mp4",
+  "exists": true,
+  "m3av_end": 309.0,
+  "video_end": 309.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-84E20",
+  "split": "dev",
+  "video": "n2lL6HVt2xo.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 304.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-8670C",
+  "split": "dev",
+  "video": "lU0xoasBbZI.f605.mp4",
+  "exists": true,
+  "m3av_end": 299.45,
+  "video_end": 299.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-87A93",
+  "split": "test",
+  "video": "9IDx9u67G74.f605.mp4",
+  "exists": true,
+  "m3av_end": 320.0,
+  "video_end": 320.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-8B1C9",
+  "split": "test",
+  "video": "4C9UPHmtHmk.f605.mp4",
+  "exists": true,
+  "m3av_end": 248.0,
+  "video_end": 300.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-8C86E",
+  "split": "test",
+  "video": "DaoC55VqQDw.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 303.7,
+  "corr": [
+   1.0,
+   1.0,
+   0.99,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-8F418",
+  "split": "dev",
+  "video": "YQRJIXAjj3c.f605.mp4",
+  "exists": true,
+  "m3av_end": 293.0,
+  "video_end": 300.7,
+  "corr": [
+   0.98,
+   1.0,
+   0.2,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-93140",
+  "split": "test",
+  "video": "xrvTtvvi4oE.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 304.1,
+  "corr": [
+   0.97,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-946C1",
+  "split": "dev",
+  "video": "zYfbe4StZ6w.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.45,
+  "video_end": 306.3,
+  "corr": [
+   1.0,
+   0.98,
+   0.99
+  ]
+ },
+ {
+  "lecture": "CHI-96A54",
+  "split": "dev",
+  "video": "F1bUcqQ67Lo.f605.mp4",
+  "exists": true,
+  "m3av_end": 288.0,
+  "video_end": 289.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-98CF8",
+  "split": "dev",
+  "video": "_806sAPPmn8.f605.mp4",
+  "exists": true,
+  "m3av_end": 288.0,
+  "video_end": 289.3,
+  "corr": [
+   0.98,
+   0.98,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-9BE5C",
+  "split": "test",
+  "video": "x29olTLAPw8.f605.mp4",
+  "exists": true,
+  "m3av_end": 289.45,
+  "video_end": 290.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-9CA48",
+  "split": "test",
+  "video": "zzYY4uYJmAQ.f605.mp4",
+  "exists": true,
+  "m3av_end": 244.0,
+  "video_end": 257.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-9D827",
+  "split": "test",
+  "video": "1de7zxBseps.f605.mp4",
+  "exists": true,
+  "m3av_end": 285.0,
+  "video_end": 285.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-A1C41",
+  "split": "test",
+  "video": "qXjeWKDQX6E.f605.mp4",
+  "exists": true,
+  "m3av_end": 240.0,
+  "video_end": 240.5,
+  "corr": [
+   1.0,
+   1.0,
+   0.99,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-A25F0",
+  "split": "dev",
+  "video": "mxMoqi58A4I.f605.mp4",
+  "exists": true,
+  "m3av_end": 280.0,
+  "video_end": 280.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-A5152",
+  "split": "test",
+  "video": "tTbQGPz4asY.f605.mp4",
+  "exists": true,
+  "m3av_end": 226.45,
+  "video_end": 303.7,
+  "corr": [
+   1.0,
+   0.99,
+   0.99,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-A6FF6",
+  "split": "test",
+  "video": "1M7vfTJfzt0.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.45,
+  "video_end": 303.6,
+  "corr": [
+   1.0,
+   0.97,
+   0.25,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-A8B69",
+  "split": "test",
+  "video": "YXd-a0asYJ0.f605.mp4",
+  "exists": true,
+  "m3av_end": 301.45,
+  "video_end": 301.5,
+  "corr": [
+   1.0,
+   0.94,
+   1.0,
+   0.98,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-A9D9B",
+  "split": "dev",
+  "video": "5JdF_R9n850.f605.mp4",
+  "exists": true,
+  "m3av_end": 301.0,
+  "video_end": 302.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-ACBAC",
+  "split": "test",
+  "video": "Auo2Lk77IBE.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 304.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-B0B09",
+  "split": "test",
+  "video": "sG4ZlyuSXKU.f605.mp4",
+  "exists": true,
+  "m3av_end": 309.45,
+  "video_end": 309.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-B9D1C",
+  "split": "test",
+  "video": "kEDXCczoag8.f605.mp4",
+  "exists": true,
+  "m3av_end": 311.45,
+  "video_end": 311.5,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-BABFD",
+  "split": "test",
+  "video": "emkrXdUcUag.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.25,
+  "video_end": 304.0,
+  "corr": [
+   1.0,
+   0.99,
+   0.98,
+   1.0,
+   0.77
+  ]
+ },
+ {
+  "lecture": "CHI-BD98A",
+  "split": "test",
+  "video": "vM3FJqno61A.f605.mp4",
+  "exists": true,
+  "m3av_end": 344.0,
+  "video_end": 345.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-C1919",
+  "split": "test",
+  "video": "1oJfnP_9pR0.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 304.4,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-C7599",
+  "split": "test",
+  "video": "GXwc6YVg22I.f605.mp4",
+  "exists": true,
+  "m3av_end": 289.0,
+  "video_end": 290.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-CA6CD",
+  "split": "test",
+  "video": "WZ49qat9id4.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.45,
+  "video_end": 304.0,
+  "corr": [
+   0.99,
+   0.99,
+   1.0,
+   0.99,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-CF7C8",
+  "split": "test",
+  "video": "OKnrwKHXybA.f605.mp4",
+  "exists": true,
+  "m3av_end": 325.0,
+  "video_end": 325.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-D1899",
+  "split": "dev",
+  "video": "mmptWeCS4Bk.f605.mp4",
+  "exists": true,
+  "m3av_end": 306.0,
+  "video_end": 306.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-D3473",
+  "split": "test",
+  "video": "QYlYQYYwSl8.f605.mp4",
+  "exists": true,
+  "m3av_end": 300.45,
+  "video_end": 301.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-D36EE",
+  "split": "dev",
+  "video": "tVCPZ68j88o.f605.mp4",
+  "exists": true,
+  "m3av_end": 326.0,
+  "video_end": 327.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-D38C1",
+  "split": "test",
+  "video": "vDCLq_JugSI.f605.mp4",
+  "exists": true,
+  "m3av_end": 302.45,
+  "video_end": 302.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-D7330",
+  "split": "test",
+  "video": "ewVN9p1-OuE.f605.mp4",
+  "exists": true,
+  "m3av_end": 272.0,
+  "video_end": 272.9,
+  "corr": [
+   1.0,
+   1.0,
+   0.93,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-DC27E",
+  "split": "test",
+  "video": "v6H3SBiC4Fs.f605.mp4",
+  "exists": true,
+  "m3av_end": 339.0,
+  "video_end": 339.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-DDFA1",
+  "split": "test",
+  "video": "cHoDTVv4mpM.f605.mp4",
+  "exists": true,
+  "m3av_end": 291.45,
+  "video_end": 292.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-DED34",
+  "split": "test",
+  "video": "-7SguLmalco.f605.mp4",
+  "exists": true,
+  "m3av_end": 298.0,
+  "video_end": 299.1,
+  "corr": [
+   1.0,
+   1.0,
+   0.8,
+   0.94,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-E0BD3",
+  "split": "test",
+  "video": "mjTo7u_y_f4.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.0,
+  "video_end": 303.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-E26DF",
+  "split": "test",
+  "video": "bbHZmUV5Tlc.f605.mp4",
+  "exists": true,
+  "m3av_end": 302.45,
+  "video_end": 302.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-E4274",
+  "split": "dev",
+  "video": "UdlogIWBs0U.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.35,
+  "video_end": 303.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-E6183",
+  "split": "test",
+  "video": "u7aTVItQfIA.f605.mp4",
+  "exists": true,
+  "m3av_end": 313.0,
+  "video_end": 314.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-E70A7",
+  "split": "dev",
+  "video": "lnrZrd4G68Q.f605.mp4",
+  "exists": true,
+  "m3av_end": 304.45,
+  "video_end": 304.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.93
+  ]
+ },
+ {
+  "lecture": "CHI-E7776",
+  "split": "dev",
+  "video": "4A7uie97omA.f605.mp4",
+  "exists": true,
+  "m3av_end": 296.0,
+  "video_end": 297.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-EA98D",
+  "split": "dev",
+  "video": "xVQrx_6cyXo.f605.mp4",
+  "exists": true,
+  "m3av_end": 302.0,
+  "video_end": 302.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-EA9B8",
+  "split": "test",
+  "video": "wepHIba5jsc.f605.mp4",
+  "exists": true,
+  "m3av_end": 324.5,
+  "video_end": 324.8,
+  "corr": [
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-EBB6C",
+  "split": "dev",
+  "video": "67ZaHFL5B_c.f605.mp4",
+  "exists": true,
+  "m3av_end": 303.45,
+  "video_end": 303.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   0.51,
+   0.97
+  ]
+ },
+ {
+  "lecture": "CHI-EFC5E",
+  "split": "dev",
+  "video": "5eFW7IY6wPU.f605.mp4",
+  "exists": true,
+  "m3av_end": 289.45,
+  "video_end": 290.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-F39EF",
+  "split": "dev",
+  "video": "HJTam8_Yisw.f605.mp4",
+  "exists": true,
+  "m3av_end": 299.0,
+  "video_end": 299.6,
+  "corr": [
+   1.0,
+   1.0,
+   0.97,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-F48F2",
+  "split": "test",
+  "video": "iCcrrL2XXu8.f605.mp4",
+  "exists": true,
+  "m3av_end": 272.45,
+  "video_end": 273.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-F48F3",
+  "split": "dev",
+  "video": "YeUy7gaFm48.f605.mp4",
+  "exists": true,
+  "m3av_end": 279.45,
+  "video_end": 279.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-F54B7",
+  "split": "dev",
+  "video": "zMYS17AafA0.f605.mp4",
+  "exists": true,
+  "m3av_end": 292.45,
+  "video_end": 292.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-F7BF8",
+  "split": "test",
+  "video": "dvNGPp5kIdQ.f605.mp4",
+  "exists": true,
+  "m3av_end": 317.0,
+  "video_end": 317.9,
+  "corr": [
+   0.84,
+   1.0,
+   1.0,
+   0.98,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-FDB72",
+  "split": "test",
+  "video": "UWLnMYJfCAI.f605.mp4",
+  "exists": true,
+  "m3av_end": 297.0,
+  "video_end": 298.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "CHI-FE542",
+  "split": "dev",
+  "video": "_LBEVTtY2kc.f605.mp4",
+  "exists": true,
+  "m3av_end": 294.465,
+  "video_end": 297.9,
+  "corr": [
+   1.0,
+   0.39,
+   1.0,
+   1.0,
+   0.64
+  ]
+ },
+ {
+  "lecture": "IPP-10817",
+  "split": "dev",
+  "video": "V1Cd6eIZ_Is.f605.mp4",
+  "exists": true,
+  "m3av_end": 4832.45,
+  "video_end": 4834.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-313F8",
+  "split": "test",
+  "video": "jIAsGvMmOkY.f605.mp4",
+  "exists": true,
+  "m3av_end": 2972.45,
+  "video_end": 3213.4,
+  "corr": [
+   0.89,
+   1.0,
+   0.99,
+   1.0,
+   0.85
+  ]
+ },
+ {
+  "lecture": "IPP-3239F",
+  "split": "dev",
+  "video": "Tc5KkhrJq_E.f605.mp4",
+  "exists": true,
+  "m3av_end": 2868.45,
+  "video_end": 2883.8,
+  "corr": [
+   1.0,
+   0.93,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-36B00",
+  "split": "test",
+  "video": "Y7tYEI22UCk.f605.mp4",
+  "exists": true,
+  "m3av_end": 941.45,
+  "video_end": 942.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-3F215",
+  "split": "test",
+  "video": "tZnE8Z5T7xI.f605.mp4",
+  "exists": true,
+  "m3av_end": 1090.0,
+  "video_end": 1090.5,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-5239A",
+  "split": "test",
+  "video": "3TsFZ697nK0.f605.mp4",
+  "exists": true,
+  "m3av_end": 1197.0,
+  "video_end": 1197.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-58EFF",
+  "split": "dev",
+  "video": "aHDAUvQcfhw.f605.mp4",
+  "exists": true,
+  "m3av_end": 643.0,
+  "video_end": 644.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-68329",
+  "split": "test",
+  "video": "Rg6CdtJ7nMk.f605.mp4",
+  "exists": true,
+  "m3av_end": 467.45,
+  "video_end": 467.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-8359A",
+  "split": "test",
+  "video": "H1qgDBPM_Jo.f605.mp4",
+  "exists": true,
+  "m3av_end": 1090.0,
+  "video_end": 1091.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-84140",
+  "split": "test",
+  "video": "SwKRFEUWS3M.f605.mp4",
+  "exists": true,
+  "m3av_end": 1532.0,
+  "video_end": 1532.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-930E4",
+  "split": "test",
+  "video": "zL_xIS9slBI.f605.mp4",
+  "exists": true,
+  "m3av_end": 1313.0,
+  "video_end": 1313.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-A9DCD",
+  "split": "test",
+  "video": "4KFRjmv06Bw.f605.mp4",
+  "exists": true,
+  "m3av_end": 952.0,
+  "video_end": 953.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-B0FEA",
+  "split": "test",
+  "video": "NFgYCksYLWc.f605.mp4",
+  "exists": true,
+  "m3av_end": 1389.0,
+  "video_end": 1390.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-B6228",
+  "split": "dev",
+  "video": "Xt4CDShoUdc.f605.mp4",
+  "exists": true,
+  "m3av_end": 3634.0,
+  "video_end": 4148.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-C5C7A",
+  "split": "test",
+  "video": "EGn-zhQNgC4.f605.mp4",
+  "exists": true,
+  "m3av_end": 445.0,
+  "video_end": 445.5,
+  "corr": [
+   0.99,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-C7190",
+  "split": "test",
+  "video": "VTsLA8zNqcY.f605.mp4",
+  "exists": true,
+  "m3av_end": 761.465,
+  "video_end": 766.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-E3BD4",
+  "split": "test",
+  "video": "x4oBTEpn3FY.f605.mp4",
+  "exists": true,
+  "m3av_end": 513.0,
+  "video_end": 513.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "IPP-EB41F",
+  "split": "dev",
+  "video": "M4XVISihv20.f605.mp4",
+  "exists": true,
+  "m3av_end": 703.0,
+  "video_end": 704.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "MLS-15DA1",
+  "split": "dev",
+  "video": "100Im_72xl4.f605.mp4",
+  "exists": true,
+  "m3av_end": 2535.0,
+  "video_end": 2535.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "MLS-2A8E1",
+  "split": "dev",
+  "video": "Vhtvn-_GOUk.f605.mp4",
+  "exists": true,
+  "m3av_end": 1034.0,
+  "video_end": 1035.3,
+  "corr": [
+   1.0,
+   1.0,
+   0.98,
+   0.99,
+   1.0
+  ]
+ },
+ {
+  "lecture": "MLS-792FC",
+  "split": "dev",
+  "video": "cz0-HcAtU5U.f605.mp4",
+  "exists": true,
+  "m3av_end": 1227.0,
+  "video_end": 1236.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "MLS-A74A9",
+  "split": "test",
+  "video": "pNsz6yC01zo.f605.mp4",
+  "exists": true,
+  "m3av_end": 1298.0,
+  "video_end": 1298.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "MLS-BC0F9",
+  "split": "dev",
+  "video": "4EhN06NiJ9c.f605.mp4",
+  "exists": true,
+  "m3av_end": 2545.45,
+  "video_end": 2556.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "MLS-C00E5",
+  "split": "dev",
+  "video": "FYIqKreRwoI.f605.mp4",
+  "exists": true,
+  "m3av_end": 938.45,
+  "video_end": 948.8,
+  "corr": [
+   0.99,
+   1.0,
+   1.0,
+   0.99,
+   1.0
+  ]
+ },
+ {
+  "lecture": "MLS-E7B23",
+  "split": "test",
+  "video": "hqAmmmDkSFA.f605.mp4",
+  "exists": true,
+  "m3av_end": 2838.45,
+  "video_end": 2839.4,
+  "corr": [
+   1.0,
+   0.96,
+   1.0,
+   0.99,
+   1.0
+  ]
+ },
+ {
+  "lecture": "MLS-E9A6D",
+  "split": "test",
+  "video": "ONZSDsrRg4E.f605.mp4",
+  "exists": true,
+  "m3av_end": 3239.0,
+  "video_end": 3240.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "MLS-ED58D",
+  "split": "test",
+  "video": "fsy6UNZei0k.f605.mp4",
+  "exists": true,
+  "m3av_end": 2310.45,
+  "video_end": 2310.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "MLS-FB9EE",
+  "split": "dev",
+  "video": "D8qdyzzNg88.f605.mp4",
+  "exists": true,
+  "m3av_end": 1450.0,
+  "video_end": 1459.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-00363",
+  "split": "test",
+  "video": "RurnNk911Nc.f605.mp4",
+  "exists": true,
+  "m3av_end": 3451.0,
+  "video_end": 4025.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-02250",
+  "split": "test",
+  "video": "D5xDV_u79PI.f605.mp4",
+  "exists": true,
+  "m3av_end": 3634.5,
+  "video_end": 3955.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-04FD0",
+  "split": "dev",
+  "video": "xIVXvpYo5BI.f605.mp4",
+  "exists": true,
+  "m3av_end": 3873.45,
+  "video_end": 4097.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-16CA2",
+  "split": "dev",
+  "video": "5HsfeVDitF4.f605.mp4",
+  "exists": true,
+  "m3av_end": 3419.45,
+  "video_end": 3420.5,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.99
+  ]
+ },
+ {
+  "lecture": "NIH-1DAF1",
+  "split": "test",
+  "video": "RfjRHOxYjwU.f605.mp4",
+  "exists": true,
+  "m3av_end": 4478.45,
+  "video_end": 4480.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-211B0",
+  "split": "dev",
+  "video": "dJR3jlw_JwY.f605.mp4",
+  "exists": true,
+  "m3av_end": 3587.45,
+  "video_end": 4158.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.81
+  ]
+ },
+ {
+  "lecture": "NIH-23E4C",
+  "split": "test",
+  "video": "DuxAcDsjJW4.f605.mp4",
+  "exists": true,
+  "m3av_end": 3312.45,
+  "video_end": 3813.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   0.56,
+   0.57
+  ]
+ },
+ {
+  "lecture": "NIH-28DAE",
+  "split": "dev",
+  "video": "BD-CUcE-GDw.f605.mp4",
+  "exists": true,
+  "m3av_end": 4052.45,
+  "video_end": 4053.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.96
+  ]
+ },
+ {
+  "lecture": "NIH-29F22",
+  "split": "test",
+  "video": "qFB2f5uWKng.f605.mp4",
+  "exists": true,
+  "m3av_end": 3331.45,
+  "video_end": 3917.5,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   0.05,
+   0.99
+  ]
+ },
+ {
+  "lecture": "NIH-2B06D",
+  "split": "test",
+  "video": "pB58hyT3kl0.f605.mp4",
+  "exists": true,
+  "m3av_end": 3607.45,
+  "video_end": 3762.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.99
+  ]
+ },
+ {
+  "lecture": "NIH-306B0",
+  "split": "dev",
+  "video": "NKhJtXkdMlc.f605.mp4",
+  "exists": true,
+  "m3av_end": 3000.5,
+  "video_end": 3733.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-46FCE",
+  "split": "test",
+  "video": "DkpPw-GFJl8.f605.mp4",
+  "exists": true,
+  "m3av_end": 3372.45,
+  "video_end": 3621.5,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-4B17B",
+  "split": "dev",
+  "video": "mYZQ8freLfE.f605.mp4",
+  "exists": true,
+  "m3av_end": 3472.45,
+  "video_end": 3541.3,
+  "corr": [
+   1.0,
+   0.89,
+   1.0,
+   1.0,
+   0.99
+  ]
+ },
+ {
+  "lecture": "NIH-4F87A",
+  "split": "dev",
+  "video": "qedoIdZrlDM.f605.mp4",
+  "exists": true,
+  "m3av_end": 3168.5,
+  "video_end": 3796.9,
+  "corr": [
+   0.98,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-568B7",
+  "split": "dev",
+  "video": "Yoo0x2cMkxc.f605.mp4",
+  "exists": true,
+  "m3av_end": 3212.45,
+  "video_end": 3795.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-585E2",
+  "split": "dev",
+  "video": "IsotJMjuEw4.f605.mp4",
+  "exists": true,
+  "m3av_end": 2961.45,
+  "video_end": 3182.5,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   0.99,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-5A3F2",
+  "split": "test",
+  "video": "CGZ0xm1472U.f605.mp4",
+  "exists": true,
+  "m3av_end": 3165.45,
+  "video_end": 3803.2,
+  "corr": [
+   0.34,
+   1.0,
+   0.99,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-5EB6F",
+  "split": "test",
+  "video": "NryQGk6LhHQ.f605.mp4",
+  "exists": true,
+  "m3av_end": 3547.45,
+  "video_end": 3548.5,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-61424",
+  "split": "test",
+  "video": "ihmt9MkQY34.f605.mp4",
+  "exists": true,
+  "m3av_end": 3625.0,
+  "video_end": 4004.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-77A41",
+  "split": "dev",
+  "video": "p2TcAA7VqmM.f605.mp4",
+  "exists": true,
+  "m3av_end": 3167.0,
+  "video_end": 3967.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-7B4FC",
+  "split": "dev",
+  "video": "tckw4mYOFq0.f605.mp4",
+  "exists": true,
+  "m3av_end": 3891.5,
+  "video_end": 4371.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-8B91B",
+  "split": "dev",
+  "video": "gTJnTCfaMBc.f605.mp4",
+  "exists": true,
+  "m3av_end": 3179.0,
+  "video_end": 3186.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-94CA7",
+  "split": "dev",
+  "video": "YnNEieHeHwI.f605.mp4",
+  "exists": true,
+  "m3av_end": 3663.45,
+  "video_end": 3664.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.98
+  ]
+ },
+ {
+  "lecture": "NIH-95F8B",
+  "split": "dev",
+  "video": "HLJa6RoCAhw.f605.mp4",
+  "exists": true,
+  "m3av_end": 3113.45,
+  "video_end": 3541.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-9A5A0",
+  "split": "dev",
+  "video": "mR4-9ArXCaE.f605.mp4",
+  "exists": true,
+  "m3av_end": 3029.45,
+  "video_end": 3501.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-9ED9E",
+  "split": "dev",
+  "video": "pRGqciC3EnA.f605.mp4",
+  "exists": true,
+  "m3av_end": 3018.45,
+  "video_end": 3807.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.96
+  ]
+ },
+ {
+  "lecture": "NIH-A9824",
+  "split": "test",
+  "video": "Y6JoSBJ9Mn0.f605.mp4",
+  "exists": true,
+  "m3av_end": 3745.45,
+  "video_end": 3746.4,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-AC894",
+  "split": "test",
+  "video": "xapbSSNjNfw.f605.mp4",
+  "exists": true,
+  "m3av_end": 3740.0,
+  "video_end": 4232.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-B49FB",
+  "split": "test",
+  "video": "1kVjVn6wwZI.f605.mp4",
+  "exists": true,
+  "m3av_end": 3608.45,
+  "video_end": 4139.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-B5E52",
+  "split": "test",
+  "video": "M3fdGkcP_Ko.f605.mp4",
+  "exists": true,
+  "m3av_end": 3000.5,
+  "video_end": 3648.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-BD73D",
+  "split": "test",
+  "video": "xAYXE-iplKk.f605.mp4",
+  "exists": true,
+  "m3av_end": 3825.45,
+  "video_end": 3826.5,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.97
+  ]
+ },
+ {
+  "lecture": "NIH-C45CB",
+  "split": "test",
+  "video": "ltTQiZBKl1Q.f605.mp4",
+  "exists": true,
+  "m3av_end": 3432.45,
+  "video_end": 3433.9,
+  "corr": []
+ },
+ {
+  "lecture": "NIH-C6E40",
+  "split": "test",
+  "video": "XdWhBlvQhbM.f605.mp4",
+  "exists": true,
+  "m3av_end": 3198.0,
+  "video_end": 3612.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-C7721",
+  "split": "dev",
+  "video": "g1Pi3Kd0DDA.f605.mp4",
+  "exists": true,
+  "m3av_end": 3491.455,
+  "video_end": 3497.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.99
+  ]
+ },
+ {
+  "lecture": "NIH-C8B73",
+  "split": "dev",
+  "video": "NkiLGwd_7p4.f605.mp4",
+  "exists": true,
+  "m3av_end": 3148.45,
+  "video_end": 3446.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.99
+  ]
+ },
+ {
+  "lecture": "NIH-D369A",
+  "split": "test",
+  "video": "a7kemIzXAF4.f605.mp4",
+  "exists": true,
+  "m3av_end": 3103.45,
+  "video_end": 4083.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-D8BE0",
+  "split": "test",
+  "video": "SdaXt2zN908.f605.mp4",
+  "exists": true,
+  "m3av_end": 3340.45,
+  "video_end": 3878.4,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-E8189",
+  "split": "dev",
+  "video": "mAtr9EdU8UM.f605.mp4",
+  "exists": true,
+  "m3av_end": 3187.55,
+  "video_end": 3672.4,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-EC45B",
+  "split": "dev",
+  "video": "HXJYySMST74.f605.mp4",
+  "exists": true,
+  "m3av_end": 3340.0,
+  "video_end": 3887.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-EFBA6",
+  "split": "dev",
+  "video": "RFKCcNtExx4.f605.mp4",
+  "exists": true,
+  "m3av_end": 2836.45,
+  "video_end": 3439.3,
+  "corr": [
+   1.0,
+   0.79,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-F1A31",
+  "split": "test",
+  "video": "ZA6P4tr55XI.f605.mp4",
+  "exists": true,
+  "m3av_end": 2974.465,
+  "video_end": 4100.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.9
+  ]
+ },
+ {
+  "lecture": "NIH-F1E8F",
+  "split": "test",
+  "video": "_CUOjdA-VG0.f605.mp4",
+  "exists": true,
+  "m3av_end": 3269.0,
+  "video_end": 3770.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   0.78,
+   1.0
+  ]
+ },
+ {
+  "lecture": "NIH-F1FA9",
+  "split": "dev",
+  "video": "KIkwKcVBJD0.f605.mp4",
+  "exists": true,
+  "m3av_end": 3434.0,
+  "video_end": 3476.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.99
+  ]
+ },
+ {
+  "lecture": "NIH-F5E14",
+  "split": "dev",
+  "video": "4aqCYE7ufqY.f605.mp4",
+  "exists": true,
+  "m3av_end": null,
+  "error": "no slide segments in M3AV"
+ },
+ {
+  "lecture": "NIH-F9FC6",
+  "split": "test",
+  "video": "Zqj7A9qX0Bw.f605.mp4",
+  "exists": true,
+  "m3av_end": 3530.0,
+  "video_end": 3980.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-027BA",
+  "split": "test",
+  "video": "YrKRlNdIkdQ.f605.mp4",
+  "exists": true,
+  "m3av_end": 355.5,
+  "video_end": 364.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-10CFE",
+  "split": "dev",
+  "video": "5qufUKQC8_g.f605.mp4",
+  "exists": true,
+  "m3av_end": 364.0,
+  "video_end": 365.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-366E5",
+  "split": "test",
+  "video": "SAntPSGF2r0.f605.mp4",
+  "exists": true,
+  "m3av_end": 360.45,
+  "video_end": 361.3,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   0.99,
+   0.91
+  ]
+ },
+ {
+  "lecture": "Ubi-39714",
+  "split": "dev",
+  "video": "oOjlkLu0gVM.f605.mp4",
+  "exists": true,
+  "m3av_end": 363.0,
+  "video_end": 364.0,
+  "corr": [
+   1.0,
+   0.99,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-424F7",
+  "split": "dev",
+  "video": "ePpuq0sAXHk.f605.mp4",
+  "exists": true,
+  "m3av_end": 372.45,
+  "video_end": 373.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-432AF",
+  "split": "dev",
+  "video": "VILyz_KTg9g.f605.mp4",
+  "exists": true,
+  "m3av_end": 352.0,
+  "video_end": 352.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-432F6",
+  "split": "dev",
+  "video": "PMyu27jRSvc.f605.mp4",
+  "exists": true,
+  "m3av_end": 383.0,
+  "video_end": 385.0,
+  "corr": [
+   1.0,
+   1.0,
+   0.9,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-4C06A",
+  "split": "test",
+  "video": "ByufmnMOZf0.f605.mp4",
+  "exists": true,
+  "m3av_end": 319.455,
+  "video_end": 320.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-53297",
+  "split": "dev",
+  "video": "KMTdZjyna5U.f605.mp4",
+  "exists": true,
+  "m3av_end": 328.5,
+  "video_end": 329.7,
+  "corr": [
+   1.0,
+   0.93,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-5BD39",
+  "split": "test",
+  "video": "mMl5o11QuVU.f605.mp4",
+  "exists": true,
+  "m3av_end": 361.45,
+  "video_end": 362.6,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-6192D",
+  "split": "test",
+  "video": "H0Y4pFqvHGU.f605.mp4",
+  "exists": true,
+  "m3av_end": 399.0,
+  "video_end": 400.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-7441D",
+  "split": "test",
+  "video": "irz7vNUWQ7g.f605.mp4",
+  "exists": true,
+  "m3av_end": 363.5,
+  "video_end": 363.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-77533",
+  "split": "dev",
+  "video": "NRaIhl9vMnU.f605.mp4",
+  "exists": true,
+  "m3av_end": 367.45,
+  "video_end": 367.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-8E1A5",
+  "split": "test",
+  "video": "cGhdSqyQZXM.f605.mp4",
+  "exists": true,
+  "m3av_end": 324.0,
+  "video_end": 325.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-968A7",
+  "split": "test",
+  "video": "L0QFOrar6AI.f605.mp4",
+  "exists": true,
+  "m3av_end": 386.45,
+  "video_end": 387.1,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-97A0E",
+  "split": "test",
+  "video": "KJbEoJZW4uQ.f605.mp4",
+  "exists": true,
+  "m3av_end": 360.0,
+  "video_end": 367.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-97AFF",
+  "split": "test",
+  "video": "wmhpFWr-CjQ.f605.mp4",
+  "exists": true,
+  "m3av_end": 339.0,
+  "video_end": 348.0,
+  "corr": [
+   1.0,
+   1.0,
+   0.99,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-A156E",
+  "split": "dev",
+  "video": "LDotzLTaCrY.f605.mp4",
+  "exists": true,
+  "m3av_end": 344.0,
+  "video_end": 344.7,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-A73B4",
+  "split": "dev",
+  "video": "xGJUsOR0OyM.f605.mp4",
+  "exists": true,
+  "m3av_end": 318.5,
+  "video_end": 318.8,
+  "corr": [
+   1.0,
+   0.77,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-B1B15",
+  "split": "dev",
+  "video": "qH8JPc_NoSM.f605.mp4",
+  "exists": true,
+  "m3av_end": 360.465,
+  "video_end": 360.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-C360A",
+  "split": "test",
+  "video": "diGsYbx4w0Y.f605.mp4",
+  "exists": true,
+  "m3av_end": 327.45,
+  "video_end": 327.9,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-D1320",
+  "split": "test",
+  "video": "A0Jahw_513s.f605.mp4",
+  "exists": true,
+  "m3av_end": 336.0,
+  "video_end": 337.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-D1760",
+  "split": "test",
+  "video": "J44H6O9pKSI.f605.mp4",
+  "exists": true,
+  "m3av_end": 335.45,
+  "video_end": 336.2,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-D4407",
+  "split": "test",
+  "video": "vOb0WsKN6WU.f605.mp4",
+  "exists": true,
+  "m3av_end": 343.0,
+  "video_end": 344.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "lecture": "Ubi-E4F06",
+  "split": "test",
+  "video": "ZuQas9aVAwY.f605.mp4",
+  "exists": true,
+  "m3av_end": 320.45,
+  "video_end": 321.0,
+  "corr": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   0.98
+  ]
+ },
+ {
+  "lecture": "Ubi-FE1DB",
+  "split": "test",
+  "video": "oCxlqX_cENA.f605.mp4",
+  "exists": true,
+  "m3av_end": 349.45,
+  "video_end": 353.8,
+  "corr": [
+   1.0,
+   1.0,
+   1.0
+  ]
+ }
+]
