@@ -1381,3 +1381,8 @@ Where the gain of the best framework with speech (S1t) over the starting design 
 - **Amendment 4** (before any test question): L1 is now S2m − R5, the strongest training-free rule on dev,
   instead of S2m − R3 (the weakest of R3-R5 on dev). S2m − R3, − R4 and − S2c are secondary. Picker for S2m stays
   MMR (77.0 vs 76.7 for Head A's own top 4). Per-system inputs: `docs/v3/m3av_systems.md`.
+- **Method freeze** (commit 3a2e911): `docs/v3/m3av_freeze.json` holds every system's pool settings, picker and
+  text policy, L1/L2, the R5 setting, and the SHA-256 of the code, configs and checkpoints (both Head A sets, Head
+  B scorer, mpnet weights). SHA-256 of the freeze file: `f054ce41038497d8fd6f5e4703ffd8c6bb5e24fa743209b7dec3e0f1861beb3e`
+  as committed (LF), `bead18c3f6d12c7f297a268ed4ebdd9e0539214d68d8f9dda4209d0c556fb687` for the Windows working
+  copy (CRLF). Test question generation started after the freeze; no system has run on test.
