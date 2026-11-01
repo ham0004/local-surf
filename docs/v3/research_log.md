@@ -1273,3 +1273,47 @@ Matched-budget speech on dev (best framework's frames, 600-word allowance):
   and approximate alignment, not legibility or alignment everywhere. The generation time cap counts worker time
   including waits, not wall-clock or GPU time.
 - **P47.** The loss report now opens with the descriptive caveat.
+- Phase 1 interruption: the zero-call dev replay loaded the text encoder on the GPU while the 4B speech arm was
+  running. That arm hit CUDA out of memory at 10:08, and the driver stopped before the failed request was cached.
+  It was restarted at 10:14 and resumes from the cache. GPU work now runs one job at a time.
+- M3AV train questions (for retraining Head A): 300 lectures, 5,706 eligible slides, 1,404 asked, 64 failed F1, 193
+  failed F2, **1,147 kept on 297 lectures** (`data/m3av/questions_train.jsonl`), rebuilt from the cache under the
+  amendment-3 answer-content rule with no new calls. Generation calls in all: 2,107 (dev 703, train 1,404); 1,701
+  rate-limit retry lines in the train log.
+
+## Step 84 (2026-11-01): Phase 1 complete; fresh-set speech arms
+All Phase 1 runs have finished: 4,413 charged 4B calls in `runs/v3_baseline/budget_phase1_4b.json`, including the
+OOM restart in step 83. These runs are on the fresh set, whose results were already seen, so they are descriptive
+follow-ups and **no setting is chosen from them**. Fresh set: 894 questions, 4B, 4 frames. Paired difference with a
+95% bootstrap interval over videos (10,000 resamples).
+
+Speech text with a 600-word allowance, on the best framework's frames (S1). The fresh transcripts are shorter, so
+mean use is 425 words:
+
+| Text policy | Words used (mean) | Accuracy | − frames+hybrid |
+|---|---|---|---|
+| frames+hybrid (the S1t policy) | 425 | 57.3% | |
+| bm25full (BM25 over the whole transcript) | 425 | 57.0% | −0.2 (−1.4..+0.9) |
+| hybrid (moment-search lines only) | 425 | 56.7% | −0.6 (−1.7..+0.5) |
+| frames (lines near the chosen frames only) | **214** | 57.7% | +0.4 (−0.9..+1.8) |
+
+Where the gain of the best framework with speech (S1t) over the starting design (S0) comes from:
+
+| Contrast | Difference |
+|---|---|
+| S1t − S0 (all changes) | +8.9 (+5.7..+12.2) |
+| S0's pictures + S1t's text − S0 (text change only) | +2.8 (+1.1..+4.4) |
+| S1t − S0's pictures + S1t's text (picture change only) | +6.2 (+3.1..+9.3) |
+| S1's pictures + S0's 120-word BM25 text − S0 (picture change only, the other order) | +8.2 (+4.9..+11.5) |
+| S1t − S1's pictures + 120-word BM25 (text change on S1's pictures) | +0.8 (−1.0..+2.6) |
+| S1t − S1 without speech | +1.3 (−0.6..+3.3) |
+
+- Text policy: as on dev, no way of choosing the lines differs from the others (all within 1 point). `frames` again
+  uses fewer words (214), so it is not a matched budget.
+- The gain over the starting design comes mostly from the pictures (+6.2 to +8.2 points, depending on the order of
+  the two changes). The richer speech text helps S0's weaker pictures (+2.8) but adds little on top of S1's pictures
+  (+0.8, not significant). Pictures and text are not additive.
+- Answer health: 1 failed answer in each of the S1t, `hybrid` and S0-pictures + S1t-text arms. Abstentions are
+  counted only for the new arms, which store the option (1-3 per arm).
+- Phase 1's runs are all done. The remaining Phase 1 work is the lecture study (M3AV): retrain Head A on the
+  M3AV train questions, then R4 and R5, settings on dev, and the method freeze before test is generated.
