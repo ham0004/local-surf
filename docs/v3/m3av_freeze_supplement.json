@@ -1,0 +1,405 @@
+{
+ "supplements": {
+  "record": "docs\\v3\\m3av_freeze.json",
+  "sha256": {
+   "lf": "f054ce41038497d8fd6f5e4703ffd8c6bb5e24fa743209b7dec3e0f1861beb3e",
+   "crlf": "bead18c3f6d12c7f297a268ed4ebdd9e0539214d68d8f9dda4209d0c556fb687"
+  },
+  "source_commit": "e9bd1ad",
+  "freeze_commit": "3a2e911"
+ },
+ "commit": "01e9709c5c2b9ea1f2bfb34fefb21f9e66f398bb",
+ "why": "auditor P71-P73: external model resolutions, resolved settings, test-path wiring and reporting; no model, setting or selection rule changes",
+ "r5_attribution": "R5 is a VSI-inspired MPNet/MobileCLIP baseline, not VSI: boost min(1, 2M) for M > 0.5 (paper Eq. 8: min(1, M + 2 max(M - 0.5, 0)); released code min(1, 0.5 + 2 (M - 0.5))), Gaussian over the whole video (VSI: line +/- W), raw strings (VSI code: lowercase, stopwords removed), MobileCLIP option-aware visual branch instead of VLM + YOLO-World",
+ "python": "3.12.14",
+ "packages": {
+  "torch": "2.11.0+cu128",
+  "torchvision": "0.26.0+cu128",
+  "transformers": "5.17.0",
+  "tokenizers": "0.23.2",
+  "open_clip_torch": "3.3.0",
+  "timm": "1.0.30",
+  "safetensors": "0.8.0",
+  "huggingface_hub": "1.33.0",
+  "accelerate": "1.15.0",
+  "numpy": "2.5.3",
+  "opencv-python": "5.0.0.93",
+  "pillow": "12.3.0",
+  "av": "18.1.0"
+ },
+ "models": {
+  "cross-encoder/ms-marco-MiniLM-L6-v2": {
+   "loaded_by": "src/videoqa/v2/head_a.py BACKBONE",
+   "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+   "refs_main": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+   "files": {
+    "config.json": "380e02c93f431831be65d99a4e7e5f67c133985bf2e77d9d4eba46847190bacc",
+    "model.safetensors": "821d1aa69520101d6e0737f78a042ae25b19e5cb9160701909d10434f4aeb0ae",
+    "special_tokens_map.json": "b6d346be366a7d1d48332dbc9fdf3bf8960b5d879522b7799ddba59e76237ee3",
+    "tokenizer.json": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66",
+    "tokenizer_config.json": "7b082b48a08a0b5c5939d99472e33addce3d96202155e33f7928cecd171186a0",
+    "vocab.txt": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+   }
+  },
+  "BAAI/bge-reranker-base": {
+   "loaded_by": "scripts/v3_head_a_light.py BGE (no revision argument)",
+   "revision": "2cfc18c9415c912f9d8155881c133215df768a70",
+   "refs_main": "2cfc18c9415c912f9d8155881c133215df768a70",
+   "files": {
+    "config.json": "289adf7ada1eb6b4afa7589a48a032d45a076cf2e46dcdb3b4cabc33be14f708",
+    "model.safetensors": "ced967c45fd1902eb92716c9ceeca7c95a936770ea9db611f5a841b926e33fbd",
+    "sentencepiece.bpe.model": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865",
+    "special_tokens_map.json": "d5469a60db23249c7f8945013d78df30b44b6bf686c6bb4740f4223f77b1b535",
+    "tokenizer.json": "9eb652ac4e40cc093272bbbe0f55d521cf67570060227109b5cdc20945a4489e",
+    "tokenizer_config.json": "a1d6bc8734a6f635dc158508bef000f8e2e5a759c7d92f984b2c86e5ff53425b"
+   }
+  },
+  "apple/MobileCLIP-S2-OpenCLIP": {
+   "loaded_by": "open_clip MobileCLIP-S2 datacompdr",
+   "revision": "8e8a808316aeb7c24d0400e1cf8f74b6937832aa",
+   "refs_main": "8e8a808316aeb7c24d0400e1cf8f74b6937832aa",
+   "files": {
+    "open_clip_model.safetensors": "8fe1e29df4c96fce3b79a66bb13c9adb7f810a2103979b744e257fcbc6cc5c9f"
+   }
+  },
+  "sentence-transformers/all-mpnet-base-v2": {
+   "loaded_by": "scripts/m3av_vsi.py MPNET",
+   "revision": "e8c3b32edf5434bc2275fc9bab85f82640a19130",
+   "refs_main": "e8c3b32edf5434bc2275fc9bab85f82640a19130",
+   "files": {
+    "1_Pooling/config.json": "a37f83ada23e7887be6b88f4998927dbeac0038af301553c7cd5461413bf1a56",
+    "config.json": "d46a3e04ded82bba22528424480697d394eeda6a27484e08c5bb2bdf5906cfa0",
+    "config_sentence_transformers.json": "061ca9d39661d6c6d6de5ba27f79a1cd5770ea247f8d46412a68a498dc5ac9f3",
+    "data_config.json": "32edcb108fc2516b920734a862ae0692bcae1c5d45d5f8d972cb0d53434a4c54",
+    "model.safetensors": "78c0197b6159d92658e319bc1d72e4c73a9a03dd03815e70e555c5ef05615658",
+    "modules.json": "84e40c8e006c9b1d6c122e02cba9b02458120b5fb0c87b746c41e0207cf642cf",
+    "sentence_bert_config.json": "cabfacded9272091a06ff595a46ef027a76ddf4ac9e77d0fcf11c605748f1667",
+    "special_tokens_map.json": "9ef40e9c160511bf3f46ceb71f1471dafa1e9473d5120bb816c36b2efa75f8ba",
+    "tokenizer.json": "b8be2c30ba5dd723a6d5ee26d013da103d5408d92ddcb23747622f9e48f1d842",
+    "tokenizer_config.json": "67f2ff7e223518e729869bb3a70f0caf8368fe549383fc11cfe2dfb42fffc268",
+    "vocab.txt": "dbd90cb94e2247bd4d4ccaecbf616d2290e66691d7d5e5bb81f063c2d0649ada"
+   }
+  },
+  "Qwen/Qwen3-VL-4B-Instruct": {
+   "loaded_by": "configs/gpu_16gb_4b.yaml",
+   "revision": "ebb281ec70b05090aa6165b016eac8ec08e71b17",
+   "refs_main": null,
+   "files": {
+    ".gitattributes": "11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361",
+    "chat_template.json": "6f8a6a55027e3da5160105556cda5dd69f6423f1c32645f6730d32de7773d0c4",
+    "config.json": "edac7703329133edfc53e46ac0081835144c99d7eebf28b71c732694d435224d",
+    "generation_config.json": "8469742d1fce0de951c8909b26a2c0c0d8490837ce476efb114da9e0cefc4d44",
+    "merges.txt": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3",
+    "model-00001-of-00002.safetensors": "30a01a0556622645a3cce87b655bbbbbc1f170c196099f1b666c93202c3339a9",
+    "model-00002-of-00002.safetensors": "046296a2a387efb43b0c997d5833c789604d168834f6e0d3064bf7bb13d002a6",
+    "model.safetensors.index.json": "58a7841d7bff2548dd91577d216274a83cf1b500bc6a534b809d6c1b1707cf2b",
+    "preprocessor_config.json": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516",
+    "README.md": "a884e5e78f7d6f7bfe237f909dbc41a126542e259dc79d8ab33cc8980580ff79",
+    "tokenizer.json": "a5d85b6dcc535e6b93115a9ef287e6132fdbf30270da6218194ba742261173c7",
+    "tokenizer_config.json": "c2da771801886ad9ae98181793ffd3dfb7f1af30f6f7c6a4e15d7dbba52e2399",
+    "video_preprocessor_config.json": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13",
+    "vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+   }
+  }
+ },
+ "code_after_freeze": {
+  "changed": {
+   "scripts/v3_baseline_cycle.py": "2b60c20de282c3a509b12a984534aad23974b1f0f1a5c075f9e22d4fb471f6bb",
+   "scripts/m3av_vsi.py": "bdf18c13437862c31efff7518135747aa7e8040f07d8c09df4c7dc1aed290277",
+   "scripts/m3av_hits.py": "7f587823f0173065bf3a50a00bd28cd8d28e7561e993789196c106251ec68142"
+  },
+  "new": {
+   "scripts/m3av_freeze_supplement.py": "f562a73b5c6957382910beb7c5ee4853666dd4c1a13c24bedf9525b13d5a0513",
+   "scripts/run_m3av_test.sh": "704c77facb5d3f10b8ff5f3f622610016248902261f1aa28d70a8fa239feaa09"
+  }
+ },
+ "test": {
+  "dataset": "m3av_test",
+  "pools": {
+   "dense4ox": {
+    "path_a": "v2",
+    "head_a_checkpoints": null,
+    "config": {
+     "unit_seconds": 20.0,
+     "max_windows": 4,
+     "neighbour_expansion": 1,
+     "excerpt_words": 300,
+     "n_path_a": 0,
+     "n_path_b": 4,
+     "scan_step_s": 5.0,
+     "scan_cap": 96,
+     "stable_hamming": -1,
+     "dup_hamming": 0,
+     "dup_seconds": 0.0,
+     "max_side": 640,
+     "scan_policy": "legacy",
+     "path_b_scope": "features",
+     "features_dir": "data/m3av_test/features",
+     "features_gap_s": 4.0,
+     "scan_query": "qo_max",
+     "times_file": null,
+     "fill_distinct": true
+    }
+   },
+   "dense4x": {
+    "path_a": "v2",
+    "head_a_checkpoints": null,
+    "config": {
+     "unit_seconds": 20.0,
+     "max_windows": 4,
+     "neighbour_expansion": 1,
+     "excerpt_words": 300,
+     "n_path_a": 0,
+     "n_path_b": 4,
+     "scan_step_s": 5.0,
+     "scan_cap": 96,
+     "stable_hamming": -1,
+     "dup_hamming": 0,
+     "dup_seconds": 0.0,
+     "max_side": 640,
+     "scan_policy": "legacy",
+     "path_b_scope": "features",
+     "features_dir": "data/m3av_test/features",
+     "features_gap_s": 4.0,
+     "scan_query": "q",
+     "times_file": null,
+     "fill_distinct": true
+    }
+   },
+   "hybrid": {
+    "path_a": "v2",
+    "head_a_checkpoints": null,
+    "config": {
+     "unit_seconds": 20.0,
+     "max_windows": 4,
+     "neighbour_expansion": 1,
+     "excerpt_words": 300,
+     "n_path_a": 6,
+     "n_path_b": 6,
+     "scan_step_s": 5.0,
+     "scan_cap": 24,
+     "stable_hamming": 6,
+     "dup_hamming": 3,
+     "dup_seconds": 1.0,
+     "max_side": 640,
+     "scan_policy": "legacy",
+     "path_b_scope": "hybrid",
+     "features_dir": "data/m3av_test/features",
+     "features_gap_s": 4.0,
+     "scan_query": "q",
+     "times_file": null,
+     "fill_distinct": false
+    }
+   },
+   "hybrid_ahead": {
+    "path_a": "head",
+    "head_a_checkpoints": [
+     "runs/v3_head_a/ckpt/light_dens_ens_human_0.pt",
+     "runs/v3_head_a/ckpt/light_dens_ens_human_1.pt",
+     "runs/v3_head_a/ckpt/light_dens_ens_human_2.pt"
+    ],
+    "config": {
+     "unit_seconds": 20.0,
+     "max_windows": 4,
+     "neighbour_expansion": 1,
+     "excerpt_words": 300,
+     "n_path_a": 6,
+     "n_path_b": 6,
+     "scan_step_s": 5.0,
+     "scan_cap": 24,
+     "stable_hamming": 6,
+     "dup_hamming": 3,
+     "dup_seconds": 1.0,
+     "max_side": 640,
+     "scan_policy": "legacy",
+     "path_b_scope": "hybrid",
+     "features_dir": "data/m3av_test/features",
+     "features_gap_s": 4.0,
+     "scan_query": "q",
+     "times_file": null,
+     "fill_distinct": false
+    }
+   },
+   "hybrid_ahead_m3av": {
+    "path_a": "head_m3av",
+    "head_a_checkpoints": [
+     "runs/v3_head_a_m3av/ckpt/light_dens_ens_human_0.pt",
+     "runs/v3_head_a_m3av/ckpt/light_dens_ens_human_1.pt",
+     "runs/v3_head_a_m3av/ckpt/light_dens_ens_human_2.pt"
+    ],
+    "config": {
+     "unit_seconds": 20.0,
+     "max_windows": 4,
+     "neighbour_expansion": 1,
+     "excerpt_words": 300,
+     "n_path_a": 6,
+     "n_path_b": 6,
+     "scan_step_s": 5.0,
+     "scan_cap": 24,
+     "stable_hamming": 6,
+     "dup_hamming": 3,
+     "dup_seconds": 1.0,
+     "max_side": 640,
+     "scan_policy": "legacy",
+     "path_b_scope": "hybrid",
+     "features_dir": "data/m3av_test/features",
+     "features_gap_s": 4.0,
+     "scan_query": "q",
+     "times_file": null,
+     "fill_distinct": false
+    }
+   },
+   "uniform4d": {
+    "path_a": "v2",
+    "head_a_checkpoints": null,
+    "config": {
+     "unit_seconds": 20.0,
+     "max_windows": 4,
+     "neighbour_expansion": 1,
+     "excerpt_words": 300,
+     "n_path_a": 0,
+     "n_path_b": 4,
+     "scan_step_s": 5.0,
+     "scan_cap": 4,
+     "stable_hamming": -1,
+     "dup_hamming": -1,
+     "dup_seconds": -1.0,
+     "max_side": 640,
+     "scan_policy": "legacy",
+     "path_b_scope": "video",
+     "features_dir": null,
+     "features_gap_s": 4.0,
+     "scan_query": "q",
+     "times_file": null,
+     "fill_distinct": false
+    }
+   },
+   "v2": {
+    "path_a": "v2",
+    "head_a_checkpoints": null,
+    "config": {
+     "unit_seconds": 20.0,
+     "max_windows": 4,
+     "neighbour_expansion": 1,
+     "excerpt_words": 300,
+     "n_path_a": 6,
+     "n_path_b": 6,
+     "scan_step_s": 5.0,
+     "scan_cap": 24,
+     "stable_hamming": 6,
+     "dup_hamming": 3,
+     "dup_seconds": 1.0,
+     "max_side": 640,
+     "scan_policy": "legacy",
+     "path_b_scope": "windows",
+     "features_dir": null,
+     "features_gap_s": 4.0,
+     "scan_query": "q",
+     "times_file": null,
+     "fill_distinct": false
+    }
+   },
+   "vsi4x": {
+    "path_a": "v2",
+    "head_a_checkpoints": null,
+    "config": {
+     "unit_seconds": 20.0,
+     "max_windows": 4,
+     "neighbour_expansion": 1,
+     "excerpt_words": 300,
+     "n_path_a": 0,
+     "n_path_b": 4,
+     "scan_step_s": 5.0,
+     "scan_cap": 96,
+     "stable_hamming": -1,
+     "dup_hamming": 0,
+     "dup_seconds": 0.0,
+     "max_side": 640,
+     "scan_policy": "legacy",
+     "path_b_scope": "times",
+     "features_dir": null,
+     "features_gap_s": 4.0,
+     "scan_query": "q",
+     "times_file": "runs/m3av/vsi/test_lam0.5_qo_max.json",
+     "fill_distinct": true
+    }
+   }
+  },
+  "selectors": {
+   "clip": "top 4 by the candidate's MobileCLIP similarity to the question",
+   "mmropt": "greedy MMR, 0.7 * similarity to 'question Options: ...' - 0.3 * max similarity to a chosen frame (MobileCLIP)",
+   "file:<ds>_hybrid_ev_set": {
+    "stage features": "--dataset {ds} --pool hybrid",
+    "stage select": "--dataset {ds} --pool hybrid --train-pool hybrid --method ev_set --lam 2.0 --mu 1.0 (k 4, gap 0, a-quota 4: defaults)",
+    "checkpoints": [
+     "runs/v3_head_b/ckpt/ev_hybrid_0.pt",
+     "runs/v3_head_b/ckpt/ev_hybrid_1.pt",
+     "runs/v3_head_b/ckpt/ev_hybrid_2.pt"
+    ],
+    "inputs": "S1's hybrid pool; per-frame MobileCLIP similarities to question and options, speech relevance of nearby transcript lines (MiniLM-L6 cross-encoder)"
+   }
+  },
+  "dense_features": "scripts/v3_features.py --step 2: MobileCLIP-S2 image embeddings at 0.5, 2.5, 4.5 ... s, stored float16",
+  "r5_setting": "lam0.5_qo_max",
+  "k": 4,
+  "answer_model_config (secondary QA)": {
+   "paths": {
+    "data_dir": "data",
+    "cache_dir": "cache",
+    "runs_dir": "runs"
+   },
+   "transcript": {
+    "unit_seconds": 20,
+    "min_unit_seconds": 5
+   },
+   "retrieval": {
+    "bm25_top_k": 64,
+    "max_windows": 4,
+    "neighbour_expansion": 1
+   },
+   "candidates": {
+    "per_window": 3,
+    "uniform": 8,
+    "rescue": 4
+   },
+   "budget": {
+    "max_frames": 8,
+    "max_rounds": 6,
+    "max_visual_tokens": 4096,
+    "max_seconds": 120,
+    "max_expansions": 2,
+    "rescue_fraction": 0.25
+   },
+   "scout": {
+    "backend": "open_clip",
+    "image_size": 224
+   },
+   "controller": {
+    "backend": "heuristic",
+    "utility_threshold": 0.05
+   },
+   "answerer": {
+    "backend": "hf_vlm",
+    "max_new_tokens": 64,
+    "frame_max_side": 640,
+    "model_id": "Qwen/Qwen3-VL-4B-Instruct",
+    "revision": "ebb281ec70b05090aa6165b016eac8ec08e71b17",
+    "dtype": "bfloat16"
+   },
+   "damage": {
+    "default_type": "delete",
+    "seed": 0
+   },
+   "device": "cuda",
+   "cost_model": {
+    "path": "configs/cost_model_rtx5060ti.yaml",
+    "lambda_per_s": 0.1
+   }
+  }
+ },
+ "primary_test_commands": {
+  "file": "scripts/run_m3av_test.sh",
+  "text": "#!/usr/bin/env bash\n# Lecture study, TEST, primary measure (docs/v3/m3av_protocol.md; frozen in docs/v3/m3av_freeze.json and\n# docs/v3/m3av_freeze_supplement.json). Run only after the auditor's go-ahead. Checks the models, code and test\n# inputs against the freeze; on the first start, refuses any test artifact that already exists, so every artifact\n# is built by this frozen run (a restart resumes it: finished files are skipped); records the artifact hashes\n# before anything is scored. One GPU job at a time.\nset -euo pipefail\nexport PYTHONIOENCODING=utf-8 HF_HUB_OFFLINE=1 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True\nPY=.venv/Scripts/python\nDS=m3av_test\n$PY scripts/m3av_freeze_supplement.py verify --split test --stage inputs\nif [ ! -e runs/m3av/test_started ]; then\n  for x in data/m3av_test/features runs/v3_baseline/m3av_test runs/m3av/vsi/test_lam0.5_qo_max.json \\\n           runs/v3_head_b/features_m3av_test_hybrid.npy runs/v3_head_b/selections/m3av_test_hybrid_ev_set.json \\\n           docs/v3/m3av_manifest_test_artifacts.json reports/m3av/hits_test.json; do\n    [ ! -e \"$x\" ] || { echo \"exists before the frozen run: $x\"; exit 1; }\n  done\n  date -u +%FT%TZ > runs/m3av/test_started\nfi\n$PY scripts/v3_features.py --dataset $DS --step 2\n$PY scripts/m3av_vsi.py --split test --setting lam0.5_qo_max\nfor pool in v2 hybrid hybrid_ahead hybrid_ahead_m3av uniform4d dense4x dense4ox vsi4x; do\n  $PY scripts/v3_baseline_cycle.py pools --dataset $DS --pool $pool\ndone\n$PY scripts/v3_head_b.py features --dataset $DS --pool hybrid\n$PY scripts/v3_head_b.py select --dataset $DS --pool hybrid --train-pool hybrid --method ev_set --lam 2.0 --mu 1.0\n$PY scripts/m3av_freeze_supplement.py manifest --split test --stage artifacts\n$PY scripts/m3av_hits.py --split test\necho \"M3AV TEST PRIMARY DONE\"\n"
+ },
+ "secondary_qa": "the answer-model commands are recorded in a further supplement before the answer model runs on test"
+}

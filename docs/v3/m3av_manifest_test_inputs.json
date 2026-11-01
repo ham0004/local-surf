@@ -1,0 +1,13 @@
+{
+ "data/m3av_raw/set_split.json": "b7715cd89fce660097055fe7faa64304bb9e160bf64b3438807141c1ebeef413",
+ "data/m3av/questions_test_visible.jsonl": "f97c6ce5d2f3a6c32c28ee369190cd9ead44b952c6dbd4efd1363a279d57bf5d",
+ "data/m3av_test/qa.jsonl": "a28744ac8e609444b8adb48ac87831b3f22361d326e46d1b1d5938590b625429",
+ "data/m3av_test/transcripts": {
+  "files": 112,
+  "sha256": "998c4a7102df7cda120f14d65cd88e54652b8615554dcf53a92ffb7f41eb2178"
+ },
+ "data/m3av_test/videos": {
+  "files": 112,
+  "sha256": "6a0cabed55fea3cf0d76bc45369026918c7301a7008d2355f6c8a42f6c5d29b8"
+ }
+}

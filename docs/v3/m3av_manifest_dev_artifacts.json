@@ -1,0 +1,41 @@
+{
+ "data/m3av_dev/features": {
+  "files": 96,
+  "sha256": "4d0eaf894f045af89dd4640f2cad89ff0062aa3c684c960590709312dc4fe1e0"
+ },
+ "runs/m3av/vsi/dev_lam0.5_qo_max.json": "1b143ec8a63f18d3508be9195c8ecd457d57a6ec5d99955a8fa482bd4530073b",
+ "runs/v3_head_b/features_m3av_dev_hybrid.npy": "4e2c67c0c69674dab395ed57a40907059da7484da4092ecd3790eeca7359db0a",
+ "runs/v3_head_b/selections/m3av_dev_hybrid_ev_set.json": "48d965266cae20b53311c05f4bbe05e5562e1f27abf647ea621feb1b77f860c5",
+ "runs/v3_baseline/m3av_dev/dense4ox/pools": {
+  "files": 3036,
+  "sha256": "f8944894dc4157e4af5a0db2a8879a225619699060fb3ce698fbc9eeff2c80a4"
+ },
+ "runs/v3_baseline/m3av_dev/dense4x/pools": {
+  "files": 3038,
+  "sha256": "2d249ba0ae1b1174fa39cc0dbe190a770ec3a681c388164905952b4c93d68da0"
+ },
+ "runs/v3_baseline/m3av_dev/hybrid/pools": {
+  "files": 5620,
+  "sha256": "ae59b7239072fa27bc5edc37ddede8f7a20b8786d86e65bccc3a661f05c90119"
+ },
+ "runs/v3_baseline/m3av_dev/hybrid_ahead/pools": {
+  "files": 5635,
+  "sha256": "a408ad03761dbc8356cbdd5c28e797af47fc19673ba1047114df4de086291261"
+ },
+ "runs/v3_baseline/m3av_dev/hybrid_ahead_m3av/pools": {
+  "files": 5636,
+  "sha256": "8a72c0f1422cb22444a3d059bbff3b3fc8447acc231870723b7e686161c5076b"
+ },
+ "runs/v3_baseline/m3av_dev/uniform4d/pools": {
+  "files": 3084,
+  "sha256": "a565ff47a4ff7965dc3ca395a80fbc84d0fc8a22f97cbc1e84236fcaeafef3b5"
+ },
+ "runs/v3_baseline/m3av_dev/v2/pools": {
+  "files": 5461,
+  "sha256": "8b71b8801631a796e387e672d034cee7ed7df4bf4b07a000d85006ee2730b997"
+ },
+ "runs/v3_baseline/m3av_dev/vsi4x/pools": {
+  "files": 3065,
+  "sha256": "87d9cee0ceae7c9ac647220b00d19b0e1528abb038f6a4768b4ce7381142b922"
+ }
+}

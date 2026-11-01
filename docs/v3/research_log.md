@@ -1386,3 +1386,60 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   B scorer, mpnet weights). SHA-256 of the freeze file: `f054ce41038497d8fd6f5e4703ffd8c6bb5e24fa743209b7dec3e0f1861beb3e`
   as committed (LF), `bead18c3f6d12c7f297a268ed4ebdd9e0539214d68d8f9dda4209d0c556fb687` for the Windows working
   copy (CRLF). Test question generation started after the freeze; no system has run on test.
+
+## Step 87 (2026-11-01): lecture test cohort frozen; freeze supplement (auditor P68-P80)
+- **Auditor check of step 86.** Amendment 4 (L1 = S2m − R5) and the repair of the fixed-K baselines are approved;
+  the auditor recomputed the R2-R5 hits and frame counts from the saved pools and matched all 24 freeze hashes.
+  Test runs stay on hold until the R5 description, a freeze supplement and the test reporting path are complete.
+- **R5 is VSI-inspired, not VSI** (P71). Step 86 and amendment 4 said R5 keeps VSI's text branch. It does not
+  exactly: the frozen R5 boosts a line similarity M > 0.5 to min(1, 2M), so every such line scores 1 (VSI's paper:
+  min(1, M + 2 max(M − 0.5, 0)); VSI's released code, checked: min(1, 0.5 + 2(M − 0.5))); its Gaussian covers the
+  whole video, where VSI's covers the line ± 2 s; it embeds raw strings, where VSI's code lowercases and removes 12
+  stopwords. R5 stays frozen as built and is named a VSI-inspired MPNet/MobileCLIP baseline. No result is claimed
+  against the published VSI system. Wording corrected in `scripts/m3av_vsi.py`, `docs/v3/m3av_systems.md` and the
+  protocol.
+- **Freeze supplement** (`docs/v3/m3av_freeze_supplement.json`, code commit 01e9709; the original record is
+  unchanged). Contents:
+  - The cache revision and SHA-256 of every snapshot file for MiniLM-L6, bge-reranker-base and MobileCLIP-S2 (all
+    three load by name), and for mpnet and Qwen3-VL-4B (pinned).
+  - Package versions.
+  - The fully resolved pool configuration of every frozen system for test, the picker and Head B arguments, and the
+    merged answer-model configuration.
+  - The code changed after the freeze, with new hashes.
+  - The exact primary test commands (`scripts/run_m3av_test.sh`).
+
+  SHA-256 of the supplement: `60ddc55ccb17b3fedd3bd26c4900e8c8b34a3adb5e02d797fcbec6318fa56347`. Text files are
+  hashed with LF line endings.
+- **Changes after the freeze**, none affecting which frames a system shows:
+  - `m3av_test` added to the dataset registries.
+  - `m3av_vsi.py` refuses any test setting other than lam0.5_qo_max (checked: it exits on lam0.5_q and when no
+    setting is given).
+  - `m3av_hits.py` runs only the frozen systems on test, stops if any of them lacks a cohort question, and reports
+    raw p-values and Holm over exactly L1 and L2 in their own table.
+  - The test driver checks models, code and test inputs against the freeze. On its first start it refuses any test
+    artifact that already exists, and it hashes every artifact before scoring.
+  - Dev check: the rewritten report reproduces every step-86 figure. L1 raw p 0.64, Holm 0.64; L2 raw p 0.0006,
+    Holm 0.0012. These are dev results, used for choices, not a confirmation.
+- **Test cohort** (generated after the freeze; only counts were looked at):
+
+  | Step | Count |
+  |---|---|
+  | Lectures processed | 113 |
+  | Eligible slide segments | 2,027 |
+  | Generation attempts | 1,108 |
+  | Dropped by F1 (format) | 53 |
+  | Dropped by F2 | 168 |
+  | Questions after F1/F2 | 887, from 112 lectures (NIH-C45CB has no eligible segment) |
+  | Dropped by F4 (visible under 2 s at τ 0.85) | 34 |
+  | **Frozen cohort** | **853 questions, 112 lectures** (1-10 per lecture, median 8; no lecture shared with dev) |
+
+  Cohort file `data/m3av/questions_test_visible.jsonl`: SHA-256 `4bd9cd6483aec7203844a0167fdfce857126984bdf85dbe52d8023359c58ff4e`
+  (bytes as written), `f97c6ce5d2f3a6c32c28ee369190cd9ead44b952c6dbd4efd1363a279d57bf5d` (LF). The inputs
+  manifest (`docs/v3/m3av_manifest_test_inputs.json`) also covers the split file, `data/m3av_test/qa.jsonl`, and
+  the 112 transcripts and videos. Dev inputs and dev artifacts have manifests too, and verify.
+- **Review sample** (`scripts/m3av_review.py`, protocol two-stage rule): 100 questions, one from each of the first
+  100 of 112 lectures in hash order (`reports/m3av/review_sample_test.json`). The packets hold test content and M3AV
+  images, so they are kept out of git (`runs/m3av/review_test/`, 100 folders plus an empty verdict form). They
+  contain no system names or results. The builder and the auditor review them separately; a person reviews them
+  later, blind.
+- No system has run on test.
