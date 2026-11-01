@@ -1,19 +1,27 @@
-"""R5 of docs/v3/m3av_protocol.md: a VSI-style subtitle + visual frame search (VSI, arXiv 2508.06869), 4 frames.
+"""R5 of docs/v3/m3av_protocol.md: a VSI-inspired MPNet/MobileCLIP subtitle + visual frame search, 4 frames.
+An adaptation of VSI (arXiv 2508.06869), not a reproduction: the published system is not compared.
 
-Text branch as in VSI: all-mpnet-base-v2 (revision e8c3b32edf5434bc2275fc9bab85f82640a19130, mean pooling, unit
-norm) cosine between the query (question + options) and each transcript line; soft threshold B = min(1, M * 2) when
+Text branch: all-mpnet-base-v2 (revision e8c3b32edf5434bc2275fc9bab85f82640a19130, mean pooling, unit norm) cosine
+M between the query (question + options) and each transcript line, on the raw strings; boost B = min(1, 2M) when
 M > 0.5, else M; lines with B <= 0.2 are dropped; each kept line spreads B with a Gaussian centred on its midpoint,
-sigma = (end - start + 2 W) / 4, W = 2 s; S_text(t) = the maximum over lines. Visual branch: VSI asks a VLM for
-target objects and runs YOLO-World; here it is the dense MobileCLIP similarity of each 2 s frame to the question
-(as R3) or to the best of question + each option (as R4), which keeps R5 inside the same encoders as R3/R4.
+sigma = (end - start + 2 W) / 4, W = 2 s, evaluated at every video time; S_text(t) = the maximum over lines.
+Visual branch: VSI asks a VLM for target objects and runs YOLO-World; here it is the dense MobileCLIP similarity of
+each 2 s frame to the question (as R3) or to the best of question + each option (as R4).
 Fusion as in VSI: S = lam * z(S_text) + (1 - lam) * z(S_visual), z over the video. Saved: the best 96 times by S,
 at least 4 s apart, best first (the pool keeps the first 4 distinct pictures); the dev measure uses the first 4.
 VSI's iterative sampling is not needed: every 2 s frame is scored.
 
-lam and the visual query are chosen on dev only by source-slide interval hit@4 (visible spans, 1 s tolerance).
+Differences from VSI's text branch (auditor P71; kept as frozen, docs/v3/m3av_freeze_supplement.json):
+- boost: paper Eq. 8 is min(1, M + 2 max(M - 0.5, 0)); the released code is min(1, 0.5 + 2 (M - 0.5)); here
+  min(1, 2M), so every line with M > 0.5 scores 1 (at M = 0.6: paper 0.8, code 0.7, here 1.0);
+- Gaussian support: VSI limits it to the line expanded by W; here it covers the whole video;
+- preprocessing: the released code lowercases and removes stopwords; here the raw strings are embedded.
 
-    python scripts/m3av_vsi.py --split dev                         # all settings; runs/m3av/vsi/<split>_<setting>.json
-    python scripts/m3av_vsi.py --split test --setting lam0.5_q     # test: the frozen setting only
+lam and the visual query were chosen on dev only by source-slide interval hit@4 (visible spans, 1 s tolerance),
+scoring the first 4 ranked times; test runs only the frozen setting (VSI_SETTING in v3_baseline_cycle.py).
+
+    python scripts/m3av_vsi.py --split dev                              # all settings; runs/m3av/vsi/<split>_<setting>.json
+    python scripts/m3av_vsi.py --split test --setting lam0.5_qo_max     # test: the frozen setting only
 """
 
 from __future__ import annotations
@@ -84,10 +92,13 @@ def main() -> None:
 
     p = argparse.ArgumentParser()
     p.add_argument("--split", required=True, choices=("dev", "test"))
-    p.add_argument("--setting", default=None, help="test: the frozen setting, e.g. lam0.5_q")
+    p.add_argument("--setting", default=None, help="test: the frozen setting (lam0.5_qo_max)")
     a = p.parse_args()
-    if a.split == "test" and not a.setting:
-        raise SystemExit("test runs only the frozen setting (--setting)")
+    if a.split == "test":
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from v3_baseline_cycle import VSI_SETTING  # noqa: PLC0415
+        if a.setting != VSI_SETTING:
+            raise SystemExit(f"test runs only the frozen setting: --setting {VSI_SETTING}")
     root = Path(f"data/m3av_{a.split}")
     its, _ = load_local_dataset(root, splits=(a.split,))
     settings = [f"lam{lam:g}_{v}" for lam in LAMS for v in VQUERIES] if a.setting is None else [a.setting]

@@ -150,3 +150,22 @@ All other comparisons are secondary and uncorrected.
     visible spans), not 54; the 9% fall in visible time combines the span fix (−4.1%) and the F3 answer-content rule.
   - Dev results (primary measure, 514 questions, 96 lectures): S2m − R5 +1.0 (−2.9..+4.7); S2m − S1 +6.8
     (+3.1..+10.7); S2m − R3 +14.4; S2m − R4 +1.9 (−2.9..+6.5); S2m − S2c −0.2 (−2.5..+2.2).
+- 2026-11-01, supplement to the freeze (auditor P71-P74), after the test questions were generated and before any
+  system runs on test; no model, setting or selection rule changes (`docs/v3/m3av_freeze_supplement.json`).
+  - **R5 is VSI-inspired, not VSI.** Amendment 4 said R5 "keeps VSI's text branch"; it does not exactly. The frozen
+    R5 boosts a line similarity M > 0.5 to min(1, 2M), so every such line scores 1 (VSI paper Eq. 8:
+    min(1, M + 2 max(M − 0.5, 0)); VSI's released code: min(1, 0.5 + 2(M − 0.5)); at M = 0.6 these give 0.8 and
+    0.7, R5 gives 1.0). Its Gaussian covers the whole video (VSI: the line ± W), and it embeds the raw strings (VSI's
+    code lowercases and removes 12 stopwords). With the MobileCLIP visual branch in place of VSI's VLM + YOLO-World
+    objects, R5 is a VSI-inspired MPNet/MobileCLIP baseline. R5 stays frozen as it is; no result is claimed against
+    the published VSI system. R5 is the strongest of the settings tried on dev (10 settings, scored on the first 4
+    ranked times), not a proven optimum.
+  - **Freeze supplement.** Records the cache revision and file hashes of every external model (bge-reranker-base
+    and MobileCLIP load by name), package versions, the resolved pool configuration of every frozen system, the
+    selector and Head B arguments, the merged answer-model configuration, the code changed after the freeze and
+    the exact primary test commands (`scripts/run_m3av_test.sh`). Test inputs are hashed when `data/m3av_test` is
+    built; test artifacts are built fresh by the frozen run and hashed before anything is scored.
+  - **Test path.** `m3av_test` added to the dataset registries; `m3av_vsi.py` refuses any test setting other
+    than lam0.5_qo_max; `m3av_hits.py` stops if a frozen system lacks any cohort question, reports raw p-values and
+    Holm over exactly L1 and L2, and puts L1/L2 in their own table. On dev the rewritten report reproduces every
+    figure: L1 raw p 0.64, Holm 0.64; L2 raw p 0.0006, Holm 0.0012 (dev, used for choices; not a confirmation).

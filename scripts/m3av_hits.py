@@ -3,9 +3,11 @@
 Source-slide interval hit@4: 1 when one of the 4 frames a system would show lies inside a visible span of a valid
 evidence segment (1 s tolerance; the same test as `chosen_hits_evidence` in v3_baseline_cycle.py). Frames come
 from the saved pools with the same `select` the answer stage uses. Paired bootstrap over lectures (10,000
-resamples, seed 20261101); questions and lectures reported. Also: frames actually shown per system.
+resamples, seed 20261101); raw p-values and Holm over exactly the two primary contrasts L1 and L2 (amendment 4).
+Stops if any frozen system lacks a question of the cohort (no primary on a subset). Also: frames actually shown.
 
     python scripts/m3av_hits.py --split dev                     # reports/m3av/hits_dev.{json,md}
+    python scripts/m3av_hits.py --split test                    # frozen systems only
 """
 
 from __future__ import annotations
@@ -23,38 +25,38 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from v3_baseline_cycle import items, pool_dir, select  # noqa: E402
 
-B, SEED = 10_000, 20261101
-SYSTEMS = {  # name: (pool, selector); a missing pool or selection file is reported and skipped
+B, SEED, ALPHA = 10_000, 20261101, 0.05
+SYSTEMS = {  # name: (pool, selector); the frozen systems (docs/v3/m3av_freeze.json), S1t shows S1's frames
     "S0 starting design": ("v2", "clip"),
     "S1 best framework (also S1t's frames)": ("hybrid", "mmropt"),
     "S2c Head A (CG-Bench)": ("hybrid_ahead", "mmropt"),
     "S2m Head A (M3AV train)": ("hybrid_ahead_m3av", "mmropt"),
     "S3 Head B": ("hybrid", "file:{ds}_hybrid_ev_set"),
-    # dev-only picker variants for the Head A systems: Head A's own 4 best moments
+    "R2 4 evenly spaced": ("uniform4d", "clip"),
+    "R3 dense MobileCLIP top-4 (96 ranked)": ("dense4x", "clip"),
+    "R4 dense option-aware top-4 (96 ranked)": ("dense4ox", "clip"),
+    "R5 VSI-inspired (96 ranked)": ("vsi4x", "clip"),
+}
+DEV_ONLY = {  # dev diagnostics (research log step 86); never run on test
     "S2c, picker A_rank": ("hybrid_ahead", "A_rank"),
     "S2m, picker A_rank": ("hybrid_ahead_m3av", "A_rank"),
-    "R2 4 evenly spaced": ("uniform4d", "clip"),
-    # fixed-K rules showing 4 distinct pictures; h = duplicate threshold, chosen on dev (FROZEN below after the choice)
     "R3 dense MobileCLIP top-4, h0": ("dense4d0", "clip"),
     "R3 dense MobileCLIP top-4, h3": ("dense4d3", "clip"),
     "R4 dense option-aware top-4, h0": ("dense4od0", "clip"),
     "R4 dense option-aware top-4, h3": ("dense4od3", "clip"),
-    "R5 VSI-style, h0": ("vsi4d0", "clip"),
-    "R5 VSI-style, h3": ("vsi4d3", "clip"),
-    "R3 dense MobileCLIP top-4 (96 ranked)": ("dense4x", "clip"),
-    "R4 dense option-aware top-4 (96 ranked)": ("dense4ox", "clip"),
-    "R5 VSI-style (96 ranked)": ("vsi4x", "clip"),
-    # superseded: 4-candidate pools that merge repeated slides and show fewer than 4 pictures (research log step 86)
+    "R5 VSI-inspired, h0": ("vsi4d0", "clip"),
+    "R5 VSI-inspired, h3": ("vsi4d3", "clip"),
+    # superseded: 4-candidate pool that merges repeated slides and shows fewer than 4 pictures
     "R3 (4-candidate pool, merged)": ("dense4", "clip"),
 }
-R3 = "R3 dense MobileCLIP top-4 (96 ranked)"
-S2M, R5 = "S2m Head A (M3AV train)", "R5 VSI-style (96 ranked)"
-CONTRASTS = [(S2M, R5), (S2M, "S1 best framework (also S1t's frames)"),          # L1, L2 (amendment 4)
-             (S2M, R3), (S2M, "R4 dense option-aware top-4 (96 ranked)"), (S2M, "S2c Head A (CG-Bench)")]
+S2M, S1, R5 = "S2m Head A (M3AV train)", "S1 best framework (also S1t's frames)", "R5 VSI-inspired (96 ranked)"
+PRIMARY = {"L1": (S2M, R5), "L2": (S2M, S1)}                       # amendment 4; Holm over exactly these two
+SECONDARY = {"S2m - R3": (S2M, "R3 dense MobileCLIP top-4 (96 ranked)"),
+             "S2m - R4": (S2M, "R4 dense option-aware top-4 (96 ranked)"), "S2m - S2c": (S2M, "S2c Head A (CG-Bench)")}
 
 
 def paired(a: dict, b: dict, lecture: dict) -> dict:
-    qs = sorted(set(a) & set(b))
+    qs = sorted(a)
     byl = collections.defaultdict(list)
     for q in qs:
         byl[lecture[q]].append(float(a[q]) - float(b[q]))
@@ -64,7 +66,28 @@ def paired(a: dict, b: dict, lecture: dict) -> dict:
     p = min(1.0, 2 * (min(np.sum(boots <= 0), np.sum(boots >= 0)) + 1) / (B + 1))
     return {"diff": round(100 * float(np.mean([a[q] - b[q] for q in qs])), 1),
             "lo": round(100 * float(np.percentile(boots, 2.5)), 1), "hi": round(100 * float(np.percentile(boots, 97.5)), 1),
-            "p": round(float(p), 4), "n": len(qs), "lectures": len(ls)}
+            "p": float(p), "n": len(qs), "lectures": len(ls)}
+
+
+def holm(ps: dict) -> dict:
+    """Holm step-down adjusted p-values (monotone, capped at 1)."""
+    out, run = {}, 0.0
+    for i, k in enumerate(sorted(ps, key=ps.get)):
+        run = max(run, min(1.0, (len(ps) - i) * ps[k]))
+        out[k] = run
+    return out
+
+
+def missing_ids(ds: str, pool: str, rule: str, qids: list) -> list:
+    from videoqa.v2.candidates import _safe  # noqa: PLC0415
+
+    d = pool_dir(ds, pool)
+    gone = {q for q in qids if not (d / _safe(q) / "pool.json").exists()}
+    if rule.startswith("file:"):
+        f = Path(f"runs/v3_head_b/selections/{rule[5:]}.json")
+        sel = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}
+        gone |= {q for q in qids if q not in sel}
+    return sorted(gone)
 
 
 def main() -> None:
@@ -77,16 +100,21 @@ def main() -> None:
     ds = f"m3av_{a.split}"
     its = {it.qa.qa_id: it.qa for it in items(ds)}
     lecture = {q: v.video_id for q, v in its.items()}
-    enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
     qids = sorted(its)
+    systems = dict(SYSTEMS, **(DEV_ONLY if a.split == "dev" else {}))
+    # complete-cohort check: every frozen system covers every question; only dev diagnostics may be absent
+    incomplete = {k: g for k, (pool, rule) in systems.items() if (g := missing_ids(ds, pool, rule.format(ds=ds), qids))}
+    bad = {k: len(g) for k, g in incomplete.items() if k in SYSTEMS}
+    if bad:
+        raise SystemExit(f"incomplete frozen systems on {ds} ({len(qids)} questions), questions missing: {bad}")
+    enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
     qo = dict(zip(qids, enc.embed_texts([its[q].question + " Options: " + ", ".join(its[q].options) for q in qids]),
                   strict=True))
-    hits, shown, missing = {}, {}, []
-    for name, (pool, rule) in SYSTEMS.items():
-        d, rule = pool_dir(ds, pool), rule.format(ds=ds)
-        if not d.exists() or (rule.startswith("file:") and not Path(f"runs/v3_head_b/selections/{rule[5:]}.json").exists()):
-            missing.append(name)
+    hits, shown = {}, {}
+    for name, (pool, rule) in systems.items():
+        if name in incomplete:
             continue
+        d, rule = pool_dir(ds, pool), rule.format(ds=ds)
         h, n = {}, []
         for q in qids:
             frames = select(load_pool(d, q), rule, 4, qo[q])
@@ -94,21 +122,36 @@ def main() -> None:
             n.append(len(frames))
         hits[name] = h
         shown[name] = {"mean": round(float(np.mean(n)), 2), "under_4": int(sum(x < 4 for x in n))}
-    out = {"split": a.split, "questions": len(qids), "lectures": len(set(lecture.values())), "missing": missing,
+    prim = {k: paired(hits[x], hits[y], lecture) for k, (x, y) in PRIMARY.items()}
+    for k, v in holm({k: v["p"] for k, v in prim.items()}).items():
+        prim[k].update(p_holm=v, significant_at_0_05=bool(v <= ALPHA))
+    out = {"split": a.split, "questions": len(qids), "lectures": len(set(lecture.values())),
+           "absent_dev_diagnostics": sorted(incomplete),
            "systems": {k: {"hit@4": round(100 * float(np.mean(list(v.values()))), 1), **shown[k]} for k, v in hits.items()},
-           "contrasts": {f"{x} - {y}": paired(hits[x], hits[y], lecture) for x, y in CONTRASTS if x in hits and y in hits},
-           "vs_R3": {k: paired(v, hits[R3], lecture) for k, v in hits.items() if R3 in hits and k != R3}}
+           "primary": {k: {"contrast": f"{x} - {y}", **prim[k]} for k, (x, y) in PRIMARY.items()},
+           "secondary": {k: paired(hits[x], hits[y], lecture) for k, (x, y) in SECONDARY.items()},
+           "per_question": {k: {q: int(v[q]) for q in qids} for k, v in hits.items() if k in SYSTEMS}}
     Path("reports/m3av").mkdir(parents=True, exist_ok=True)
     Path(f"reports/m3av/hits_{a.split}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
+
+    def row(name: str, c: dict) -> str:
+        return f"| {name} | {c['diff']:+.1f} ({c['lo']:+.1f}..{c['hi']:+.1f}) | {c['p']:.4g} |"
+
     lines = [f"# Source-slide interval hit@4, M3AV {a.split} ({len(qids)} questions, {out['lectures']} lectures)", "",
-             f"| System | hit@4 (%) | frames shown (mean) | questions with < 4 frames | − {R3} (95% interval over lectures) |",
-             "|---|---|---|---|---|"]
-    for k, v in out["systems"].items():
-        c = out["vs_R3"].get(k)
-        lines.append(f"| {k} | {v['hit@4']} | {v['mean']} | {v['under_4']} | "
-                     + (f"{c['diff']:+.1f} ({c['lo']:+.1f}..{c['hi']:+.1f})" if c else "") + " |")
-    if missing:
-        lines += ["", "Not yet available: " + ", ".join(missing)]
+             "Paired bootstrap over lectures (10,000 resamples, seed 20261101); every frozen system covers every question."
+             + (" Dev results were used to choose methods; they are not a confirmation." if a.split == "dev" else ""),
+             "", "## Primary contrasts (amendment 4; Holm over L1 and L2)", "",
+             "| Contrast | Difference, points (95% interval) | raw p | Holm p | significant at 0.05 |", "|---|---|---|---|---|"]
+    lines += [row(f"{k}: {x} - {y}", prim[k]) + f" {prim[k]['p_holm']:.4g} | "
+              f"{'yes' if prim[k]['significant_at_0_05'] else 'no'} |" for k, (x, y) in PRIMARY.items()]
+    lines += ["", "## Secondary contrasts (no correction; descriptive)", "",
+              "| Contrast | Difference, points (95% interval) | raw p |", "|---|---|---|"]
+    lines += [row(f"{x} - {y}", out["secondary"][k]) for k, (x, y) in SECONDARY.items()]
+    lines += ["", "## Systems", "", "| System | hit@4 (%) | frames shown (mean) | questions with < 4 frames |",
+              "|---|---|---|---|"]
+    lines += [f"| {k} | {v['hit@4']} | {v['mean']} | {v['under_4']} |" for k, v in out["systems"].items()]
+    if incomplete:
+        lines += ["", "Dev diagnostics not available: " + ", ".join(sorted(incomplete))]
     Path(f"reports/m3av/hits_{a.split}.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
 

@@ -52,6 +52,8 @@ DATASETS = {"cgbench": ("data/cgbench", "dev", None), "videommmu": ("data/videom
             "lvb_fresh": ("data/lvb_fresh", "test", None),
             # lecture study (docs/v3/m3av_protocol.md): M3AV dev; test only after the method freeze
             "m3av_dev": ("data/m3av_dev", "dev", None),
+            # added after the freeze (docs/v3/m3av_freeze_supplement.json, auditor P73): the frozen test cohort
+            "m3av_test": ("data/m3av_test", "test", None),
             # Head B training pools (CG-Bench train videos we hold; never used for selection decisions)
             "cgbench_train": ("data/cgbench", "train", None)}
 POOLS = {
@@ -109,7 +111,7 @@ FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/fea
             "cgbench_train": "data/cgbench/features", "videommmu_comp": "data/videommmu/features",
             "cgbench_test": "data/cgbench/features", "videommmu_test": "data/videommmu/features",
             "videommmu_comp_test": "data/videommmu/features", "lvb_fresh": "data/lvb_fresh/features",
-            "m3av_dev": "data/m3av_dev/features"}
+            "m3av_dev": "data/m3av_dev/features", "m3av_test": "data/m3av_test/features"}
 SELECTIONS = Path("runs/v3_head_b/selections")
 LIMITS = (4000, 4 * 3600.0)
 # second ledger, declared in research_log step 35 after the first was used up by stages 1-3

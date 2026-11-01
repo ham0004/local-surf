@@ -16,7 +16,7 @@ part (details in `docs/v3/research_log.md`):
 | Head A: learned offset distribution per line (the proposed new part) | **rejected** (negative result) | −3.5 recall@6 against density moments without offsets on CG-Bench dev (step 39) |
 | Head A: light residual over frozen MiniLM + bge-reranker scores, density voting, human labels, 3 seeds (`light_dens`, `ens`) | **adopted** as Head A (system S2) | dev recall@6 +8.5 (+4.1..+13.1) over zero-shot (step 39). Fresh set: +1.3 over the best framework, not confirmed; the learned residual adds +0.3 (−2.1..+2.8) over its own density rule (step 82) |
 | Head B: set selector with option-evidence term and set context (`ev_set`, λ = 2, μ = 1) | **adopted** as Head B (systems S3, S4) | chosen on train inner validation (step 37 onwards). Fresh-set H1 (S4 − S1, 4B) −0.2 (−3.0..+2.7) and H2 (Nemotron) +2.1 (−0.8..+5.1): both not supported (`reports/v3_confirmation`) |
-| Head B: the option-evidence term (λ) | **no measurable effect** | λ = 0 vs λ = 2: +0.0 and +0.6 points; the same selected sets for 785 and 792 of 894 questions at a maximum of 4 frames (steps 82-83) |
+| Head B: the option-evidence term (λ) | **no confirmed gain** | λ = 0 vs λ = 2: +0.0 and +0.6 points; the same selected sets for 785 and 792 of 894 questions at a maximum of 4 frames (steps 82-83) |
 | Head A retrained on lecture speech (S2m) | **in progress** | lecture study, `docs/v3/m3av_protocol.md` |
 
 Neither head is claimed as new: speech/visual dual-path retrieval, option-aware frame scoring and learned
