@@ -50,6 +50,8 @@ DATASETS = {"cgbench": ("data/cgbench", "dev", None), "videommmu": ("data/videom
             "videommmu_comp_test": ("data/videommmu", "test", "vmmmu:Comprehension:"),
             # fresh confirmation set (docs/v3/confirmation_protocol.md): LongVideoBench videos never used before
             "lvb_fresh": ("data/lvb_fresh", "test", None),
+            # lecture study (docs/v3/m3av_protocol.md): M3AV dev; test only after the method freeze
+            "m3av_dev": ("data/m3av_dev", "dev", None),
             # Head B training pools (CG-Bench train videos we hold; never used for selection decisions)
             "cgbench_train": ("data/cgbench", "train", None)}
 POOLS = {
@@ -71,15 +73,25 @@ POOLS = {
     "hybrid_ahead_r0": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="head_r0"),
     # Head B v2 training pools: Head A cross-fitted over 4 video folds (research_log step 58)
     "hybrid_ahead_cf": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="head_cf"),
+    # lecture study S2m: Head A with the same recipe retrained on M3AV train lectures (scripts/run_s2m.sh)
+    "hybrid_ahead_m3av": dict(scan_step_s=5.0, scan_cap=24, path_b_scope="hybrid", path_a="head_m3av"),
 }
 # external reference rules for the final comparison (no Path A, 4 frames, chosen by the "clip" selector):
 POOLS["uniform4"] = dict(n_path_a=0, n_path_b=4, scan_cap=4, scan_step_s=5.0, path_b_scope="video", stable_hamming=0)
 POOLS["dense4"] = dict(n_path_a=0, n_path_b=4, scan_cap=4, scan_step_s=5.0, path_b_scope="features")
+# lecture study (docs/v3/m3av_protocol.md): R4 = dense top-4 by the best of question + each option
+POOLS["dense4o"] = dict(n_path_a=0, n_path_b=4, scan_cap=4, scan_step_s=5.0, path_b_scope="features", scan_query="qo_max")
+# R5 = VSI-style subtitle + visual search; its 4 times come from scripts/m3av_vsi.py with the setting chosen on dev
+VSI_SETTING = None
+POOLS["vsi4"] = dict(n_path_a=0, n_path_b=4, scan_cap=4, scan_step_s=5.0, path_b_scope="times",
+                     times_file="runs/m3av/vsi/{split}_{setting}.json")
 HEAD_A_CKPTS = [f"runs/v3_head_a/ckpt/light_dens_ens_human_{s}.pt" for s in range(3)]
+HEAD_A_M3AV_CKPTS = [f"runs/v3_head_a_m3av/ckpt/light_dens_ens_human_{s}.pt" for s in range(3)]
 FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/features",
             "cgbench_train": "data/cgbench/features", "videommmu_comp": "data/videommmu/features",
             "cgbench_test": "data/cgbench/features", "videommmu_test": "data/videommmu/features",
-            "videommmu_comp_test": "data/videommmu/features", "lvb_fresh": "data/lvb_fresh/features"}
+            "videommmu_comp_test": "data/videommmu/features", "lvb_fresh": "data/lvb_fresh/features",
+            "m3av_dev": "data/m3av_dev/features"}
 SELECTIONS = Path("runs/v3_head_b/selections")
 LIMITS = (4000, 4 * 3600.0)
 # second ledger, declared in research_log step 35 after the first was used up by stages 1-3
@@ -130,20 +142,25 @@ def stage_pools(a) -> None:
 
     settings = dict(POOLS[a.pool])
     path_a = settings.pop("path_a", "v2")
+    if "times_file" in settings:
+        if VSI_SETTING is None:
+            raise SystemExit("choose the R5 setting on dev first (VSI_SETTING)")
+        settings["times_file"] = settings["times_file"].format(split=DATASETS[a.dataset][1], setting=VSI_SETTING)
     cfg = PoolConfig(**settings, excerpt_words=300,
-                     features_dir=FEATURES[a.dataset] if a.pool in ("dense", "dense4") or a.pool.startswith("hybrid") else None)
+                     features_dir=FEATURES[a.dataset] if a.pool.startswith(("dense", "hybrid")) else None)
     enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
     head_a = HotMomentScorer(device="cuda", cache_dir="cache/hf/hub")
     if path_a == "zeroshot":
         from videoqa.v3.head_a import ZeroShotMoments  # noqa: PLC0415
         head_a = ZeroShotMoments(head_a)
-    elif path_a in ("head", "head_r0"):
+    elif path_a in ("head", "head_r0", "head_m3av"):
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         from v3_head_a_eval import Reranker  # noqa: PLC0415
         from v3_head_a_light import BGE  # noqa: PLC0415
 
         from videoqa.v3.head_a import LearnedMoments  # noqa: PLC0415
-        head_a = LearnedMoments(head_a, HEAD_A_CKPTS, bge=Reranker(BGE), zero_residual=path_a == "head_r0")
+        head_a = LearnedMoments(head_a, HEAD_A_M3AV_CKPTS if path_a == "head_m3av" else HEAD_A_CKPTS, bge=Reranker(BGE),
+                                zero_residual=path_a == "head_r0")
     elif path_a == "head_cf":
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         from v3_head_a_eval import Reranker  # noqa: PLC0415

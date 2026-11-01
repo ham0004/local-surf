@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -49,9 +50,9 @@ from videoqa.v3.head_a import (  # noqa: E402
     line_times,
 )
 
-RUN = Path("runs/v3_head_a")
+RUN = Path(os.environ.get("HEAD_A_RUN", "runs/v3_head_a"))      # runs/v3_head_a_m3av for S2m
 BGE = "BAAI/bge-reranker-base"           # revision 2cfc18c9415c912f9d8155881c133215df768a70 (step 38)
-OUT = Path("reports/v3_head_a")
+OUT = Path(os.environ.get("HEAD_A_OUT", "reports/v3_head_a"))   # reports/m3av for S2m
 def stage_bge(a) -> None:
     """Second frozen scorer for the 'ens' feature set: bge-reranker-base on question + options (step 38's best)."""
     from v3_head_a_eval import Reranker, segments  # noqa: PLC0415

@@ -38,7 +38,8 @@ COLS = ["No.", "Stage", "Experiment", "System (plain name)", "Speech path (Path 
 
 STAGES = {1: "1. Version 1", 2: "2. Version 2", 3: "3. v3 benchmark check", 4: "4. v3 tuning (dev)",
           5: "5. Head A", 6: "6. Head B", 7: "7. Final locked test", 8: "8. Speech text", 9: "9. Larger answer model (4B)",
-          10: "10. Full combination grid", 11: "11. Pooled summaries", 12: "12. Large answer model (Nemotron, API follow-up)"}
+          10: "10. Full combination grid", 11: "11. Pooled summaries", 12: "12. Large answer model (Nemotron, API follow-up)",
+          13: "13. Fresh confirmation set (LongVideoBench)"}
 
 MODELS = {"": "Qwen3-VL-2B", "|ans=4b": "Qwen3-VL-4B", "|ans=nemo": "Nemotron-3.5-Super-VL-120B"}
 
@@ -57,6 +58,7 @@ DATA = {  # dataset key: (benchmark, video type, question set)
     "videommmu_comp_test": ("Video-MMMU Comprehension", "lectures, understanding questions", "test"),
     "ALL_TEST": ("CG-Bench + Video-MMMU (both tracks)", "all test questions", "test"),
     "LECTURE_TEST": ("Video-MMMU (both tracks)", "all lecture test questions", "test"),
+    "lvb_fresh": ("LongVideoBench (fresh set)", "everyday videos (8 s - 60 min)", "fresh confirmation"),
 }
 POOL = {  # pool: (speech path, picture search, pictures in pool note)
     "v2": ("speech rule: MiniLM on lines inside the 4 BM25 windows", "scan every 5 s inside the BM25 windows"),
@@ -68,6 +70,7 @@ POOL = {  # pool: (speech path, picture search, pictures in pool note)
     "hybrid_b12": ("speech rule: MiniLM on lines inside the 4 BM25 windows", "hybrid, 12 pictures instead of 6"),
     "hybrid_azs": ("MiniLM over the whole transcript (untrained)", "hybrid: 3 inside windows + 3 dense whole video"),
     "hybrid_ahead": ("Head A (trained) over the whole transcript", "hybrid: 3 inside windows + 3 dense whole video"),
+    "hybrid_ahead_r0": ("Head A with its learned residual set to 0 (density voting only)", "hybrid: 3 inside windows + 3 dense whole video"),
     "uniform4": ("none", "4 evenly spaced pictures"),
     "dense4": ("none", "dense whole-video search, top 4"),
 }
@@ -77,7 +80,7 @@ PICK = {
     "relevance": "top pictures by speech score", "A_only": "only speech-path pictures (best by question + options)",
     "B_only": "only picture-search pictures (best by question + options)", "none": "no pictures",
     "optset": "option-evidence set rule (untrained)", "ev": "Head B trained on human-marked seconds, no option term",
-    "ev_set": "Head B (trained, chosen version)", "ev_set_noset": "Head B without avoiding look-alikes",
+    "ev_set": "Head B (trained, chosen version)", "ev_set_nolam": "Head B without its option term (lambda = 0)", "ev_set_noset": "Head B without avoiding look-alikes",
     "util": "Head B trained on answer-model feedback", "util_set": "Head B feedback version + option term",
 }
 
@@ -126,8 +129,9 @@ def describe(pool, selector, words):
         text = {"frames+hybrid": f"speech around the chosen pictures + best lines (word + meaning search), {words} words",
                 "hybrid": f"best lines by word + meaning search, {words} words",
                 "frames": f"speech around the chosen pictures, {words} words",
+                "bm25full": f"best lines by BM25 over the whole transcript, {words} words",
                 "full": f"whole transcript, capped at {words} words"}.get(tp, tp)
-    trained = ", ".join(x for x in (("Head A" if pool == "hybrid_ahead" else ""), ("Head B" if key in ("ev", "ev_set", "ev_set_noset", "util", "util_set") else "")) if x) or "none"
+    trained = ", ".join(x for x in (("Head A" if pool == "hybrid_ahead" else ""), ("Head B" if key in ("ev", "ev_set", "ev_set_noset", "ev_set_nolam", "util", "util_set") else "")) if x) or "none"
     pics = {"none": "0"}.get(key, "4")
     if pool == "v2" and key == "clip" and words == 120 and tp is None:
         name = "Starting framework (v2 design)"
@@ -139,6 +143,10 @@ def describe(pool, selector, words):
         name = "Best framework + Head B" + (" + speech text" if tp == "frames+hybrid" else "")
     elif pool == "hybrid_ahead" and key == "ev_set":
         name = "Best framework + Head A + Head B" + (" + speech text" if tp == "frames+hybrid" else "")
+    elif pool == "hybrid_ahead_r0" and key == "mmropt":
+        name = "Best framework + Head A, learned residual set to 0 (ablation)"
+    elif pool in ("hybrid", "hybrid_ahead") and key == "ev_set_nolam":
+        name = "Best framework" + (" + Head A" if pool == "hybrid_ahead" else "") + " + Head B without its option term (ablation)"
     elif pool == "uniform4":
         name = "Standard rule: 4 evenly spaced pictures"
     elif pool == "dense4":
@@ -156,6 +164,8 @@ def stage_of(ds, pool, selector, words):
     tp = any(t.startswith("tp=") for t in tags)
     head = pool == "hybrid_ahead" or "ev_set" in selector or "_util" in selector or "_optset" in selector or "_ev" in selector
     test = ds.endswith("_test") or ds in ("ALL_TEST", "LECTURE_TEST")
+    if ds == "lvb_fresh":
+        return 13
     if ans(selector) == "|ans=nemo":
         return 12
     if four_b:
@@ -254,6 +264,9 @@ def v3_rows(groups):
             meaning += f" {cmp_s[0]:+.1f} points vs the starting framework ({'confirmed' if cmp_s[2] != 'no' else 'not confirmed'})."
         if cmp_b:
             meaning += f" {cmp_b[0]:+.1f} points vs the best framework ({'confirmed' if cmp_b[2] != 'no' else 'not confirmed'})."
+        if d == "lvb_fresh":
+            meaning += (" Fresh set: only H1-H4 in reports/v3_confirmation are confirmatory (Holm-corrected); this row's"
+                        " intervals are uncorrected, and rows added after those results were seen are exploratory.")
         out.append(dict(stage=stage_of(d, p, s, w) if d not in ("ALL_TEST", "LECTURE_TEST") else (11 if stage_of("cgbench_test", p, s, w) in (7, 8, 9, 10) else stage_of("cgbench_test", p, s, w)),
                         exp="multiple-choice accuracy", desc=desc, bench=bench, vtype=vtype, qset=qset, n=n, vids=vids,
                         measure="multiple-choice accuracy (answer letter correct)", res=res, ct=f"{correct} / {n}",
@@ -473,7 +486,8 @@ def main() -> None:
             ["vs ... difference", "result minus the reference on the same questions, in percentage points"],
             ["95% interval / confirmed?", "paired bootstrap over videos; 'yes' when the interval excludes zero"],
             ["Answer model", "frozen vision-language model that reads the pictures and answers (2B small, 4B larger, both local; Nemotron 120B through an API, a follow-up diagnostic). Every comparison uses the same answer model"],
-            ["Pooled rows (stage 11)", "the same system over all 459 test questions, or over the 404 lecture test questions"]]:
+            ["Pooled rows (stage 11)", "the same system over all 459 test questions, or over the 404 lecture test questions"],
+            ["Fresh set (stage 13)", "894 LongVideoBench questions not used before; H1-H4 (reports/v3_confirmation) are the only confirmatory comparisons, all other rows there are descriptive"]]:
         gl.append(line)
     gl.column_dimensions["A"].width, gl.column_dimensions["B"].width = 26, 120
     wb.save(OUT / "all_results.xlsx")

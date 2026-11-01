@@ -42,8 +42,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from v3_head_a_eval import KS, NMS_GAP_S, ZeroShot, load, nms, score_metrics, segments  # noqa: E402
 
-RUN = Path("runs/v3_head_a")
-OUT = Path("reports/v3_head_a")
+RUN = Path(os.environ.get("HEAD_A_RUN", "runs/v3_head_a"))      # runs/v3_head_a_m3av for S2m
+OUT = Path(os.environ.get("HEAD_A_OUT", "reports/v3_head_a"))   # reports/m3av for S2m
 NEAR_S = 10.0
 OFF_RANGE_S, OFF_BIN_S = 40.0, 4.0
 N_BINS = int(2 * OFF_RANGE_S / OFF_BIN_S) + 1          # 21 bins, centre bin = offset 0

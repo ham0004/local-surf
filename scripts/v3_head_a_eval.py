@@ -36,8 +36,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-DATA = Path("data/head_a")
-OUT = Path("reports/v3_head_a")
+DATA = Path(os.environ.get("HEAD_A_DATA", "data/head_a"))       # data/head_a_m3av for S2m (lecture study)
+OUT = Path(os.environ.get("HEAD_A_OUT", "reports/v3_head_a"))   # reports/m3av for S2m
 KS = (1, 2, 4, 6)
 TOL_S = 1.0
 NMS_GAP_S = 8.0

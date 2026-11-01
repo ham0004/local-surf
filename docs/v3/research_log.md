@@ -1317,3 +1317,31 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   counted only for the new arms, which store the option (1-3 per arm).
 - Phase 1's runs are all done. The remaining Phase 1 work is the lecture study (M3AV): retrain Head A on the
   M3AV train questions, then R4 and R5, settings on dev, and the method freeze before test is generated.
+
+## Step 85 (2026-11-01): auditor round 5 (P57-P67): wording and count corrections; fresh set in the results table
+- **Step 84, frame decomposition (P60).** The row "picture change only" (+6.2) changes the frame selection under a
+  fixed text *policy*, and the `frames+hybrid` policy takes speech around the frames actually chosen. So the
+  transcript text shown also changes with the frames. It is a frame-selection change including the text changes
+  it causes, not a pure visual contribution. The cleaner control is the +8.2 row, where both arms use the same
+  120-word BM25 excerpt (it does not depend on the frames). "Pictures and text are not additive" is withdrawn: the
+  order dependence is descriptive, and no interaction test was run.
+- **Step 84, text policies (P60).** "No way of choosing the lines differs" is too strong. Correct reading: none
+  of the three alternative policies shows a confirmed accuracy advantage over frames+hybrid; failing to find a
+  difference does not show they are equivalent.
+- **Head B frame counts (P58).** Head B chooses at most 4 frames; with λ = 2 it shows fewer than 4 for 81 (best
+  framework's pool) and 82 (Head A's pool) of 894 questions, because those pools are small. λ = 0 shows exactly
+  the same number of frames for every question (mean 3.85 and 3.86). "Identical sets for 785 and 792 questions"
+  means identical selected sets at a maximum budget of 4.
+- **Split spans (P60).** "54 of 514 questions have split spans" (step 83, amendment 3) cannot be reproduced and
+  is replaced. Definition: a question has a split span when one valid segment holds at least two visible spans.
+  Current file: **58 of 514** (57 have more visible spans than valid segments). Total visible time on the same
+  514 questions: 27,729.6 s before the fix → 25,327.7 s now (−8.7%). This combines two changes: the span fix
+  alone gives 26,586.0 s (−4.1%; recomputed from the pre-F3 questions with the current rule), and the F3
+  answer-content rule removes a further 4.7%.
+- **Results table (P60, earlier P36).** `docs/report/all_results.csv` now has a stage 13 with the 35 fresh-set
+  rows (894 questions each, 2B, 4B and Nemotron), labelled "fresh confirmation". Each row says that only H1-H4 in
+  `reports/v3_confirmation` are confirmatory (Holm) and that its own intervals are uncorrected. The ablation rows
+  are named as such.
+- **Design document (P60).** `docs/v3/heads_design.md` now opens with an adopted/rejected table. Rejected: the
+  fine-tuned cross-encoder and the learned offsets (the proposed new part of Head A). Adopted: the light residual
+  Head A and the `ev_set` Head B, neither confirmed on the fresh set. No measurable effect: the option term.

@@ -59,6 +59,9 @@ class PoolConfig:
                                    # "hybrid": half of Path B from "features", half from the windows scan
     features_dir: str | None = None  # <dir>/<video_id>.npz (times, emb) from scripts/v3_features.py
     features_gap_s: float = 4.0      # "features" scope: decode the top scan_cap times at least this far apart
+    scan_query: str = "q"            # "features" scope: rank by the question ("q") or by the best of question +
+                                     # each option ("qo_max", the option-aware rule R4 of docs/v3/m3av_protocol.md)
+    times_file: str | None = None    # "times" scope: {qa_id: [seconds]} chosen elsewhere (R5, scripts/m3av_vsi.py)
 
 
 # ---------------------------------------------------------------------------
@@ -97,12 +100,16 @@ def build_pool(qa, transcript, video_path: str, encoders, head_a, cfg: PoolConfi
     # -- Path B: sparse scan inside the windows -------------------------------
     window_times: set[float] = set()
     if cfg.path_b_scope in ("features", "hybrid"):
-        scan_times = _feature_scan_times(Path(cfg.features_dir) / f"{qa.video_id}.npz",
-                                         encoders.embed_texts([qa.question])[0], cfg.scan_cap, cfg.features_gap_s)
+        scan_q = (encoders.embed_texts([qa.question + " " + o for o in qa.options]) if cfg.scan_query == "qo_max"
+                  else encoders.embed_texts([qa.question])[0])
+        scan_times = _feature_scan_times(Path(cfg.features_dir) / f"{qa.video_id}.npz", scan_q, cfg.scan_cap,
+                                         cfg.features_gap_s)
         if cfg.path_b_scope == "hybrid":      # plus the v2 scan inside the BM25 windows; half the slots each
             w = scan_timestamps(windows, duration, cfg.scan_step_s, cfg.scan_cap, cfg.scan_policy)
             window_times = {round(x, 3) for x in w}
             scan_times = scan_times + [x for x in w if all(abs(x - u) >= 0.5 for u in scan_times)]
+    elif cfg.path_b_scope == "times":
+        scan_times = [float(x) for x in json.loads(Path(cfg.times_file).read_text(encoding="utf-8"))[qa.qa_id]]
     elif cfg.path_b_scope == "video":
         step = max(cfg.scan_step_s, duration / max(cfg.scan_cap, 1))
         scan_times = [float(t) for t in np.arange(0.5, max(duration - 0.05, 0.5), step)][: cfg.scan_cap]
@@ -177,9 +184,11 @@ def _with_neighbours(segs, s) -> str:
 
 
 def _feature_scan_times(path: Path, q_emb, cap: int, gap: float) -> list[float]:
-    """The ``cap`` dense-feature times most similar to the question, at least ``gap`` s apart."""
+    """The ``cap`` dense-feature times most similar to the question, at least ``gap`` s apart. Several query
+    embeddings (one row each): a time scores its best match."""
     z = np.load(path)
-    order = np.argsort(-(z["emb"].astype(np.float32) @ np.asarray(q_emb, np.float32)), kind="stable")
+    sim = z["emb"].astype(np.float32) @ np.atleast_2d(np.asarray(q_emb, np.float32)).T
+    order = np.argsort(-sim.max(1), kind="stable")
     out: list[float] = []
     for i in order:
         t = float(z["times"][i])
