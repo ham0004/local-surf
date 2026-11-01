@@ -1214,3 +1214,62 @@ Train generation (for retraining Head A) stopped at its time cap after 156 calls
 the parallel workers, including waits on API rate limits (HTTP 429), so 24 h of summed time ran out in a few hours
 of wall time. The cap was raised to 120 summed hours (`GEN_LIMITS`; the 6,000-call cap is unchanged) and the run
 resumed with 4 workers from the cache.
+
+## Step 82 (2026-11-01): Phase 1 results so far (CG-Bench dev complete; fresh-set fast arms complete)
+4B answers, 4 frames. Paired difference in points with a 95% bootstrap interval over videos (10,000 resamples).
+CG-Bench dev has 82 questions, so one question is 1.2 points.
+
+| Set | Contrast | Difference |
+|---|---|---|
+| dev | Head A full (S2, 45.1%) − Head A without the learned residual (`hybrid_ahead_r0`, 41.5%) | +3.7 (−3.7..+10.8) |
+| dev | Head A without residual − best framework (S1, 36.6%) | +4.9 (−1.4..+11.7) |
+| dev | Head A without residual − zero-shot moments (`hybrid_azs`, 37.8%) | +3.7 (+1.1..+6.8) |
+| fresh | Head A full (57.2%) − without residual (56.8%) | +0.3 (−2.1..+2.8) |
+| fresh | Head A without residual − best framework (55.9%) | +0.9 (−1.5..+3.2) |
+| fresh | Head B λ = 0 − Head B λ = 2 (on the best framework's pool) | +0.0 (−0.9..+0.9) |
+| fresh | Head B λ = 0 − λ = 2 (on Head A's pool) | +0.6 (−0.2..+1.4) |
+
+Matched-budget speech on dev (best framework's frames, 600-word allowance):
+
+| Text policy | Words used (mean) | Accuracy | − frames+hybrid |
+|---|---|---|---|
+| frames+hybrid (the S1t policy) | 540 | 40.2% | |
+| bm25full (BM25 over the whole transcript) | 539 | 41.5% | +1.2 (−5.4..+6.6) |
+| hybrid (moment-search lines only) | 541 | 42.7% | +2.4 (+0.0..+5.3) |
+| frames (lines near the chosen frames only) | **117** | 42.7% | +2.4 (−2.4..+7.5) |
+
+- Head A on unseen questions: whatever it gains on the fresh set (+1.3 over the best framework, not significant)
+  comes mostly from its moment rule (density voting over speech scores), not the learned residual (+0.3).
+  On dev the residual looks larger (+3.7) but the interval is wide.
+- Head B's coverage term (λ) makes no difference: λ = 0 and λ = 2 pick nearly the same frames.
+- Speech text: on dev, no way of choosing the lines beats the others; all are within 3 questions. The `frames`
+  policy uses only 117 words because few lines lie near the chosen frames, so that row is not a matched budget.
+  The fresh-set text arms are still running.
+- Not yet measured: invalid or abstained answers per system on dev (auditor P38). `rows.jsonl` stores only right
+  or wrong, so these come from the answer logs.
+
+## Step 83 (2026-11-01): auditor round 4 (P45-P56): visibility spans fixed, answer-content check, dev diagnostics
+- **P48, visibility spans.** `stage_apply` had joined every passing second of a segment into one span, so a frame
+  in a non-visible gap could be credited. Spans are now unions of consecutive passing samples. Dev rebuilt: 514
+  questions on 96 lectures; 54 have split spans; total visible time −9%. Sheets and `apply` are limited to the
+  requested split. Protocol amendment 3.
+- **P52, repeated occurrences.** A repeated occurrence must now also show the answer's critical tokens, so "10
+  times for each object" no longer matches a slide without the 10. Dev rebuilt from the cache with no new calls: 20
+  questions lose 29 of 780 occurrences. Per-frame calibration judgments are published, and the tally is computed
+  from them (`reports/m3av/visibility_calibration.md`). Correction to step 81: set 3 had 61 complete-slide frames
+  (61 counted visible) and 17 build-stage frames (8 counted visible), not 62 and 16. The review sampler is now
+  two-stage, with a lecture-balanced and a question-weighted estimate.
+- **P46, Head B λ.** "Nearly the same frames" is now measured: λ = 0 and λ = 2 choose the identical 4-frame set
+  for 785 of 894 fresh questions (87.8%) on the best framework's pool and 792 (88.6%) on Head A's pool; on average
+  3.7 of 4 frames are shared. There is no confirmed gain from λ, which is not the same as showing no effect.
+- **P38 / P50, dev answer diagnostics.** The rows now keep the chosen option. All 13 CG-Bench dev arms (1,066 4B
+  answers) were replayed from the cache with zero calls: no abstentions and no failed answers. Whether a choice was
+  forced (no letter in the reply, so the most likely letter was taken) was never stored; new answers now record it.
+  Nothing here calls for a prompt change.
+- **P49, wording.** Holm now receives unrounded p-values; the confirmation report is unchanged to 4 decimals.
+  Correction to step 80: 211 videos are present but 210 were duration-checked (NIH-F5E14 has no slide metadata and
+  was not decoded). Six of the 1,033 sampled slide correlations are below 0.5 (the lowest lecture median is 0.96),
+  and that coarse grey measure was later rejected for visibility. So the check supports complete files
+  and approximate alignment, not legibility or alignment everywhere. The generation time cap counts worker time
+  including waits, not wall-clock or GPU time.
+- **P47.** The loss report now opens with the descriptive caveat.

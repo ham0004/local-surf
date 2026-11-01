@@ -65,7 +65,8 @@ def paired(a: dict, b: dict, qs: list) -> dict:
     # (count + 1) / (B + 1): never 0; with no resample crossing zero the two-sided p is at most about 2 / B
     p = min(1.0, 2 * (min(np.sum(boots <= 0), np.sum(boots >= 0)) + 1) / (B + 1))
     return {"diff": round(100 * d, 1), "lo": round(100 * np.percentile(boots, 2.5), 1),
-            "hi": round(100 * np.percentile(boots, 97.5), 1), "p": round(float(p), 4), "n": len(qs), "videos": len(vids)}
+            "hi": round(100 * np.percentile(boots, 97.5), 1), "p": round(float(p), 4), "p_raw": float(p),  # Holm input
+            "n": len(qs), "videos": len(vids)}
 
 
 def compare(a: dict, b: dict) -> dict:
@@ -103,7 +104,7 @@ def main() -> None:
     for h, a, b, m in PRIMARY:
         summary["primary"][h] = {"contrast": f"{a} - {b}", "model": m, **compare(system(rows, a, m), system(rows, b, m))}
     final = {h: v["primary"]["p"] for h, v in summary["primary"].items() if v["status"] == "final"}
-    adj = holm({h: v["primary"]["p"] for h, v in summary["primary"].items() if "primary" in v})
+    adj = holm({h: v["primary"]["p_raw"] for h, v in summary["primary"].items() if "primary" in v})   # unrounded
     for h, v in summary["primary"].items():
         v["p_holm"] = adj.get(h)
         v["holm_final"] = len(final) == len(PRIMARY)

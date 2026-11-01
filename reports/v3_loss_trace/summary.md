@@ -1,6 +1,6 @@
 # Loss trace on CG-Bench dev (82 questions)
 
-Each question is counted once, at the first step where the answer is lost (see the script docstring).
+Each question is put in one class: right answers by whether a chosen frame is inside the marked seconds, wrong answers by the first pipeline step whose output misses them. The classes are descriptive, not causal: they do not say which change would recover the answer, "model limit" means the 5 tested placements failed, and text systems are compared with an oracle whose text differs. Pre-filter and window losses are not separated.
 
 | System | n | pool miss | choice miss | reading miss | model limit | right, hit | right, miss |
 |---|---|---|---|---|---|---|---|

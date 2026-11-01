@@ -3,8 +3,8 @@
 Nemotron sees one saved slide image and its OCR text (never the speech or the times) and writes one 4-option
 question plus the exact slide words that support the answer. Slides are taken per lecture in the protocol's hash
 order until the quota of questions passing F1 (format) and F2 (grounding) is met, at most 3 x quota slides per
-lecture. F3 then marks every segment of the lecture that shows the same words as valid evidence. F4 (visibility)
-needs the videos and is done by `scripts/m3av_visibility.py`.
+lecture. F3 then marks every segment of the lecture that shows the same words, and the answer content, as valid
+evidence. F4 (visibility) needs the videos and is done by `scripts/m3av_visibility.py`.
 
 Every reply is cached (runs/m3av/gen_cache.jsonl) and charged to runs/m3av/budget_gen.json.
 
@@ -62,6 +62,14 @@ def grounded(evidence: str, ocr: str, share: float = 0.8) -> bool:
     """F2 / F3: at least 80% of the evidence words occur in the OCR text."""
     ev, have = words(evidence), set(words(ocr))
     return bool(ev) and sum(w in have for w in ev) / len(ev) >= share
+
+
+def critical(q: dict, source_ocr: str) -> set[str]:
+    """Answer content a repeated occurrence must also show (auditor P52): the correct option's words that are on the
+    source slide, and every token with a digit in the evidence text. Empty when the key is fully paraphrased."""
+    on_slide = set(words(source_ocr))
+    return ({w for w in words(q["options"][q["answer_index"]]) if w in on_slide}
+            | {w for w in words(q["evidence_text"]) if any(c.isdigit() for c in w)})
 
 
 def order_key(lecture: str, start: float) -> str:
@@ -158,14 +166,17 @@ class Generator:
             if not grounded(q["evidence_text"], segs[i]["ocr_text"]):
                 fails["F2"] += 1
                 continue
-            valid = [j for j, s in enumerate(segs) if j == i or grounded(q["evidence_text"], s["ocr_text"])]   # F3
+            need = critical(q, segs[i]["ocr_text"])                                                           # F3
+            valid = [j for j, s in enumerate(segs)
+                     if j == i or (grounded(q["evidence_text"], s["ocr_text"]) and need <= set(words(s["ocr_text"])))]
             qa_id = f"m3av:{lecture}:{segs[i]['start']:g}"
             perm = sorted(range(4), key=lambda k: hashlib.sha256(f"m3av-options:{qa_id}:{k}".encode()).hexdigest())
             out.append({"qa_id": qa_id, "lecture": lecture,      # options in a fixed hash order (no position bias)
                         "question": q["question"].strip(), "options": [q["options"][k].strip() for k in perm],
                         "answer_index": perm.index(q["answer_index"]), "generated_answer_index": q["answer_index"], "evidence_text": q["evidence_text"].strip(),
                         "source_segment": [segs[i]["start"], segs[i]["end"]], "source_image": segs[i]["name"],
-                        "valid_segments": [[segs[j]["start"], segs[j]["end"]] for j in valid]})
+                        "valid_segments": [[segs[j]["start"], segs[j]["end"]] for j in valid],
+                        "critical_tokens": sorted(need)})
         return out, {"lecture": lecture, "eligible": len(eligible(segs, lecture)), "tried": tried, **fails, "kept": len(out)}
 
 

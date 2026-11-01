@@ -93,6 +93,8 @@ def ledger_limits(name: str) -> tuple:
         return LIMITS
     if name.startswith("budget_confirm"):           # confirmation run, docs/v3/confirmation_protocol.md
         return (20000, 72 * 3600.0)
+    if name.startswith("budget_cacheonly"):         # replay cached answers into rows; any missing answer stops the run
+        return (0, 1.0)
     if name.startswith("budget_phase1"):            # matched-budget speech and head ablations, research_log step 74
         return (9000, 40 * 3600.0)                   # raised from 24 h in step 77 (600-word calls ~20 s)
     if name.startswith("budget_headb_v2"):          # Head B v2 dev screen, research_log step 60
@@ -358,6 +360,8 @@ def stage_answer(a) -> None:
                 with lock:                           # a failure is cached under its full request key (never
                     budget.charge(spent / workers)   # retried), charged to the ledger and scored as wrong
                     cache[key] = {"key": key, "option": ans.option_index if ans else -1, "seconds": spent}
+                    if ans and ans.forced_choice:    # no letter in the reply: most likely letter taken (P38)
+                        cache[key]["forced"] = True
                     if failed:
                         cache[key]["failed"] = failed
                     with open(cache_path, "a", encoding="utf-8") as fh:
@@ -366,7 +370,7 @@ def stage_answer(a) -> None:
             inside = lambda t: any(x - 1.0 <= t <= y + 1.0 for x, y in iv)  # noqa: E731
             row = {"dataset": a.dataset, "pool": a.pool, "selector": rule, "k": a.k, "words": a.words,
                    "qa_id": p.qa_id, "video_id": p.video_id, "correct": cache[key]["option"] == p.gold_option_index,
-                   "failed": cache[key].get("failed"),
+                   "failed": cache[key].get("failed"), "option": cache[key]["option"],   # None: abstained (P38)
                    "pool_size": len(p.candidates), "pool_hits_evidence": any(inside(c.time_s) for c in p.candidates) if iv else None,
                    "chosen_hits_evidence": any(inside(c.time_s) for c in frames) if iv else None,
                    "pool_seconds": sum(p.timings.get(x, 0.0) for x in ("retrieval", "head_a", "decode", "clip")),

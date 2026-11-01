@@ -103,3 +103,30 @@ All other comparisons are secondary and uncorrected.
   part may hold the fact; the question review's "fact legible in the proposed span" item measures this. Heavy
   burned-in subtitles (correlation about 0.72) take those seconds out of the span (conservative: a frame on another
   slide is not credited). Dev result: 542 → 517 questions (25 under 2 s visible), 96 lectures.
+- 2026-11-01, amendment 3, on dev only, before any test question exists (auditor P48, P52, P53).
+  - **F4 spans.** Each 1-per-second sample stands for [t, t + 1 s), clipped at the segment end. Only consecutive
+    passing samples no more than 1.5 s apart join one interval, so a failing sample, or a gap in the decoded frames,
+    always breaks a span. A question's visible spans are the union of these intervals over its valid segments, and
+    its visible time is their total length. The first implementation joined every passing second of a segment into
+    one span from the first to the last and so could credit non-visible gaps. Dev after the fix: 54 of 514 questions
+    have split spans, total visible time falls 9%, and 514 questions remain (28 have less than 2 s).
+  - **Dev only.** Sheets are built from dev lectures only, and `apply` reads only the requested split's curves.
+  - **F3 answer content.** A repeated occurrence counts as evidence only if its OCR also contains the answer's
+    critical tokens. These are the correct option's words that appear on the source slide, plus every token with a
+    digit in `evidence_text`; they are kept as `critical_tokens`. When the key is fully paraphrased (4 of 542 dev
+    questions), only the 80% rule applies. Dev: 20 questions lose 29 of 780 occurrences.
+  - **Calibration record.** The builder's per-frame judgments for all three sheet sets, and the tally computed
+    from them, are in `reports/m3av/visibility_calibration.{csv,md}` (`scripts/m3av_visibility_calibration.py`).
+    Corrected set-3 counts: complete slide 61 of 61 counted visible, build stage 8 of 17 (amendment 2 said 62 and
+    16: one frame was miscounted by hand). They are judgments on selected dev frames, not population error rates.
+  - **Review sample, two stages.** (1) The lectures with at least one question in the frozen test cohort are
+    ordered by SHA-256 of `m3av-review-lecture:<lecture>`, regardless of their question counts, and the first 100
+    are taken. If fewer than 100 such lectures exist, a further pass in the same order takes a second question from
+    each lecture, then a third, and so on, until there are 100 questions. (2) Within a lecture, questions are taken
+    in the order of SHA-256 of `m3av-review:<qa_id>`. Two estimates are reported: the lecture-balanced rejection rate
+    (unweighted mean over sampled lectures) and the cohort's question-weighted rate, Σ n_l r_l / Σ n_l, where n_l
+    is the lecture's number of cohort questions (inclusion probability ∝ 1 / n_l). Removing the rejected sampled
+    questions while keeping unreviewed ones is a sensitivity analysis, not a validation of the kept questions.
+  - **Per-system table.** At the method freeze, a table is written for every system: candidate pool and search
+    work, frames shown, transcript words and tokens shown, the encoders used, and the inputs taken from training
+    data. L1 and L2 claim only what they compare; R4 and R5 are shown in the same table as the main results.

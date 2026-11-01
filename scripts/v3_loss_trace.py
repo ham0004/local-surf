@@ -104,7 +104,11 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "questions.jsonl").write_text("".join(json.dumps(x) + "\n" for x in per_q), encoding="utf-8")
     md = ["# Loss trace on CG-Bench dev (82 questions)", "",
-          "Each question is counted once, at the first step where the answer is lost (see the script docstring).", "",
+          "Each question is put in one class: right answers by whether a chosen frame is inside the marked seconds, wrong "
+          "answers by the first pipeline step whose output misses them. The "
+          "classes are descriptive, not causal: they do not say which change would recover the answer, \"model limit\" "
+          "means the 5 tested placements failed, and text systems are compared with an oracle whose text differs. "
+          "Pre-filter and window losses are not separated.", "",
           "| System | n | " + " | ".join(CLASSES) + " |", "|---" * (len(CLASSES) + 2) + "|"]
     for k, (n, c) in table.items():
         md.append(f"| {k} | {n} | " + " | ".join(f"{c[x]} ({100 * c[x] / n:.0f}%)" for x in CLASSES) + " |")

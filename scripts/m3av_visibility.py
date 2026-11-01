@@ -26,11 +26,30 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from m3av_questions import OUT, RAW, segments  # noqa: E402
+from m3av_questions import OUT, RAW, SPLIT, segments  # noqa: E402
 from m3av_video_check import video_of  # noqa: E402
 
 CURVES = Path("runs/m3av/curves_edge")
 MIN_VISIBLE_S = 2.0
+MAX_STEP_S = 1.5                                    # samples further apart than this do not join one run
+
+
+def split_lectures(split: str) -> set[str]:
+    return {k for k, v in json.loads(SPLIT.read_text(encoding="utf-8")).items() if v == split}
+
+
+def runs(samples: list[tuple[float, bool]], end: float) -> list[list[float]]:
+    """Visible intervals from 1-per-second samples: each sample stands for [t, t + 1 s), clipped at the segment end;
+    only consecutive passing samples (at most MAX_STEP_S apart) join, so a failing sample always breaks the span."""
+    out: list[list[float]] = []
+    last = None
+    for t, ok in samples:
+        if ok and out and last is not None and t - last <= MAX_STEP_S:
+            out[-1][1] = min(end, t + 1.0)
+        elif ok:
+            out.append([t, min(end, t + 1.0)])
+        last = t if ok else None
+    return [[round(s, 2), round(e, 2)] for s, e in out if e > s]
 
 
 def edges(img) -> np.ndarray:
@@ -95,8 +114,10 @@ def stage_sheets(a) -> None:
     import av  # noqa: PLC0415
     from PIL import Image, ImageDraw  # noqa: PLC0415
 
-    builds = []
-    for path in sorted(CURVES.glob("*.json")):
+    if a.split != "dev":
+        raise SystemExit("sheets are for choosing tau on dev only")
+    dev, builds = split_lectures("dev"), []
+    for path in sorted(p for p in CURVES.glob("*.json") if p.stem in dev):
         for st, curve in json.loads(path.read_text(encoding="utf-8")).items():
             c = [x[1] for x in curve]                   # own-slide correlation
             if len(c) >= 4 and min(c[: len(c) // 2]) < 0.9 and max(c) > 0.95:
@@ -131,7 +152,8 @@ def stage_sheets(a) -> None:
 
 def stage_apply(a) -> None:
     qs = [json.loads(x) for x in (OUT / f"questions_{a.split}.jsonl").read_text(encoding="utf-8").splitlines()]
-    curves = {p.stem: json.loads(p.read_text(encoding="utf-8")) for p in CURVES.glob("*.json")}
+    mine = split_lectures(a.split)
+    curves = {p.stem: json.loads(p.read_text(encoding="utf-8")) for p in CURVES.glob("*.json") if p.stem in mine}
     kept, dropped = [], 0
     for q in qs:
         spans, valid = [], {st for st, _ in q["valid_segments"]}
@@ -141,11 +163,9 @@ def stage_apply(a) -> None:
             k = index[st]
             prev_ok = k > 0 and segs[k - 1]["start"] not in valid          # compare only with non-evidence neighbours
             next_ok = k + 1 < len(segs) and segs[k + 1]["start"] not in valid
-            vis = [t for t, own, prev, nxt in curves[q["lecture"]][str(st)]
-                   if own >= a.tau and not (prev_ok and prev is not None and prev > own)
-                   and not (next_ok and nxt is not None and nxt > own)]
-            if vis:
-                spans.append([min(vis), min(en, max(vis) + 1.0)])
+            spans += runs([(t, own >= a.tau and not (prev_ok and prev is not None and prev > own)
+                            and not (next_ok and nxt is not None and nxt > own))
+                           for t, own, prev, nxt in curves[q["lecture"]][str(st)]], en)
         q["visible_spans"], q["visible_s"] = spans, round(sum(e - s for s, e in spans), 2)
         if q["visible_s"] >= MIN_VISIBLE_S:
             kept.append(q)
