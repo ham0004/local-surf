@@ -150,22 +150,22 @@ def stage_write(_a) -> None:
            "secondary_qa": "the answer-model commands are recorded in a further supplement before the answer model "
                            "runs on test"}
     OUT.write_text(json.dumps(rec, indent=1), encoding="utf-8")
-    print(f"{OUT}: sha256 {sha(OUT)}")
+    print(f"{OUT.as_posix()}: sha256 {sha(OUT)}")
 
 
 def manifest(split: str, stage: str) -> dict:
     ds = f"m3av_{split}"
-    root = Path(DATASETS[ds][0])
+    root = DATASETS[ds][0]
     if stage == "inputs":
         return {"data/m3av_raw/set_split.json": sha(Path("data/m3av_raw/set_split.json")),
                 f"data/m3av/questions_{split}_visible.jsonl": sha(Path(f"data/m3av/questions_{split}_visible.jsonl")),
-                f"{root}/qa.jsonl": sha(root / "qa.jsonl"),
-                f"{root}/transcripts": tree(root / "transcripts"), f"{root}/videos": tree(root / "videos")}
+                f"{root}/qa.jsonl": sha(Path(root, "qa.jsonl")),
+                f"{root}/transcripts": tree(Path(root, "transcripts")), f"{root}/videos": tree(Path(root, "videos"))}
     out = {FEATURES[ds]: tree(Path(FEATURES[ds])),
            f"runs/m3av/vsi/{split}_{VSI_SETTING}.json": sha(Path(f"runs/m3av/vsi/{split}_{VSI_SETTING}.json")),
            f"runs/v3_head_b/features_{ds}_hybrid.npy": sha(Path(f"runs/v3_head_b/features_{ds}_hybrid.npy")),
-           f"{SELECTIONS}/{ds}_hybrid_ev_set.json": sha(SELECTIONS / f"{ds}_hybrid_ev_set.json")}
-    out.update({f"{RUN}/{ds}/{p}/pools": tree(RUN / ds / p / "pools") for p in FROZEN_POOLS})
+           f"{SELECTIONS.as_posix()}/{ds}_hybrid_ev_set.json": sha(SELECTIONS / f"{ds}_hybrid_ev_set.json")}
+    out.update({f"{RUN.as_posix()}/{ds}/{p}/pools": tree(RUN / ds / p / "pools") for p in FROZEN_POOLS})
     return out
 
 
@@ -174,7 +174,7 @@ def stage_manifest(a) -> None:
     if dest.exists():
         raise SystemExit(f"{dest} exists")
     dest.write_text(json.dumps(manifest(a.split, a.part), indent=1), encoding="utf-8")
-    print(f"{dest}: sha256 {sha(dest)}")
+    print(f"{dest.as_posix()}: sha256 {sha(dest)}")
 
 
 def stage_verify(a) -> None:
