@@ -1443,3 +1443,16 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   contain no system names or results. The builder and the auditor review them separately; a person reviews them
   later, blind.
 - No system has run on test.
+
+## Step 88 (2026-11-02): builder review of the 100 test packets (sealed)
+- The auditor began its review of the packets but hit its usage limit after about 80 of them, and saved none of
+  its verdicts. It has not yet checked P71-P74, so the test run stays on hold.
+- The builder reviewed all 100 packets alone. For every packet it looked at the frame at the middle of the
+  proposed span; when the slide occurred more than once, the span was short, the slide built up over time, or the
+  frame was unclear, it also looked at the saved slide and the other frames. Verdicts:
+  `collab/review_builder_test.csv`, SHA-256 `8e77f77745f2ad65715662d7a112b215a35ccbee509aacdedaf6245426f699f9`.
+- A sealed builder note (`collab/sealed_builder_note_test.md`, SHA-256
+  `991ea9ee53973afc75a659014553f5b70dab2434acea55d116db3d7978e277b3`) holds the review summary and a proposed
+  sensitivity analysis. Both are declared before any test outcome. They are kept out of the log until the auditor
+  has saved its own verdicts, so its review stays independent. The primary measure and L1/L2 do not change.
+- No system has run on test.
