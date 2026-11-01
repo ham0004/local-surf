@@ -1,0 +1,176 @@
+{
+ "frozen": "before the M3AV test cohort is generated",
+ "commit": "e9bd1ad42d5904aad815beb51287db6d924422f0",
+ "k": 4,
+ "answer_model": "Qwen3-VL-4B (configs/gpu_16gb_4b.yaml)",
+ "vsi_setting": "lam0.5_qo_max",
+ "systems": {
+  "S0": {
+   "pool": "v2",
+   "pool_settings": {
+    "scan_step_s": 5.0,
+    "scan_cap": 24
+   },
+   "selector": "clip",
+   "words": 120,
+   "text_policy": "bm25"
+  },
+  "S1": {
+   "pool": "hybrid",
+   "pool_settings": {
+    "scan_step_s": 5.0,
+    "scan_cap": 24,
+    "path_b_scope": "hybrid"
+   },
+   "selector": "mmropt",
+   "words": 0,
+   "text_policy": "none"
+  },
+  "S1t": {
+   "pool": "hybrid",
+   "pool_settings": {
+    "scan_step_s": 5.0,
+    "scan_cap": 24,
+    "path_b_scope": "hybrid"
+   },
+   "selector": "mmropt",
+   "words": 600,
+   "text_policy": "frames+hybrid"
+  },
+  "S2c": {
+   "pool": "hybrid_ahead",
+   "pool_settings": {
+    "scan_step_s": 5.0,
+    "scan_cap": 24,
+    "path_b_scope": "hybrid",
+    "path_a": "head"
+   },
+   "selector": "mmropt",
+   "words": 0,
+   "text_policy": "none"
+  },
+  "S2m": {
+   "pool": "hybrid_ahead_m3av",
+   "pool_settings": {
+    "scan_step_s": 5.0,
+    "scan_cap": 24,
+    "path_b_scope": "hybrid",
+    "path_a": "head_m3av"
+   },
+   "selector": "mmropt",
+   "words": 0,
+   "text_policy": "none"
+  },
+  "S3": {
+   "pool": "hybrid",
+   "pool_settings": {
+    "scan_step_s": 5.0,
+    "scan_cap": 24,
+    "path_b_scope": "hybrid"
+   },
+   "selector": "file:{ds}_hybrid_ev_set (ev_set, lam 2, mu 1, CG-Bench-trained scorer)",
+   "words": 0,
+   "text_policy": "none"
+  },
+  "R2": {
+   "pool": "uniform4d",
+   "pool_settings": {
+    "n_path_a": 0,
+    "n_path_b": 4,
+    "scan_cap": 4,
+    "scan_step_s": 5.0,
+    "path_b_scope": "video",
+    "stable_hamming": -1,
+    "dup_hamming": -1,
+    "dup_seconds": -1.0
+   },
+   "selector": "clip",
+   "words": 0,
+   "text_policy": "none"
+  },
+  "R3": {
+   "pool": "dense4x",
+   "pool_settings": {
+    "n_path_a": 0,
+    "n_path_b": 4,
+    "scan_cap": 96,
+    "scan_step_s": 5.0,
+    "stable_hamming": -1,
+    "fill_distinct": true,
+    "dup_hamming": 0,
+    "dup_seconds": 0.0,
+    "path_b_scope": "features"
+   },
+   "selector": "clip",
+   "words": 0,
+   "text_policy": "none"
+  },
+  "R4": {
+   "pool": "dense4ox",
+   "pool_settings": {
+    "n_path_a": 0,
+    "n_path_b": 4,
+    "scan_cap": 96,
+    "scan_step_s": 5.0,
+    "stable_hamming": -1,
+    "fill_distinct": true,
+    "dup_hamming": 0,
+    "dup_seconds": 0.0,
+    "path_b_scope": "features",
+    "scan_query": "qo_max"
+   },
+   "selector": "clip",
+   "words": 0,
+   "text_policy": "none"
+  },
+  "R5": {
+   "pool": "vsi4x",
+   "pool_settings": {
+    "n_path_a": 0,
+    "n_path_b": 4,
+    "scan_cap": 96,
+    "scan_step_s": 5.0,
+    "stable_hamming": -1,
+    "fill_distinct": true,
+    "dup_hamming": 0,
+    "dup_seconds": 0.0,
+    "path_b_scope": "times",
+    "times_file": "runs/m3av/vsi/{split}_{setting}.json"
+   },
+   "selector": "clip",
+   "words": 0,
+   "text_policy": "none"
+  }
+ },
+ "contrasts": {
+  "L1": "S2m - R5",
+  "L2": "S2m - S1",
+  "correction": "Holm over L1 and L2"
+ },
+ "files": {
+  "scripts/v3_baseline_cycle.py": "a5494b260ce0faea7977cb1a0c2bac7aff66f8d0eba52c08e85548d965f5face",
+  "src/videoqa/v2/candidates.py": "6738d6bf6769f2532d820e182024613102a3bfa1dab068c1681ddef836becf8d",
+  "src/videoqa/v3/head_a.py": "048453dc5477f58485c7211bd344b8d786ab7b0e065b2fd45a11213c438587d5",
+  "src/videoqa/v2/head_a.py": "9f2096798898327cce3055595194debfa3a97ba0579afe355895e64b25094af9",
+  "src/videoqa/v2/encoders.py": "0f92996f2450a39e6de86a8e448e151f3313dff5e60f66c0f05870a8a6836f90",
+  "src/videoqa/answerer.py": "56c30c62988dbe6c5e156a4a0d39fe4e1146cc9b31c8f476eb4292f8c4743317",
+  "scripts/v3_head_b.py": "7ae0c4109d99f969b1cc3824a15fecc347976fe36943afd3c5a2623c1d6986b5",
+  "scripts/m3av_vsi.py": "be1197f31f3c0dd1f76971684bc05adb3f386f585a2de6cea8a43e313fb83ba5",
+  "scripts/m3av_hits.py": "98c1f525bc6ed3c9d4f752fbb2ad2dc3efed4dc4495bb9aebb7e68de502cd560",
+  "scripts/m3av_dataset.py": "3fe0712f071993a47dd5db246e9c3513e284aaba475a98159b4fd34e2e0b2940",
+  "scripts/m3av_head_a_data.py": "f6994def8015202edc7121357304bb99cc8cf8c946e2bfdac782b64a297de0b9",
+  "scripts/m3av_visibility.py": "92dc371e7536e8b26828e1b09eef7e66784408680618f3d8c0562e4b18ac1920",
+  "scripts/m3av_questions.py": "5a41456261b7b28ab3674932b234fee8dc5196258cb0e69837b254d8a3612475",
+  "configs/gpu_16gb_4b.yaml": "264424b2264a14f621ecbbdf02bdaf361fc68e12f6cfddeafb4ec904a3caf659",
+  "runs/v3_head_a/ckpt/light_dens_ens_human_0.pt": "ff24110b8b1e619457c0f84e4ca16c9b4b08709cc465b646538a18ac0c252c91",
+  "runs/v3_head_a/ckpt/light_dens_ens_human_1.pt": "543496d26ea15409c5db2ce7f9bc5e0e3e16f57b84841b167b2471ef6f944781",
+  "runs/v3_head_a/ckpt/light_dens_ens_human_2.pt": "fdf603e1141380aea03725b689c1b93b3285f34fc010ed97da235d8ba2ec6f9d",
+  "runs/v3_head_a_m3av/ckpt/light_dens_ens_human_0.pt": "affe79234f257d765696ffe51fa766961004405159dd85f280a68886127eca6f",
+  "runs/v3_head_a_m3av/ckpt/light_dens_ens_human_1.pt": "9c05f691d668f2a63724767ffb0c25b35a1c94f027842c1c0ab30bf6362429d7",
+  "runs/v3_head_a_m3av/ckpt/light_dens_ens_human_2.pt": "fcbb7e4479cd8c1f7349f3c18c0790ece13205cc89a87b0990b25030063fd56e",
+  "runs/v3_head_b/ckpt/ev_hybrid_0.pt": "4b6e1708b298709dedfbe7b4a01ead0301f9362b7fa59b32c06b147a7c72e321",
+  "runs/v3_head_b/ckpt/ev_hybrid_1.pt": "1201a802d2765de83411e306010d0d3389cadf08cd6cc93900e97828cb94cf91",
+  "runs/v3_head_b/ckpt/ev_hybrid_2.pt": "b86bfed137addfc1c06a8a085bbbcb1847004a518956f4637d2109d7525ce0a3",
+  "cache/hf/hub/models--sentence-transformers--all-mpnet-base-v2/snapshots/e8c3b32edf5434bc2275fc9bab85f82640a19130/model.safetensors": "78c0197b6159d92658e319bc1d72e4c73a9a03dd03815e70e555c5ef05615658"
+ }
+}
