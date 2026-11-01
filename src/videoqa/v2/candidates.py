@@ -62,6 +62,9 @@ class PoolConfig:
     scan_query: str = "q"            # "features" scope: rank by the question ("q") or by the best of question +
                                      # each option ("qo_max", the option-aware rule R4 of docs/v3/m3av_protocol.md)
     times_file: str | None = None    # "times" scope: {qa_id: [seconds]} chosen elsewhere (R5, scripts/m3av_vsi.py)
+    fill_distinct: bool = False      # keep the first n_path_b scan frames, in the rule's own order, that are not
+                                     # duplicates (dup_hamming / dup_seconds) of a kept one, so a fixed-K rule shows
+                                     # K distinct pictures (lecture study; slides repeat for minutes)
 
 
 # ---------------------------------------------------------------------------
@@ -109,7 +112,7 @@ def build_pool(qa, transcript, video_path: str, encoders, head_a, cfg: PoolConfi
             window_times = {round(x, 3) for x in w}
             scan_times = scan_times + [x for x in w if all(abs(x - u) >= 0.5 for u in scan_times)]
     elif cfg.path_b_scope == "times":
-        scan_times = [float(x) for x in json.loads(Path(cfg.times_file).read_text(encoding="utf-8"))[qa.qa_id]]
+        scan_times = [float(x) for x in json.loads(Path(cfg.times_file).read_text(encoding="utf-8"))[qa.qa_id]][: cfg.scan_cap]
     elif cfg.path_b_scope == "video":
         step = max(cfg.scan_step_s, duration / max(cfg.scan_cap, 1))
         scan_times = [float(t) for t in np.arange(0.5, max(duration - 0.05, 0.5), step)][: cfg.scan_cap]
@@ -137,6 +140,22 @@ def build_pool(qa, transcript, video_path: str, encoders, head_a, cfg: PoolConfi
         from_win = [f for f in reps_ranked if round(f.requested_s, 3) in window_times][: cfg.n_path_b // 2]
         rest = [f for f in reps_ranked if f not in from_win][: cfg.n_path_b - len(from_win)]
         reps_ranked = sorted(from_win + rest, key=lambda f: -float(embs[f.digest] @ q_emb))
+    if cfg.fill_distinct:
+        if cfg.path_b_scope == "times":       # the given order (best first)
+            pos = {round(x, 3): i for i, x in enumerate(scan_times)}
+            order = sorted(reps, key=lambda f: pos[round(f.requested_s, 3)])
+        elif cfg.path_b_scope == "features":  # the scan query's score (question, or best option for qo_max)
+            sq = np.atleast_2d(np.asarray(scan_q, np.float32))
+            order = sorted(reps, key=lambda f: -float((sq @ np.asarray(embs[f.digest], np.float32)).max()))
+        else:
+            order = reps_ranked
+        reps_ranked = []
+        for f in order:
+            if all(hamming_hex(f.phash, k.phash) > cfg.dup_hamming and abs(f.decoded_pts_s - k.decoded_pts_s) > cfg.dup_seconds
+                   for k in reps_ranked):
+                reps_ranked.append(f)
+            if len(reps_ranked) == cfg.n_path_b:
+                break
     reps_ranked = reps_ranked[: cfg.n_path_b]
 
     # -- merge + de-duplicate ---------------------------------------------------

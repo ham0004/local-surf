@@ -130,3 +130,23 @@ All other comparisons are secondary and uncorrected.
   - **Per-system table.** At the method freeze, a table is written for every system: candidate pool and search
     work, frames shown, transcript words and tokens shown, the encoders used, and the inputs taken from training
     data. L1 and L2 claim only what they compare; R4 and R5 are shown in the same table as the main results.
+- 2026-11-01, amendment 4, on dev only, before any test question exists (dev results in `reports/m3av/hits_dev.md`,
+  research log step 86; per-system inputs in `docs/v3/m3av_systems.md`).
+  - **Fixed-K rules show 4 distinct pictures.** The first R2-R5 pools held only 4 candidates, and the pool's
+    merging of repeated pictures (a slide stays on screen for minutes) left R3 with 1.4 frames on average (hit@4
+    46.7). Final versions: R3, R4 and R5 rank 96 times (at least 4 s apart) by their own score and show the first 4
+    pictures that differ (perceptual-hash distance > 0, chosen on dev over 3: better for all three rules). R2
+    shows its 4 evenly spaced frames unmerged. Dev frames shown: 3.91-4.00.
+  - **R4** scores each 2 s frame by its best MobileCLIP match over "question + option k". **R5** keeps VSI's text
+    branch (all-mpnet-base-v2, soft threshold θ 0.5 and γ 2, threshold 0.2, Gaussian spread W 2 s) and uses R4's
+    score as the visual branch (VSI's object detector is not used). Fusion λ = 0.5, chosen on dev from {0, 0.25,
+    0.5, 0.75, 1} × {question, best option} visual queries.
+  - **L1 changed to S2m − R5** (was S2m − R3). R3 was declared as the strongest training-free rule found so far;
+    on dev it is the weakest of R3-R5 (62.6 vs R4 75.1 and R5 76.1). L1 now uses the strongest training-free rule
+    on dev. L2 is unchanged (S2m − S1); Holm over L1 and L2. S2m − R3, S2m − R4 and S2m − S2c are secondary.
+  - **S2m settings.** Head A retrained with the deployed recipe unchanged (light_dens, ens, human, width 32, lr
+    1e-3, 15 epochs, 3 seeds averaged). Picker kept as MMR (dev 77.0; Head A's own top 4: 76.7).
+  - **Correction to amendment 3:** the split-span count is 58 of 514 questions (a valid segment with at least two
+    visible spans), not 54; the 9% fall in visible time combines the span fix (−4.1%) and the F3 answer-content rule.
+  - Dev results (primary measure, 514 questions, 96 lectures): S2m − R5 +1.0 (−2.9..+4.7); S2m − S1 +6.8
+    (+3.1..+10.7); S2m − R3 +14.4; S2m − R4 +1.9 (−2.9..+6.5); S2m − S2c −0.2 (−2.5..+2.2).

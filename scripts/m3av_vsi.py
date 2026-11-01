@@ -6,7 +6,8 @@ M > 0.5, else M; lines with B <= 0.2 are dropped; each kept line spreads B with 
 sigma = (end - start + 2 W) / 4, W = 2 s; S_text(t) = the maximum over lines. Visual branch: VSI asks a VLM for
 target objects and runs YOLO-World; here it is the dense MobileCLIP similarity of each 2 s frame to the question
 (as R3) or to the best of question + each option (as R4), which keeps R5 inside the same encoders as R3/R4.
-Fusion as in VSI: S = lam * z(S_text) + (1 - lam) * z(S_visual), z over the video. Top 4 by S, at least 4 s apart.
+Fusion as in VSI: S = lam * z(S_text) + (1 - lam) * z(S_visual), z over the video. Saved: the best 96 times by S,
+at least 4 s apart, best first (the pool keeps the first 4 distinct pictures); the dev measure uses the first 4.
 VSI's iterative sampling is not needed: every 2 s frame is scored.
 
 lam and the visual query are chosen on dev only by source-slide interval hit@4 (visible spans, 1 s tolerance).
@@ -67,14 +68,14 @@ def z(x: np.ndarray) -> np.ndarray:
     return (x - x.mean()) / (x.std() + 1e-6)
 
 
-def top_k(times: np.ndarray, score: np.ndarray) -> list[float]:
+def ranked(times: np.ndarray, score: np.ndarray, n: int = 96) -> list[float]:
     out: list[float] = []
     for i in np.argsort(-score, kind="stable"):
         if all(abs(float(times[i]) - u) >= GAP_S for u in out):
             out.append(float(times[i]))
-            if len(out) == K:
+            if len(out) == n:
                 break
-    return sorted(out)
+    return out
 
 
 def main() -> None:
@@ -103,7 +104,7 @@ def main() -> None:
                "qo_max": (emb @ enc.embed_texts([qa.question + " " + o for o in qa.options]).T).max(1)}
         for s in settings:
             lam, v = float(s.split("_")[0][3:]), s.split("_", 1)[1]
-            picks[s][qa.qa_id] = top_k(times, lam * st + (1 - lam) * z(vis[v]))
+            picks[s][qa.qa_id] = ranked(times, lam * st + (1 - lam) * z(vis[v]))
         if (n + 1) % 50 == 0:
             print(f"{n + 1}/{len(its)}", flush=True)
     OUT.mkdir(parents=True, exist_ok=True)
@@ -111,7 +112,7 @@ def main() -> None:
     for s in settings:
         (OUT / f"{a.split}_{s}.json").write_text(json.dumps(picks[s]), encoding="utf-8")
         if a.split == "dev":                       # dev only: the measure that chooses the setting
-            hits = [any(x - 1.0 <= t <= y + 1.0 for t in picks[s][it.qa.qa_id] for x, y in it.qa.evidence_intervals_s)
+            hits = [any(x - 1.0 <= t <= y + 1.0 for t in picks[s][it.qa.qa_id][:K] for x, y in it.qa.evidence_intervals_s)
                     for it in its]
             report[s] = {"hit@4": round(100 * float(np.mean(hits)), 1), "n": len(hits)}
             print(s, report[s])

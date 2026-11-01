@@ -30,13 +30,27 @@ SYSTEMS = {  # name: (pool, selector); a missing pool or selection file is repor
     "S2c Head A (CG-Bench)": ("hybrid_ahead", "mmropt"),
     "S2m Head A (M3AV train)": ("hybrid_ahead_m3av", "mmropt"),
     "S3 Head B": ("hybrid", "file:{ds}_hybrid_ev_set"),
-    "R2 4 evenly spaced": ("uniform4", "clip"),
-    "R3 dense MobileCLIP top-4": ("dense4", "clip"),
-    "R4 dense option-aware top-4": ("dense4o", "clip"),
-    "R5 VSI-style": ("vsi4", "clip"),
+    # dev-only picker variants for the Head A systems: Head A's own 4 best moments
+    "S2c, picker A_rank": ("hybrid_ahead", "A_rank"),
+    "S2m, picker A_rank": ("hybrid_ahead_m3av", "A_rank"),
+    "R2 4 evenly spaced": ("uniform4d", "clip"),
+    # fixed-K rules showing 4 distinct pictures; h = duplicate threshold, chosen on dev (FROZEN below after the choice)
+    "R3 dense MobileCLIP top-4, h0": ("dense4d0", "clip"),
+    "R3 dense MobileCLIP top-4, h3": ("dense4d3", "clip"),
+    "R4 dense option-aware top-4, h0": ("dense4od0", "clip"),
+    "R4 dense option-aware top-4, h3": ("dense4od3", "clip"),
+    "R5 VSI-style, h0": ("vsi4d0", "clip"),
+    "R5 VSI-style, h3": ("vsi4d3", "clip"),
+    "R3 dense MobileCLIP top-4 (96 ranked)": ("dense4x", "clip"),
+    "R4 dense option-aware top-4 (96 ranked)": ("dense4ox", "clip"),
+    "R5 VSI-style (96 ranked)": ("vsi4x", "clip"),
+    # superseded: 4-candidate pools that merge repeated slides and show fewer than 4 pictures (research log step 86)
+    "R3 (4-candidate pool, merged)": ("dense4", "clip"),
 }
-CONTRASTS = [("S2m Head A (M3AV train)", "R3 dense MobileCLIP top-4"),
-             ("S2m Head A (M3AV train)", "S1 best framework (also S1t's frames)")]
+R3 = "R3 dense MobileCLIP top-4 (96 ranked)"
+S2M, R5 = "S2m Head A (M3AV train)", "R5 VSI-style (96 ranked)"
+CONTRASTS = [(S2M, R5), (S2M, "S1 best framework (also S1t's frames)"),          # L1, L2 (amendment 4)
+             (S2M, R3), (S2M, "R4 dense option-aware top-4 (96 ranked)"), (S2M, "S2c Head A (CG-Bench)")]
 
 
 def paired(a: dict, b: dict, lecture: dict) -> dict:
@@ -83,12 +97,11 @@ def main() -> None:
     out = {"split": a.split, "questions": len(qids), "lectures": len(set(lecture.values())), "missing": missing,
            "systems": {k: {"hit@4": round(100 * float(np.mean(list(v.values()))), 1), **shown[k]} for k, v in hits.items()},
            "contrasts": {f"{x} - {y}": paired(hits[x], hits[y], lecture) for x, y in CONTRASTS if x in hits and y in hits},
-           "vs_R3": {k: paired(v, hits["R3 dense MobileCLIP top-4"], lecture) for k, v in hits.items()
-                     if "R3 dense MobileCLIP top-4" in hits and not k.startswith("R3")}}
+           "vs_R3": {k: paired(v, hits[R3], lecture) for k, v in hits.items() if R3 in hits and k != R3}}
     Path("reports/m3av").mkdir(parents=True, exist_ok=True)
     Path(f"reports/m3av/hits_{a.split}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
     lines = [f"# Source-slide interval hit@4, M3AV {a.split} ({len(qids)} questions, {out['lectures']} lectures)", "",
-             "| System | hit@4 (%) | frames shown (mean) | questions with < 4 frames | − R3 (95% interval over lectures) |",
+             f"| System | hit@4 (%) | frames shown (mean) | questions with < 4 frames | − {R3} (95% interval over lectures) |",
              "|---|---|---|---|---|"]
     for k, v in out["systems"].items():
         c = out["vs_R3"].get(k)

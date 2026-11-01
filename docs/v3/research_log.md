@@ -1345,3 +1345,39 @@ Where the gain of the best framework with speech (S1t) over the starting design 
 - **Design document (P60).** `docs/v3/heads_design.md` now opens with an adopted/rejected table. Rejected: the
   fine-tuned cross-encoder and the learned offsets (the proposed new part of Head A). Adopted: the light residual
   Head A and the `ev_set` Head B, neither confirmed on the fresh set. No measurable effect: the option term.
+
+## Step 86 (2026-11-01): lecture study on dev: S2m trained, R4 and R5 built, settings chosen (protocol amendment 4)
+- **S2m.** Head A retrained on M3AV train questions with the deployed recipe unchanged (`scripts/run_s2m.sh`:
+  1,147 questions on 297 lectures; evidence = the valid slide segments; inner validation on 15% of train lectures
+  picks the epoch; 3 seeds). Speech-moment recall on dev (moments inside a visible span): zero-shot density 62.5% at
+  4 moments, S2m 76.8% (`reports/m3av/s2m_dev.json`). This is the speech path alone, not the 4 frames shown.
+- **M3AV dev as a dataset** (`scripts/m3av_dataset.py`): evidence intervals = visible spans, so the answer stage's
+  evidence hit (1 s tolerance) is exactly the primary measure. `scripts/m3av_hits.py` computes it for every
+  system from the saved pools without the answer model.
+- **Baselines found to be crippled, and fixed.** The first R2-R5 pools held 4 candidates; merging repeated pictures
+  left R3 with 1.4 frames on average (hit@4 46.7) and R5 with 2.0 (59.3, against 74.7 for its own 4 times).
+  Final versions rank 96 times by the rule's own score and show the first 4 distinct pictures (hash distance > 0;
+  0 beat 3 for R3, R4 and R5). R3 rose to 62.6, R4 to 75.1, R5 to 76.1. The general-video R2/R3 pools are
+  unchanged (new pool names).
+- **R5 setting** chosen on dev: λ = 0.5 with the option-aware visual query (74.7 at 4 raw times; 10 settings in
+  `runs/m3av/vsi/dev_report.json`; text only 61.3, visual only 50.2-61.7).
+- **Dev, source-slide interval hit@4** (514 questions, 96 lectures; `reports/m3av/hits_dev.md`):
+
+  | System | hit@4 | − S2m (95% interval over lectures) |
+  |---|---|---|
+  | S2c Head A (CG-Bench) | 77.2 | +0.2 (−2.2..+2.5) |
+  | **S2m Head A (M3AV train)** | **77.0** | |
+  | R5 VSI-style | 76.1 | −1.0 (−4.7..+2.9) |
+  | R4 option-aware dense | 75.1 | −1.9 (−6.5..+2.9) |
+  | S3 Head B | 70.8 | |
+  | S1 best framework (S1t has the same frames) | 70.2 | −6.8 (−10.7..−3.1) |
+  | S0 starting design | 64.2 | |
+  | R3 dense MobileCLIP | 62.6 | −14.4 (−19.1..−9.4) |
+  | R2 evenly spaced | 26.5 | |
+
+- Reading: a trained speech locator beats the best framework and plain picture search on lecture slides, but the
+  training-free subtitle + visual fusion (R5) and option-aware picture search (R4) are as good on dev. Retraining
+  Head A on lectures adds nothing over the CG-Bench head (−0.2).
+- **Amendment 4** (before any test question): L1 is now S2m − R5, the strongest training-free rule on dev,
+  instead of S2m − R3 (the weakest of R3-R5 on dev). S2m − R3, − R4 and − S2c are secondary. Picker for S2m stays
+  MMR (77.0 vs 76.7 for Head A's own top 4). Per-system inputs: `docs/v3/m3av_systems.md`.

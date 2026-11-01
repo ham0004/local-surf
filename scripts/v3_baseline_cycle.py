@@ -82,9 +82,27 @@ POOLS["dense4"] = dict(n_path_a=0, n_path_b=4, scan_cap=4, scan_step_s=5.0, path
 # lecture study (docs/v3/m3av_protocol.md): R4 = dense top-4 by the best of question + each option
 POOLS["dense4o"] = dict(n_path_a=0, n_path_b=4, scan_cap=4, scan_step_s=5.0, path_b_scope="features", scan_query="qo_max")
 # R5 = VSI-style subtitle + visual search; its 4 times come from scripts/m3av_vsi.py with the setting chosen on dev
-VSI_SETTING = None
+VSI_SETTING = "lam0.5_qo_max"           # chosen on dev, best hit@4 of 10 settings (runs/m3av/vsi/dev_report.json)
 POOLS["vsi4"] = dict(n_path_a=0, n_path_b=4, scan_cap=4, scan_step_s=5.0, path_b_scope="times",
                      times_file="runs/m3av/vsi/{split}_{setting}.json")
+# The 4-candidate pools above merge repeated slides and then show fewer than 4 pictures (dev: R3 1.4 on average).
+# Lecture-study versions show 4 distinct pictures: 24 ranked times (>= 4 s apart), no run merging, the first 4 not
+# duplicates of a kept one (perceptual-hash distance <= h, chosen on dev from 0 and 3). R2 shows its 4 frames unmerged.
+POOLS["uniform4d"] = dict(n_path_a=0, n_path_b=4, scan_cap=4, scan_step_s=5.0, path_b_scope="video", stable_hamming=-1,
+                          dup_hamming=-1, dup_seconds=-1.0)
+for _h in (0, 3):
+    _d = dict(n_path_a=0, n_path_b=4, scan_cap=24, scan_step_s=5.0, stable_hamming=-1, fill_distinct=True,
+              dup_hamming=_h, dup_seconds=0.0)
+    POOLS[f"dense4d{_h}"] = dict(_d, path_b_scope="features")
+    POOLS[f"dense4od{_h}"] = dict(_d, path_b_scope="features", scan_query="qo_max")
+    POOLS[f"vsi4d{_h}"] = dict(_d, path_b_scope="times", times_file="runs/m3av/vsi/{split}_{setting}.json")
+# Chosen on dev (step 86): h = 0 for R3, R4 and R5; 24 times still left about 150 questions with < 4 distinct
+# pictures (short talks: the 24 best times fall on 2-3 slides), so the final versions rank 96 times.
+_x = dict(n_path_a=0, n_path_b=4, scan_cap=96, scan_step_s=5.0, stable_hamming=-1, fill_distinct=True, dup_hamming=0,
+          dup_seconds=0.0)
+POOLS["dense4x"] = dict(_x, path_b_scope="features")                                # R3
+POOLS["dense4ox"] = dict(_x, path_b_scope="features", scan_query="qo_max")          # R4
+POOLS["vsi4x"] = dict(_x, path_b_scope="times", times_file="runs/m3av/vsi/{split}_{setting}.json")   # R5
 HEAD_A_CKPTS = [f"runs/v3_head_a/ckpt/light_dens_ens_human_{s}.pt" for s in range(3)]
 HEAD_A_M3AV_CKPTS = [f"runs/v3_head_a_m3av/ckpt/light_dens_ens_human_{s}.pt" for s in range(3)]
 FEATURES = {"cgbench": "data/cgbench/features", "videommmu": "data/videommmu/features",
@@ -284,6 +302,8 @@ def select(pool, rule: str, k: int, qo_emb):
         ids = _FILE_SELECTIONS[path][pool.qa_id][:k]
         by_id = {c.id: c for c in cands}
         return [by_id[i] for i in ids]
+    if rule == "A_rank":                             # speech path's own order (Head A moments, best first)
+        return [c for c in cands if "A" in c.paths][:k]
     if rule == "A_only":
         cands = [c for c in cands if "A" in c.paths]
     if rule == "B_only":

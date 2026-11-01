@@ -1,0 +1,278 @@
+{
+ "split": "dev",
+ "questions": 514,
+ "lectures": 96,
+ "missing": [],
+ "systems": {
+  "S0 starting design": {
+   "hit@4": 64.2,
+   "mean": 3.94,
+   "under_4": 8
+  },
+  "S1 best framework (also S1t's frames)": {
+   "hit@4": 70.2,
+   "mean": 4.0,
+   "under_4": 1
+  },
+  "S2c Head A (CG-Bench)": {
+   "hit@4": 77.2,
+   "mean": 4.0,
+   "under_4": 0
+  },
+  "S2m Head A (M3AV train)": {
+   "hit@4": 77.0,
+   "mean": 4.0,
+   "under_4": 0
+  },
+  "S3 Head B": {
+   "hit@4": 70.8,
+   "mean": 4.0,
+   "under_4": 1
+  },
+  "S2c, picker A_rank": {
+   "hit@4": 74.5,
+   "mean": 4.0,
+   "under_4": 0
+  },
+  "S2m, picker A_rank": {
+   "hit@4": 76.7,
+   "mean": 4.0,
+   "under_4": 0
+  },
+  "R2 4 evenly spaced": {
+   "hit@4": 26.5,
+   "mean": 4.0,
+   "under_4": 0
+  },
+  "R3 dense MobileCLIP top-4, h0": {
+   "hit@4": 60.5,
+   "mean": 3.43,
+   "under_4": 154
+  },
+  "R3 dense MobileCLIP top-4, h3": {
+   "hit@4": 58.9,
+   "mean": 3.02,
+   "under_4": 240
+  },
+  "R4 dense option-aware top-4, h0": {
+   "hit@4": 73.2,
+   "mean": 3.42,
+   "under_4": 150
+  },
+  "R4 dense option-aware top-4, h3": {
+   "hit@4": 71.0,
+   "mean": 3.02,
+   "under_4": 239
+  },
+  "R5 VSI-style, h0": {
+   "hit@4": 76.1,
+   "mean": 3.82,
+   "under_4": 49
+  },
+  "R5 VSI-style, h3": {
+   "hit@4": 72.8,
+   "mean": 3.52,
+   "under_4": 125
+  },
+  "R3 dense MobileCLIP top-4 (96 ranked)": {
+   "hit@4": 62.6,
+   "mean": 3.91,
+   "under_4": 30
+  },
+  "R4 dense option-aware top-4 (96 ranked)": {
+   "hit@4": 75.1,
+   "mean": 3.91,
+   "under_4": 31
+  },
+  "R5 VSI-style (96 ranked)": {
+   "hit@4": 76.1,
+   "mean": 3.96,
+   "under_4": 13
+  },
+  "R3 (4-candidate pool, merged)": {
+   "hit@4": 46.7,
+   "mean": 1.4,
+   "under_4": 510
+  }
+ },
+ "contrasts": {
+  "S2m Head A (M3AV train) - R5 VSI-style (96 ranked)": {
+   "diff": 1.0,
+   "lo": -2.9,
+   "hi": 4.7,
+   "p": 0.6399,
+   "n": 514,
+   "lectures": 96
+  },
+  "S2m Head A (M3AV train) - S1 best framework (also S1t's frames)": {
+   "diff": 6.8,
+   "lo": 3.1,
+   "hi": 10.7,
+   "p": 0.0006,
+   "n": 514,
+   "lectures": 96
+  },
+  "S2m Head A (M3AV train) - R3 dense MobileCLIP top-4 (96 ranked)": {
+   "diff": 14.4,
+   "lo": 9.4,
+   "hi": 19.1,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  },
+  "S2m Head A (M3AV train) - R4 dense option-aware top-4 (96 ranked)": {
+   "diff": 1.9,
+   "lo": -2.9,
+   "hi": 6.5,
+   "p": 0.45,
+   "n": 514,
+   "lectures": 96
+  },
+  "S2m Head A (M3AV train) - S2c Head A (CG-Bench)": {
+   "diff": -0.2,
+   "lo": -2.5,
+   "hi": 2.2,
+   "p": 0.9313,
+   "n": 514,
+   "lectures": 96
+  }
+ },
+ "vs_R3": {
+  "S0 starting design": {
+   "diff": 1.6,
+   "lo": -3.4,
+   "hi": 6.3,
+   "p": 0.5621,
+   "n": 514,
+   "lectures": 96
+  },
+  "S1 best framework (also S1t's frames)": {
+   "diff": 7.6,
+   "lo": 3.1,
+   "hi": 11.9,
+   "p": 0.0012,
+   "n": 514,
+   "lectures": 96
+  },
+  "S2c Head A (CG-Bench)": {
+   "diff": 14.6,
+   "lo": 9.4,
+   "hi": 19.6,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  },
+  "S2m Head A (M3AV train)": {
+   "diff": 14.4,
+   "lo": 9.4,
+   "hi": 19.1,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  },
+  "S3 Head B": {
+   "diff": 8.2,
+   "lo": 3.5,
+   "hi": 12.7,
+   "p": 0.0006,
+   "n": 514,
+   "lectures": 96
+  },
+  "S2c, picker A_rank": {
+   "diff": 11.9,
+   "lo": 6.3,
+   "hi": 17.2,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  },
+  "S2m, picker A_rank": {
+   "diff": 14.0,
+   "lo": 8.3,
+   "hi": 19.4,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  },
+  "R2 4 evenly spaced": {
+   "diff": -36.2,
+   "lo": -41.0,
+   "hi": -31.5,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  },
+  "R3 dense MobileCLIP top-4, h0": {
+   "diff": -2.1,
+   "lo": -3.4,
+   "hi": -1.0,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  },
+  "R3 dense MobileCLIP top-4, h3": {
+   "diff": -3.7,
+   "lo": -6.7,
+   "hi": -1.0,
+   "p": 0.0082,
+   "n": 514,
+   "lectures": 96
+  },
+  "R4 dense option-aware top-4, h0": {
+   "diff": 10.5,
+   "lo": 6.5,
+   "hi": 14.3,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  },
+  "R4 dense option-aware top-4, h3": {
+   "diff": 8.4,
+   "lo": 4.0,
+   "hi": 12.5,
+   "p": 0.0006,
+   "n": 514,
+   "lectures": 96
+  },
+  "R5 VSI-style, h0": {
+   "diff": 13.4,
+   "lo": 9.2,
+   "hi": 17.7,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  },
+  "R5 VSI-style, h3": {
+   "diff": 10.1,
+   "lo": 5.7,
+   "hi": 14.5,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  },
+  "R4 dense option-aware top-4 (96 ranked)": {
+   "diff": 12.5,
+   "lo": 8.8,
+   "hi": 16.1,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  },
+  "R5 VSI-style (96 ranked)": {
+   "diff": 13.4,
+   "lo": 9.2,
+   "hi": 17.7,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  },
+  "R3 (4-candidate pool, merged)": {
+   "diff": -16.0,
+   "lo": -19.8,
+   "hi": -12.5,
+   "p": 0.0002,
+   "n": 514,
+   "lectures": 96
+  }
+ }
+}
