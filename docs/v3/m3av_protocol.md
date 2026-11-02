@@ -169,3 +169,18 @@ All other comparisons are secondary and uncorrected.
     than lam0.5_qo_max; `m3av_hits.py` stops if a frozen system lacks any cohort question, reports raw p-values and
     Holm over exactly L1 and L2, and puts L1/L2 in their own table. On dev the rewritten report reproduces every
     figure: L1 raw p 0.64, Holm 0.64; L2 raw p 0.0006, Holm 0.0012 (dev, used for choices; not a confirmation).
+- 2026-11-03, second supplement to the freeze (auditor P83), before any system runs on test
+  (`docs/v3/m3av_freeze_supplement2.json`). It adds one descriptive sensitivity analysis to the report. The
+  cohort, systems, frames, primary measure, L1/L2 and Holm family do not change.
+  - **Why.** Both question reviews found "other occurrences" of a source slide that are different slides sharing a
+    title or the answer word. Such a span still counts as a hit for the primary measure.
+  - **S-src hit@4.** Each visible span is clipped to the question's source segment; only positive-length parts are
+    kept, and other occurrences are ignored. The same 1 s tolerance and the same 4 frames apply. Questions with no
+    source-visible part stay in the cohort and count as misses for every system (test 3, dev 1).
+  - **Reporting.** Every system's S-src score, and the L1 and L2 differences with paired lecture-bootstrap 95%
+    intervals (10,000 draws, seed 20261101). No p-values, no Holm, no significance claim. A lower S-src score is
+    not worse retrieval in itself, since genuine repeats are excluded.
+  - **Checks on dev.** Primary per-question hits and all primary and secondary statistics are identical to the
+    report before the addition; no question has an S-src hit without a primary hit.
+  - **Verification.** `scripts/m3av_freeze_supplement2.py verify` checks the original freeze and supplement 1 by
+    hash, then the models and code against both supplements. The test driver now verifies through it.

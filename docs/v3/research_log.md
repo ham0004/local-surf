@@ -1456,3 +1456,58 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   sensitivity analysis. Both are declared before any test outcome. They are kept out of the log until the auditor
   has saved its own verdicts, so its review stays independent. The primary measure and L1/L2 do not change.
 - No system has run on test.
+
+## Step 89 (2026-11-03): both question reviews saved; S-src sensitivity analysis sealed before test
+- **Auditor review.** The auditor reviewed all 100 packets alone and saved its verdicts before opening the builder
+  files (`collab/review_auditor_test.csv`, SHA-256 `b60a0bf85e0fba92ef2e2ecc2b12a7736c7092f4cd0b5a77c29cec92befe2cb4`).
+  It then checked both builder files against their step-88 hashes; both match.
+
+  | Reviewer | Accept | Reject | Uncertain |
+  |---|---|---|---|
+  | Builder | 84 | 10 | 6 |
+  | Auditor | 77 | 7 | 16 |
+
+  - The two verdicts agree on 84 of 100 packets (both accept 76). They differ on 14, 17, 26, 30, 37, 39, 41, 49,
+    60, 70, 84, 86, 89, 91, 98 and 100.
+  - Many differences are severity: the builder rejects partial-span problems that the auditor marks uncertain.
+  - These are two model reviews, not human judgments. Both files stay unchanged for a later human review, which
+    sees neither model's verdicts and no system results.
+- **The builder note, unsealed.**
+  - Rejects: 8 for evidence spans (5, 17, 35, 63, 70, 84, 98, 100) and 2 for more than one defensible answer
+    (24, 99). Uncertain: 4 hard to read at 360p (1, 28, 38, 39), 1 span (41), 1 video-call banner (30).
+  - Every key matched its slide. The transcript inside the span gives or hints at the answer in 41 of 100
+    (auditor: 49).
+  - **False "other occurrences".** A slide counts as occurring again when another slide shares its title or the
+    answer word (for example "Poke" on four different charts). Each such span is matched against its own saved
+    image, so the visibility check cannot catch it. 158 of 853 test questions (18.5%) have another occurrence
+    (dev: 95 of 514). Of the 14 sampled ones, the builder judged 7 false.
+  - The auditor judged more of them false: in 89 the repeat shows the label on the other axis, and in 86 it shows
+    RQ4 instead of RQ1. The presence of the answer word is not enough. These are exposure counts, not error rates.
+- **Decision.** The auditor accepted the proposed sensitivity analysis (P83). It closed P71-P74 and gave the
+  go-ahead for the test run (P92), on condition that the analysis is implemented and sealed first. The test
+  questions, F3/F4, thresholds and models are not changed because of the review.
+- **S-src hit@4** (`scripts/m3av_hits.py`, descriptive only):
+  - The same hit test and the same 4 frames, but each visible span is clipped to the question's own source
+    segment, and other occurrences are ignored.
+  - 3 test questions and 1 dev question have no source-visible part. They stay in the cohort as misses for every
+    system.
+  - It reports every system and the L1/L2 differences with 95% intervals, with no p-values or Holm.
+- **Dev check.** The primary per-question hits, system scores, L1/L2 with Holm and secondary contrasts are
+  identical to the step-87 report. No S-src hit occurs without a primary hit (4,626 of 4,626 system-question
+  pairs). Dev S-src (used for choices, not a confirmation):
+
+  | Contrast | S-src difference, points (95% interval) | Primary difference |
+  |---|---|---|
+  | L1: S2m − R5 | +0.0 (−4.1..+4.2) | +1.0 (−2.9..+4.7) |
+  | L2: S2m − S1 | +7.0 (+3.3..+10.9) | +6.8 (+3.1..+10.7) |
+
+- **Second freeze supplement** (`docs/v3/m3av_freeze_supplement2.json`, SHA-256
+  `25826f95204154d9ade82b2e57f7d04ff4aee6d2fcdb2d5edde7a9284f9ee23c`, code commit aa86a07). It records:
+  - the S-src definition;
+  - for the changed scorer and test driver, their supplement-1 hashes and their new ones;
+  - the new verifier.
+
+  `scripts/m3av_freeze_supplement2.py verify` checks the original freeze and supplement 1 by hash, then the models
+  and code against both. It passes on test inputs, dev inputs and dev artifacts, and it rejects a changed scorer.
+  The supplement-1 verifier rejects the changed files as it should, so it is no longer the entry point.
+- No system has run on test. Next: `scripts/run_m3av_test.sh`.
