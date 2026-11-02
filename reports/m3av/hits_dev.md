@@ -39,3 +39,33 @@ Paired bootstrap over lectures (10,000 resamples, seed 20261101); every frozen s
 | R5 VSI-inspired, h0 | 76.1 | 3.82 | 49 |
 | R5 VSI-inspired, h3 | 72.8 | 3.52 | 125 |
 | R3 (4-candidate pool, merged) | 46.7 | 1.4 | 510 |
+
+## Sensitivity: S-src hit@4 (descriptive, not confirmatory)
+
+Visible spans clipped to the question's source segment; other occurrences ignored; same frames. 1 of 514 questions have no source-visible part and count as misses for every system. A lower S-src score is not worse retrieval in itself: genuine repeats are excluded.
+
+| Contrast | Difference, points (95% interval) |
+|---|---|
+| L1: S2m Head A (M3AV train) - R5 VSI-inspired (96 ranked) | +0.0 (-4.1..+4.2) |
+| L2: S2m Head A (M3AV train) - S1 best framework (also S1t's frames) | +7.0 (+3.3..+10.9) |
+
+| System | S-src hit@4 (%) | primary hit@4 (%) |
+|---|---|---|
+| S0 starting design | 59.1 | 64.2 |
+| S1 best framework (also S1t's frames) | 64.6 | 70.2 |
+| S2c Head A (CG-Bench) | 72.2 | 77.2 |
+| S2m Head A (M3AV train) | 71.6 | 77.0 |
+| S3 Head B | 65.8 | 70.8 |
+| R2 4 evenly spaced | 19.6 | 26.5 |
+| R3 dense MobileCLIP top-4 (96 ranked) | 58.2 | 62.6 |
+| R4 dense option-aware top-4 (96 ranked) | 70.4 | 75.1 |
+| R5 VSI-inspired (96 ranked) | 71.6 | 76.1 |
+| S2c, picker A_rank | 69.1 | 74.5 |
+| S2m, picker A_rank | 71.0 | 76.7 |
+| R3 dense MobileCLIP top-4, h0 | 56.4 | 60.5 |
+| R3 dense MobileCLIP top-4, h3 | 55.4 | 58.9 |
+| R4 dense option-aware top-4, h0 | 68.7 | 73.2 |
+| R4 dense option-aware top-4, h3 | 66.7 | 71.0 |
+| R5 VSI-inspired, h0 | 71.6 | 76.1 |
+| R5 VSI-inspired, h3 | 68.7 | 72.8 |
+| R3 (4-candidate pool, merged) | 43.0 | 46.7 |

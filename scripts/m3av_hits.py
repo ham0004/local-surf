@@ -6,6 +6,11 @@ from the saved pools with the same `select` the answer stage uses. Paired bootst
 resamples, seed 20261101); raw p-values and Holm over exactly the two primary contrasts L1 and L2 (amendment 4).
 Stops if any frozen system lacks a question of the cohort (no primary on a subset). Also: frames actually shown.
 
+S-src hit@4 (second freeze supplement, auditor P83): a descriptive sensitivity analysis, never confirmatory. The
+same frames and test, but each visible span is clipped to the question's source segment (positive-length parts
+only) and other occurrences are ignored. Questions with no source-visible part stay in the cohort with no S-src
+hit. Reported per system with L1/L2 differences and their paired bootstrap intervals; no p-values, no Holm.
+
     python scripts/m3av_hits.py --split dev                     # reports/m3av/hits_dev.{json,md}
     python scripts/m3av_hits.py --split test                    # frozen systems only
 """
@@ -78,6 +83,22 @@ def holm(ps: dict) -> dict:
     return out
 
 
+def source_spans(split: str, its: dict) -> dict:
+    """Visible spans clipped to the source segment (S-src); the cohort's visible spans are the evidence intervals."""
+    out = {}
+    for line in Path(f"data/m3av/questions_{split}_visible.jsonl").read_text(encoding="utf-8").splitlines():
+        q = json.loads(line)
+        if q["qa_id"] not in its:
+            continue
+        if [list(x) for x in its[q["qa_id"]].evidence_intervals_s] != q["visible_spans"]:
+            raise SystemExit(f"visible spans differ from the evidence intervals: {q['qa_id']}")
+        a0, b0 = q["source_segment"]
+        out[q["qa_id"]] = [(max(a, a0), min(b, b0)) for a, b in q["visible_spans"] if min(b, b0) > max(a, a0)]
+    if set(out) != set(its):
+        raise SystemExit("cohort file and qa.jsonl hold different questions")
+    return out
+
+
 def missing_ids(ds: str, pool: str, rule: str, qids: list) -> list:
     from videoqa.v2.candidates import _safe  # noqa: PLC0415
 
@@ -110,17 +131,21 @@ def main() -> None:
     enc = FrozenEncoders(device="cuda", cache_dir="cache/open_clip", use_ocr=False)
     qo = dict(zip(qids, enc.embed_texts([its[q].question + " Options: " + ", ".join(its[q].options) for q in qids]),
                   strict=True))
-    hits, shown = {}, {}
+    src = source_spans(a.split, its)
+    hits, src_hits, shown = {}, {}, {}
     for name, (pool, rule) in systems.items():
         if name in incomplete:
             continue
         d, rule = pool_dir(ds, pool), rule.format(ds=ds)
-        h, n = {}, []
+        h, hs, n = {}, {}, []
         for q in qids:
             frames = select(load_pool(d, q), rule, 4, qo[q])
             h[q] = any(x - 1.0 <= c.time_s <= y + 1.0 for c in frames for x, y in its[q].evidence_intervals_s)
+            hs[q] = any(x - 1.0 <= c.time_s <= y + 1.0 for c in frames for x, y in src[q])
+            if hs[q] and not h[q]:
+                raise SystemExit(f"S-src hit without a primary hit: {name}, {q}")
             n.append(len(frames))
-        hits[name] = h
+        hits[name], src_hits[name] = h, hs
         shown[name] = {"mean": round(float(np.mean(n)), 2), "under_4": int(sum(x < 4 for x in n))}
     prim = {k: paired(hits[x], hits[y], lecture) for k, (x, y) in PRIMARY.items()}
     for k, v in holm({k: v["p"] for k, v in prim.items()}).items():
@@ -131,6 +156,16 @@ def main() -> None:
            "primary": {k: {"contrast": f"{x} - {y}", **prim[k]} for k, (x, y) in PRIMARY.items()},
            "secondary": {k: paired(hits[x], hits[y], lecture) for k, (x, y) in SECONDARY.items()},
            "per_question": {k: {q: int(v[q]) for q in qids} for k, v in hits.items() if k in SYSTEMS}}
+    no_src = sorted(q for q in qids if not src[q])
+    src_l = {k: {kk: vv for kk, vv in paired(src_hits[x], src_hits[y], lecture).items() if kk != "p"}
+             for k, (x, y) in PRIMARY.items()}
+    out["s_src"] = {"definition": "sensitivity analysis (second freeze supplement, auditor P83), descriptive only: "
+                                  "visible spans clipped to the source segment, other occurrences ignored, same frames "
+                                  "and 1 s tolerance; no p-values, no Holm",
+                    "questions_without_source_visible_part": len(no_src), "ids_without_source_visible_part": no_src,
+                    "systems": {k: round(100 * float(np.mean(list(v.values()))), 1) for k, v in src_hits.items()},
+                    "contrasts": {k: {"contrast": f"{x} - {y}", **src_l[k]} for k, (x, y) in PRIMARY.items()},
+                    "per_question": {k: {q: int(v[q]) for q in qids} for k, v in src_hits.items() if k in SYSTEMS}}
     Path("reports/m3av").mkdir(parents=True, exist_ok=True)
     Path(f"reports/m3av/hits_{a.split}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
 
@@ -150,6 +185,15 @@ def main() -> None:
     lines += ["", "## Systems", "", "| System | hit@4 (%) | frames shown (mean) | questions with < 4 frames |",
               "|---|---|---|---|"]
     lines += [f"| {k} | {v['hit@4']} | {v['mean']} | {v['under_4']} |" for k, v in out["systems"].items()]
+    lines += ["", "## Sensitivity: S-src hit@4 (descriptive, not confirmatory)", "",
+              "Visible spans clipped to the question's source segment; other occurrences ignored; same frames. "
+              f"{len(no_src)} of {len(qids)} questions have no source-visible part and count as misses for every "
+              "system. A lower S-src score is not worse retrieval in itself: genuine repeats are excluded.", "",
+              "| Contrast | Difference, points (95% interval) |", "|---|---|"]
+    lines += [f"| {k}: {x} - {y} | {src_l[k]['diff']:+.1f} ({src_l[k]['lo']:+.1f}..{src_l[k]['hi']:+.1f}) |"
+              for k, (x, y) in PRIMARY.items()]
+    lines += ["", "| System | S-src hit@4 (%) | primary hit@4 (%) |", "|---|---|---|"]
+    lines += [f"| {k} | {v} | {out['systems'][k]['hit@4']} |" for k, v in out["s_src"]["systems"].items()]
     if incomplete:
         lines += ["", "Dev diagnostics not available: " + ", ".join(sorted(incomplete))]
     Path(f"reports/m3av/hits_{a.split}.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
