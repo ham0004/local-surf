@@ -1,0 +1,41 @@
+{
+ "data/m3av_test/features": {
+  "files": 112,
+  "sha256": "c437f7bd3613fe16cf6004ca7d48ab4bf87ec2b7edcc0bfad535ae5a864f50b4"
+ },
+ "runs/m3av/vsi/test_lam0.5_qo_max.json": "aac0f9dc6cba238793c768f0f3b616f66040a12572c07af8e3903ba4c7cc72e0",
+ "runs/v3_head_b/features_m3av_test_hybrid.npy": "91ff9cf8f131403b8bffe897de44727fc9fc30a743aad0f7abebe3b01e11af09",
+ "runs/v3_head_b/selections/m3av_test_hybrid_ev_set.json": "f8085ef08fc6b0404e76537170a3c4191fb92b9cca8e481a010d2f8ae608de9e",
+ "runs/v3_baseline/m3av_test/dense4ox/pools": {
+  "files": 5015,
+  "sha256": "a9f94c2913d58ed3059aa857c9902a9062900b29bb3c83824f5193b5d43c7b2a"
+ },
+ "runs/v3_baseline/m3av_test/dense4x/pools": {
+  "files": 5007,
+  "sha256": "26bcff14de9ea75d3dc6d2d1f1ce66631a1de223f0d45614b71b7565492ab5af"
+ },
+ "runs/v3_baseline/m3av_test/hybrid/pools": {
+  "files": 9362,
+  "sha256": "efa40b6bfeffb13ed83c93d23ed3d87bec4da4ab5e9dcef85ab38e8a7e926385"
+ },
+ "runs/v3_baseline/m3av_test/hybrid_ahead/pools": {
+  "files": 9431,
+  "sha256": "7a3facb30f2ffd8fd3ca6b5ee4595356ae28c2ce9d956f663fb38f96f0d18268"
+ },
+ "runs/v3_baseline/m3av_test/hybrid_ahead_m3av/pools": {
+  "files": 9408,
+  "sha256": "16c83755196b6909f411bcac92c64119db9ffd2bc70d1afd3bc6dcc2b1bc9591"
+ },
+ "runs/v3_baseline/m3av_test/uniform4d/pools": {
+  "files": 5118,
+  "sha256": "d061193ca83c96b63e84250617169b483bbd9c789eded080ab4b396881690606"
+ },
+ "runs/v3_baseline/m3av_test/v2/pools": {
+  "files": 9078,
+  "sha256": "4e519e10245cf228b64aebb301d2c818ddd75dfceff8c6a947a2ff660bbe3711"
+ },
+ "runs/v3_baseline/m3av_test/vsi4x/pools": {
+  "files": 5067,
+  "sha256": "ebf93aac609ad57550955db1ec49fe2745c97269de71bb2ba8c4fc1b6d2c8e44"
+ }
+}

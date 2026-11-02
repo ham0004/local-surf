@@ -1511,3 +1511,51 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   and code against both. It passes on test inputs, dev inputs and dev artifacts, and it rejects a changed scorer.
   The supplement-1 verifier rejects the changed files as it should, so it is no longer the entry point.
 - No system has run on test. Next: `scripts/run_m3av_test.sh`.
+
+## Step 90 (2026-11-03): lecture study, frozen test run (primary measure)
+- `scripts/run_m3av_test.sh` ran once, from 18:44 to about 21:09 UTC on 2 Nov, with S-src sealed first (auditor
+  P92, path 1).
+  - Before starting, it verified the models, code and test inputs against the freeze and both supplements.
+  - Every artifact was built fresh and hashed before scoring (`docs/v3/m3av_manifest_test_artifacts.json`,
+    SHA-256 `ed21653471f132d0b4f12e5dd2407cba23d645db84bc790d195d6103d5ff661d`). The artifacts verify afterwards.
+  - Every frozen system covers all 853 questions in 112 lectures.
+  - Report: `reports/m3av/hits_test.{json,md}`, JSON SHA-256
+    `6ef21809895cab37194152733ba31a9ae4b68ed2f4aef6dafeac980716088ef1`. Nothing was rerun or changed after
+    scoring.
+- **Primary contrasts** (source-slide interval hit@4; paired bootstrap over lectures; Holm over L1 and L2):
+
+  | Contrast | Test difference, points (95% interval) | Holm p | Dev difference |
+  |---|---|---|---|
+  | L1: S2m − R5 | −0.5 (−3.8..+2.9) | 0.83 | +1.0 |
+  | L2: S2m − S1 | **+5.3 (+2.7..+7.8)** | **0.0004** | +6.8 |
+
+  - L2 is confirmed: Head A trained on M3AV lectures picks frames on the source slide more often than the best
+    framework without it.
+  - L1 is not confirmed: S2m does not beat the VSI-inspired baseline. Non-significance is not equivalence; the
+    interval allows S2m to be up to 3.8 points worse or 2.9 points better.
+- **Secondary contrasts** (descriptive): S2m − R3 +15.2 (+11.3..+19.1); S2m − R4 +2.5 (−1.1..+6.0); S2m − S2c
+  −0.4 (−2.1..+1.5). Head A trained on CG-Bench does as well on lectures as Head A trained on M3AV.
+- **Systems, hit@4 (%):**
+
+  | System | Hit@4 (%) |
+  |---|---|
+  | S0 | 67.4 |
+  | S1 | 74.1 |
+  | S2c | 79.7 |
+  | S2m | 79.4 |
+  | S3 (Head B) | 73.6 |
+  | R2 | 22.9 |
+  | R3 | 64.1 |
+  | R4 | 76.9 |
+  | R5 | 79.8 |
+
+  Head B gives no gain over S1. R5 ranks 96 decoded frames, against up to about 54 requested decodes for the
+  hybrid systems; it shows fewer than 4 frames for 27 questions.
+- **S-src sensitivity** (descriptive): L1 −1.5 (−4.9..+1.8), L2 +5.0 (+2.4..+7.6). Every system falls by 4 to 6
+  points. The conclusions are the same as for the primary measure, so the false repeated-slide labels do not
+  explain them.
+- **Reading.** On lectures, Head A clearly helps the framework. A simple VSI-inspired subtitle and visual search
+  is as strong, and the Head A trained on general video matches the lecture-trained one. This is the same pattern
+  as dev, and it is a result, not a failure of the run. Still to do:
+  - the secondary answer-model runs, whose commands go into a further supplement first;
+  - the blind human review of the 100 packets.
