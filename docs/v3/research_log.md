@@ -1559,3 +1559,59 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   as dev, and it is a result, not a failure of the run. Still to do:
   - the secondary answer-model runs, whose commands go into a further supplement first;
   - the blind human review of the 100 packets.
+
+## Step 91 (2026-11-03): secondary answer-model evaluation sealed before test
+- **Audit of step 90.** The auditor (P94-P97) recomputed every count, interval and Holm value from the saved
+  per-question hits, and independently rebuilt most systems' hits from the saved pools.
+- **Corrections to step 90's wording** (P97):
+  - "Does as well", "is as strong" and "matches" were too strong. The right phrase is **no confirmed
+    difference**: S2m − S2c −0.4 (−2.1..+1.5), S2m − R5 −0.5 (−3.8..+2.9).
+  - Head B's point estimate is below S1's (628 against 632 hits), but no S3 − S1 test was declared.
+  - S-src shows the pattern is **robust to this source-only sensitivity analysis**. It does not show that label
+    errors cannot explain the findings: build stages, overlays, small text and ambiguity remain inside source
+    intervals.
+  - The per-system drops are 4.1 to 6.3 points, not 4 to 6.
+  - L2 compares the whole trained locator package with S1. It does not isolate the learned part, show a benefit
+    of lecture training over S2c, or show an answer-accuracy gain.
+- **Third freeze supplement** (`docs/v3/m3av_freeze_supplement3.json`, SHA-256 LF
+  `e7148696d2cc557fa7f01f041843641bc55b9685d7b3b19ec83c426802182b06`, bytes
+  `8384225c29ad7e88622901e324873fbbc5e95edf881bf5b8f36320b8148bd4b1`; code commit a8c9eb0).
+  - Written after the primary hit outcomes, and before any answer-model call on test.
+  - It chains to the freeze, supplements 1-2, both test manifests and the primary report.
+  - It records:
+    - the 12 conditions with their exact inputs and text policies;
+    - the answerer identity, its prompts and processor settings (the 640×360 frames are not resized beyond patch
+      rounding);
+    - the reuse, failure, ledger, resume, completeness and seal rules;
+    - the analysis and the commands;
+    - hashes of the QA code and of the code it runs that the earlier records did not cover.
+  - `scripts/m3av_freeze_supplement3.py verify` checks the whole chain, the models, code, package and Python
+    versions, and the test inputs and artifacts. It rejects a changed QA script.
+- **QA driver** (`scripts/m3av_qa.py`). One record per condition and question, with:
+  - the frame ids, times and pixel digests;
+  - the transcript line ids and realized words;
+  - the prompt hash and request key;
+  - the raw reply, the parsed option, and abstention, forced-choice and failure flags;
+  - prompt text, visual and generated tokens (counted separately);
+  - answer, selection and pool-build times.
+
+  Before each answer, the recomputed frames must reproduce the stored primary and S-src hits. Identical requests
+  are answered once and later reuses are marked. No earlier answer cache is read.
+- **Dev check** on the first 24 dev questions in hash order (288 records; `reports/m3av/qa_dev_check.json`). Every
+  check passes:
+  - the run is complete, and every frame condition reproduces its hits;
+  - S1t shows S1's frames exactly;
+  - the controls get no frames, and systems without a text allowance get no text;
+  - realized words reach at most S0 118, S1t 599, `t_only` 600;
+  - tokens are logged for every new answer;
+  - a resumed run makes no new calls;
+  - a repeated row and a conflicting reply are both rejected.
+- **Dev resources.**
+  - New answers took 1.8 s (`q_only`), about 2.4 s (systems without text), 4.0 s (`t_only`) and 7.6 s (S1t).
+  - 12 of 288 requests were identical to an earlier condition and were reused.
+  - Model loading took 12 s.
+  - Peak GPU memory: torch allocated 11.1 GB, and reserved 19.8 GB on the 15.9 GB RTX 5060 Ti. Reserved memory
+    above the card's size means Windows let part of it spill into shared system memory. A claim that everything
+    fits in 16 GB needs this qualified.
+- **Estimate.** About 8 h of answer time for 853 test questions, plus pool loading.
+- The 24-question dev accuracies (`reports/m3av/qa_dev.md`) only test the pipeline. They are too few to read.

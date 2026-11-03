@@ -184,3 +184,20 @@ All other comparisons are secondary and uncorrected.
     report before the addition; no question has an S-src hit without a primary hit.
   - **Verification.** `scripts/m3av_freeze_supplement2.py verify` checks the original freeze and supplement 1 by
     hash, then the models and code against both supplements. The test driver now verifies through it.
+- 2026-11-03, third supplement to the freeze (auditor P103), written after the primary hit outcomes and before
+  any answer-model call on test (`docs/v3/m3av_freeze_supplement3.json`). It fixes how the declared secondary
+  answer-model evaluation runs, and changes no model, pool, selection rule, cohort or primary result.
+  - **Conditions.** The 10 QA systems (S0, S1, S1t, S2c, S2m, S3, R2-R5) and two controls, on all 853 questions:
+    12 × 853 = 10,236 records.
+    - `q_only` sees the question and options only.
+    - `t_only` sees no frames and 600 words chosen by BM25 over the whole transcript.
+  - **Same for every condition.** The frozen answerer (Qwen3-VL-4B, pinned revision, bfloat16, greedy, 64 new
+    tokens), the prompt, and at most 4 frames.
+  - **Rules.** These are recorded in the supplement: identical requests are answered once, failures and
+    abstentions have fixed handling, a dedicated ledger caps the run, and seal and report require all 10,236
+    records.
+    - Every record keeps the raw reply and the measured tokens: prompt text, visual and generated, counted
+      separately.
+  - **Analysis.** Descriptive only, not part of the primary Holm family. Accuracy is reported on all questions and
+    on two common masks, without the questions `q_only` answers correctly and without those `t_only` answers
+    correctly. The contrasts are S2m − R5, S2m − S1, S2m − S2c, S2m − R3, S2m − R4, S3 − S1 and S1t − S1.
