@@ -1,0 +1,86 @@
+{
+ "summary": {
+  "questions": 24,
+  "records": 288,
+  "checks": {
+   "complete": "12 conditions x 24 questions = 288 records",
+   "hits_reproduced": "every frame condition's recomputed primary and S-src hits equal hits_dev.json (checked before each answer)",
+   "s1t_frames_equal_s1": true,
+   "controls_without_frames": true,
+   "no_text_systems_without_text": true,
+   "max_words": {
+    "S0": 118,
+    "S1t": 599,
+    "t_only": 600
+   },
+   "tokens_logged": true,
+   "resume_no_new_calls": true,
+   "rejects repeated row": true,
+   "rejects conflicting reply": true
+  },
+  "per_condition": {
+   "S0": {
+    "new_calls": 24,
+    "reused": 0,
+    "answer_seconds_mean": 2.75
+   },
+   "S1": {
+    "new_calls": 24,
+    "reused": 0,
+    "answer_seconds_mean": 2.43
+   },
+   "S1t": {
+    "new_calls": 24,
+    "reused": 0,
+    "answer_seconds_mean": 7.59
+   },
+   "S2c": {
+    "new_calls": 22,
+    "reused": 2,
+    "answer_seconds_mean": 2.36
+   },
+   "S2m": {
+    "new_calls": 17,
+    "reused": 7,
+    "answer_seconds_mean": 2.35
+   },
+   "S3": {
+    "new_calls": 24,
+    "reused": 0,
+    "answer_seconds_mean": 2.46
+   },
+   "R2": {
+    "new_calls": 24,
+    "reused": 0,
+    "answer_seconds_mean": 2.69
+   },
+   "R3": {
+    "new_calls": 24,
+    "reused": 0,
+    "answer_seconds_mean": 2.6
+   },
+   "R4": {
+    "new_calls": 21,
+    "reused": 3,
+    "answer_seconds_mean": 2.42
+   },
+   "R5": {
+    "new_calls": 24,
+    "reused": 0,
+    "answer_seconds_mean": 2.43
+   },
+   "q_only": {
+    "new_calls": 24,
+    "reused": 0,
+    "answer_seconds_mean": 1.81
+   },
+   "t_only": {
+    "new_calls": 24,
+    "reused": 0,
+    "answer_seconds_mean": 3.99
+   }
+  },
+  "test_answer_hours_estimate": 8.2,
+  "estimate_note": "mean answer seconds and the reuse rate of these dev questions scaled to 853; excludes model loading and pool loading"
+ }
+}

@@ -1,0 +1,486 @@
+{
+ "split": "dev",
+ "questions": 24,
+ "lectures": 22,
+ "note": "secondary and descriptive: paired bootstrap over lectures (10,000, seed 20261101), raw p uncorrected; not part of the primary Holm family. The masks depend on Qwen3-VL-4B; they are not verified visually necessary subsets",
+ "controls": {
+  "q_only": {
+   "correct": 13,
+   "failed (unknown)": 0,
+   "wrong": 11
+  },
+  "t_only": {
+   "correct": 15,
+   "failed (unknown)": 0,
+   "wrong": 9
+  }
+ },
+ "mask_sizes": {
+  "all": 24,
+  "without q_only-correct": 11,
+  "without t_only-correct": 9
+ },
+ "conditions": {
+  "S0": {
+   "accuracy": 87.5,
+   "n": 24,
+   "abstained": 0,
+   "forced": 0,
+   "failed": 0,
+   "frames_mean": 4.0,
+   "text_words_median": 107.0,
+   "text_words_max": 118,
+   "prompt_text_tokens_median": 427.5,
+   "visual_tokens_median": 880.0,
+   "generated_tokens_median": 34.0,
+   "answer_seconds_median": 2.5635,
+   "select_seconds_median": 0.0,
+   "pool_seconds_median": 0.46,
+   "reused": 0
+  },
+  "S1": {
+   "accuracy": 87.5,
+   "n": 24,
+   "abstained": 0,
+   "forced": 0,
+   "failed": 0,
+   "frames_mean": 4.0,
+   "text_words_median": 0.0,
+   "text_words_max": 0,
+   "prompt_text_tokens_median": 183.0,
+   "visual_tokens_median": 880.0,
+   "generated_tokens_median": 33.0,
+   "answer_seconds_median": 2.3015,
+   "select_seconds_median": 0.0001,
+   "pool_seconds_median": 0.6795,
+   "reused": 0
+  },
+  "S1t": {
+   "accuracy": 87.5,
+   "n": 24,
+   "abstained": 0,
+   "forced": 0,
+   "failed": 0,
+   "frames_mean": 4.0,
+   "text_words_median": 590.0,
+   "text_words_max": 599,
+   "prompt_text_tokens_median": 1512.5,
+   "visual_tokens_median": 880.0,
+   "generated_tokens_median": 39.0,
+   "answer_seconds_median": 4.6,
+   "select_seconds_median": 0.0001,
+   "pool_seconds_median": 0.6795,
+   "reused": 0
+  },
+  "S2c": {
+   "accuracy": 91.7,
+   "n": 24,
+   "abstained": 0,
+   "forced": 0,
+   "failed": 0,
+   "frames_mean": 4.0,
+   "text_words_median": 0.0,
+   "text_words_max": 0,
+   "prompt_text_tokens_median": 183.0,
+   "visual_tokens_median": 880.0,
+   "generated_tokens_median": 33.0,
+   "answer_seconds_median": 2.232,
+   "select_seconds_median": 0.0001,
+   "pool_seconds_median": 0.8755,
+   "reused": 2
+  },
+  "S2m": {
+   "accuracy": 91.7,
+   "n": 24,
+   "abstained": 0,
+   "forced": 0,
+   "failed": 0,
+   "frames_mean": 4.0,
+   "text_words_median": 0.0,
+   "text_words_max": 0,
+   "prompt_text_tokens_median": 183.0,
+   "visual_tokens_median": 880.0,
+   "generated_tokens_median": 33.0,
+   "answer_seconds_median": 2.2195,
+   "select_seconds_median": 0.0001,
+   "pool_seconds_median": 0.8474999999999999,
+   "reused": 7
+  },
+  "S3": {
+   "accuracy": 79.2,
+   "n": 24,
+   "abstained": 0,
+   "forced": 0,
+   "failed": 0,
+   "frames_mean": 4.0,
+   "text_words_median": 0.0,
+   "text_words_max": 0,
+   "prompt_text_tokens_median": 184.0,
+   "visual_tokens_median": 880.0,
+   "generated_tokens_median": 31.0,
+   "answer_seconds_median": 2.2385,
+   "select_seconds_median": 0.0001,
+   "pool_seconds_median": 0.6795,
+   "reused": 0
+  },
+  "R2": {
+   "accuracy": 66.7,
+   "n": 24,
+   "abstained": 0,
+   "forced": 0,
+   "failed": 0,
+   "frames_mean": 4.0,
+   "text_words_median": 0.0,
+   "text_words_max": 0,
+   "prompt_text_tokens_median": 182.5,
+   "visual_tokens_median": 880.0,
+   "generated_tokens_median": 37.0,
+   "answer_seconds_median": 2.674,
+   "select_seconds_median": 0.0,
+   "pool_seconds_median": 0.1905,
+   "reused": 0
+  },
+  "R3": {
+   "accuracy": 79.2,
+   "n": 24,
+   "abstained": 0,
+   "forced": 0,
+   "failed": 0,
+   "frames_mean": 3.79,
+   "text_words_median": 0.0,
+   "text_words_max": 0,
+   "prompt_text_tokens_median": 182.0,
+   "visual_tokens_median": 880.0,
+   "generated_tokens_median": 36.0,
+   "answer_seconds_median": 2.385,
+   "select_seconds_median": 0.0,
+   "pool_seconds_median": 1.461,
+   "reused": 0
+  },
+  "R4": {
+   "accuracy": 87.5,
+   "n": 24,
+   "abstained": 0,
+   "forced": 0,
+   "failed": 0,
+   "frames_mean": 3.79,
+   "text_words_median": 0.0,
+   "text_words_max": 0,
+   "prompt_text_tokens_median": 180.5,
+   "visual_tokens_median": 880.0,
+   "generated_tokens_median": 33.0,
+   "answer_seconds_median": 2.2455,
+   "select_seconds_median": 0.0,
+   "pool_seconds_median": 1.513,
+   "reused": 3
+  },
+  "R5": {
+   "accuracy": 95.8,
+   "n": 24,
+   "abstained": 0,
+   "forced": 0,
+   "failed": 0,
+   "frames_mean": 3.88,
+   "text_words_median": 0.0,
+   "text_words_max": 0,
+   "prompt_text_tokens_median": 183.5,
+   "visual_tokens_median": 880.0,
+   "generated_tokens_median": 32.5,
+   "answer_seconds_median": 2.2705,
+   "select_seconds_median": 0.0,
+   "pool_seconds_median": 1.508,
+   "reused": 0
+  },
+  "q_only": {
+   "accuracy": 54.2,
+   "n": 24,
+   "abstained": 0,
+   "forced": 0,
+   "failed": 0,
+   "frames_mean": 0.0,
+   "text_words_median": 0.0,
+   "text_words_max": 0,
+   "prompt_text_tokens_median": 131.5,
+   "visual_tokens_median": 0.0,
+   "generated_tokens_median": 33.0,
+   "answer_seconds_median": 1.7375,
+   "select_seconds_median": 0.0,
+   "pool_seconds_median": 0.46,
+   "reused": 0
+  },
+  "t_only": {
+   "accuracy": 62.5,
+   "n": 24,
+   "abstained": 0,
+   "forced": 0,
+   "failed": 0,
+   "frames_mean": 0.0,
+   "text_words_median": 592.0,
+   "text_words_max": 600,
+   "prompt_text_tokens_median": 1466.5,
+   "visual_tokens_median": 0.0,
+   "generated_tokens_median": 52.5,
+   "answer_seconds_median": 3.607,
+   "select_seconds_median": 0.0,
+   "pool_seconds_median": 0.46,
+   "reused": 0
+  }
+ },
+ "by_mask": {
+  "all": {
+   "S0": 87.5,
+   "S1": 87.5,
+   "S1t": 87.5,
+   "S2c": 91.7,
+   "S2m": 91.7,
+   "S3": 79.2,
+   "R2": 66.7,
+   "R3": 79.2,
+   "R4": 87.5,
+   "R5": 95.8,
+   "q_only": 54.2,
+   "t_only": 62.5
+  },
+  "without q_only-correct": {
+   "S0": 81.8,
+   "S1": 81.8,
+   "S1t": 81.8,
+   "S2c": 90.9,
+   "S2m": 90.9,
+   "S3": 63.6,
+   "R2": 63.6,
+   "R3": 63.6,
+   "R4": 72.7,
+   "R5": 90.9,
+   "q_only": 0.0,
+   "t_only": 27.3
+  },
+  "without t_only-correct": {
+   "S0": 77.8,
+   "S1": 77.8,
+   "S1t": 77.8,
+   "S2c": 88.9,
+   "S2m": 88.9,
+   "S3": 55.6,
+   "R2": 44.4,
+   "R3": 66.7,
+   "R4": 66.7,
+   "R5": 88.9,
+   "q_only": 11.1,
+   "t_only": 0.0
+  }
+ },
+ "contrasts": {
+  "all": {
+   "S2m - R5": {
+    "diff": -4.2,
+    "lo": -13.6,
+    "hi": 0.0,
+    "p": 0.6887311268873113,
+    "n": 24,
+    "lectures": 22
+   },
+   "S2m - S1": {
+    "diff": 4.2,
+    "lo": -9.1,
+    "hi": 18.2,
+    "p": 0.7969203079692031,
+    "n": 24,
+    "lectures": 22
+   },
+   "S2m - S2c": {
+    "diff": 0.0,
+    "lo": -12.5,
+    "hi": 12.5,
+    "p": 1.0,
+    "n": 24,
+    "lectures": 22
+   },
+   "S2m - R3": {
+    "diff": 12.5,
+    "lo": -4.5,
+    "hi": 31.8,
+    "p": 0.24397560243975602,
+    "n": 24,
+    "lectures": 22
+   },
+   "S2m - R4": {
+    "diff": 4.2,
+    "lo": -9.1,
+    "hi": 18.2,
+    "p": 0.7865213478652134,
+    "n": 24,
+    "lectures": 22
+   },
+   "S3 - S1": {
+    "diff": -8.3,
+    "lo": -22.7,
+    "hi": 0.0,
+    "p": 0.24517548245175483,
+    "n": 24,
+    "lectures": 22
+   },
+   "S1t - S1": {
+    "diff": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "p": 1.0,
+    "n": 24,
+    "lectures": 22
+   }
+  },
+  "without q_only-correct": {
+   "S2m - R5": {
+    "diff": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "p": 1.0,
+    "n": 11,
+    "lectures": 11
+   },
+   "S2m - S1": {
+    "diff": 9.1,
+    "lo": 0.0,
+    "hi": 27.3,
+    "p": 0.6875312468753124,
+    "n": 11,
+    "lectures": 11
+   },
+   "S2m - S2c": {
+    "diff": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "p": 1.0,
+    "n": 11,
+    "lectures": 11
+   },
+   "S2m - R3": {
+    "diff": 27.3,
+    "lo": 0.0,
+    "hi": 54.5,
+    "p": 0.05979402059794021,
+    "n": 11,
+    "lectures": 11
+   },
+   "S2m - R4": {
+    "diff": 18.2,
+    "lo": 0.0,
+    "hi": 45.5,
+    "p": 0.2101789821017898,
+    "n": 11,
+    "lectures": 11
+   },
+   "S3 - S1": {
+    "diff": -18.2,
+    "lo": -45.5,
+    "hi": 0.0,
+    "p": 0.21957804219578042,
+    "n": 11,
+    "lectures": 11
+   },
+   "S1t - S1": {
+    "diff": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "p": 1.0,
+    "n": 11,
+    "lectures": 11
+   }
+  },
+  "without t_only-correct": {
+   "S2m - R5": {
+    "diff": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "p": 1.0,
+    "n": 9,
+    "lectures": 9
+   },
+   "S2m - S1": {
+    "diff": 11.1,
+    "lo": 0.0,
+    "hi": 33.3,
+    "p": 0.6857314268573143,
+    "n": 9,
+    "lectures": 9
+   },
+   "S2m - S2c": {
+    "diff": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "p": 1.0,
+    "n": 9,
+    "lectures": 9
+   },
+   "S2m - R3": {
+    "diff": 22.2,
+    "lo": 0.0,
+    "hi": 55.6,
+    "p": 0.20557944205579443,
+    "n": 9,
+    "lectures": 9
+   },
+   "S2m - R4": {
+    "diff": 22.2,
+    "lo": 0.0,
+    "hi": 55.6,
+    "p": 0.20557944205579443,
+    "n": 9,
+    "lectures": 9
+   },
+   "S3 - S1": {
+    "diff": -22.2,
+    "lo": -55.6,
+    "hi": 0.0,
+    "p": 0.192980701929807,
+    "n": 9,
+    "lectures": 9
+   },
+   "S1t - S1": {
+    "diff": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "p": 1.0,
+    "n": 9,
+    "lectures": 9
+   }
+  }
+ },
+ "sessions": [
+  {
+   "start": "2026-11-03T22:53:07",
+   "split": "dev",
+   "questions": 24,
+   "to_answer": 24,
+   "calls": 276,
+   "reused": 12,
+   "failed": 0,
+   "model_load_seconds": 11.8,
+   "end": "2026-11-03T23:07:46",
+   "status": "done",
+   "ledger_calls": 276,
+   "ledger_seconds": 832.7,
+   "torch_peak_allocated_gb": 11.08,
+   "torch_peak_reserved_gb": 19.82,
+   "gpu": "NVIDIA GeForce RTX 5060 Ti",
+   "gpu_total_gb": 15.93
+  },
+  {
+   "start": "2026-11-03T23:08:06",
+   "split": "dev",
+   "questions": 24,
+   "to_answer": 0,
+   "calls": 0,
+   "reused": 0,
+   "failed": 0,
+   "end": "2026-11-03T23:08:06",
+   "status": "done",
+   "ledger_calls": 276,
+   "ledger_seconds": 832.7,
+   "torch_peak_allocated_gb": 0.0,
+   "torch_peak_reserved_gb": 0.0,
+   "gpu": "NVIDIA GeForce RTX 5060 Ti",
+   "gpu_total_gb": 15.93
+  }
+ ]
+}
