@@ -39,7 +39,7 @@ COLS = ["No.", "Stage", "Experiment", "System (plain name)", "Speech path (Path 
 STAGES = {1: "1. Version 1", 2: "2. Version 2", 3: "3. v3 benchmark check", 4: "4. v3 tuning (dev)",
           5: "5. Head A", 6: "6. Head B", 7: "7. Final locked test", 8: "8. Speech text", 9: "9. Larger answer model (4B)",
           10: "10. Full combination grid", 11: "11. Pooled summaries", 12: "12. Large answer model (Nemotron, API follow-up)",
-          13: "13. Fresh confirmation set (LongVideoBench)"}
+          13: "13. Fresh confirmation set (LongVideoBench)", 14: "14. Lecture study (M3AV)"}
 
 MODELS = {"": "Qwen3-VL-2B", "|ans=4b": "Qwen3-VL-4B", "|ans=nemo": "Nemotron-3.5-Super-VL-120B"}
 
@@ -430,9 +430,73 @@ def manual_rows():
     return R
 
 
+def lecture_rows():
+    """Lecture study on M3AV test (853 questions, 112 lectures), read from the committed reports."""
+    hits = json.loads(Path("reports/m3av/hits_test.json").read_text(encoding="utf-8"))
+    qa = json.loads(Path("reports/m3av/qa_test.json").read_text(encoding="utf-8"))
+    n, vids = hits["questions"], hits["lectures"]
+    bench = ("M3AV (lecture videos)", "recorded conference and course talks with slides", "test (frozen, used once)", n, vids)
+    ha, hb = "hybrid: 3 inside windows + 3 dense whole video", "Head A (trained on M3AV train) over the whole transcript"
+    dense = "dense scan every 2 s, 96 ranked, first 4 distinct pictures"
+    systems = {   # code: (hit report key, name, Path A, Path B, picker, trained)
+        "S0": ("S0 starting design", "Starting framework (v2 design)", "speech rule inside BM25 windows",
+               "scan inside BM25 windows", "top pictures by match to the question", "none"),
+        "S1": ("S1 best framework (also S1t's frames)", "Best framework", "speech rule: MiniLM on lines inside the 4 BM25 windows",
+               ha, "MMR rule on question + options (best framework's picker)", "none"),
+        "S1t": (None, "Best framework + speech text", "speech rule: MiniLM on lines inside the 4 BM25 windows", ha,
+                "MMR rule on question + options (best framework's picker)", "none"),
+        "S2c": ("S2c Head A (CG-Bench)", "Best framework + Head A (trained on CG-Bench)",
+                "Head A (trained on CG-Bench) over the whole transcript", ha, "MMR rule on question + options", "Head A (CG-Bench)"),
+        "S2m": ("S2m Head A (M3AV train)", "Best framework + Head A (trained on lectures)", hb, ha,
+                "MMR rule on question + options", "Head A (M3AV train)"),
+        "S3": ("S3 Head B", "Best framework + Head B", "speech rule: MiniLM on lines inside the 4 BM25 windows", ha,
+               "Head B (trained, chosen version)", "Head B"),
+        "R2": ("R2 4 evenly spaced", "Rule: 4 evenly spaced pictures", "none", "none", "pictures spread evenly over the video", "none"),
+        "R3": ("R3 dense MobileCLIP top-4 (96 ranked)", "Rule: dense MobileCLIP top-4", "none", dense,
+               "top pictures by match to the question", "none"),
+        "R4": ("R4 dense option-aware top-4 (96 ranked)", "Rule: dense option-aware top-4", "none", dense,
+               "best match over question + each option", "none"),
+        "R5": ("R5 VSI-inspired (96 ranked)", "Rule: VSI-inspired subtitle + picture search (not the published VSI)",
+               "subtitle search (MPNet), Gaussian spread", dense, "subtitle score + option-aware picture score", "none")}
+    text = {"S0": "BM25 excerpt, 120 words", "S1t": "speech around the chosen pictures + best lines (word + meaning search), 600 words"}
+    R = []
+
+    def add(stage_exp, code, measure, res, ct, cb, meaning, model="-", txt="none (pictures only)"):
+        key, name, a, b, pick, trained = systems[code]
+        R.append(dict(stage=14, exp=stage_exp, desc=dict(name=f"{code}: {name}", path_a=a, path_b=b, picker=pick, pics="4",
+                                                         text=txt, model=model, trained=trained),
+                      bench=bench[0], vtype=bench[1], qset=bench[2], n=n, vids=vids, measure=measure, res=res, ct=ct, cs=None,
+                      cb=cb, meaning=meaning, sort=("m", f"{len(R):03d}")))
+    l1, l2 = hits["primary"]["L1"], hits["primary"]["L2"]
+    for code, (key, *_ ) in systems.items():
+        if key is None:
+            continue
+        v = hits["systems"][key]["hit@4"]
+        cb, note = None, " Descriptive; only L1 and L2 are confirmatory."
+        if code == "S2m":
+            cb = (l2["diff"], f"{l2['lo']:+.1f} to {l2['hi']:+.1f}", "yes (gain)" if l2["significant_at_0_05"] else "no")
+            note = (f" Confirmatory (Holm over L1 and L2): vs best framework {l2['diff']:+.1f} (Holm p {l2['p_holm']:.4f});"
+                    f" vs R5 {l1['diff']:+.1f} ({l1['lo']:+.1f} to {l1['hi']:+.1f}, Holm p {l1['p_holm']:.2f}): no confirmed difference.")
+        add("lecture locator, primary", code, "source-slide hit@4: at least one picture inside a span where the answer slide is on screen (+-1 s)",
+            v, f"{round(v * n / 100)} / {n}", cb, f"{v}% of {n} lecture questions had a picture on screen with the answer slide.{note}")
+    c = qa["contrasts"]["all"]
+    for code in systems:
+        v = qa["conditions"][code]["accuracy"]
+        cb, note = None, ""
+        if code != "S1" and f"{code} - S1" in c:
+            d = c[f"{code} - S1"]
+            cb = (d["diff"], f"{d['lo']:+.1f} to {d['hi']:+.1f}", "not tested (descriptive)")
+            note = f" vs best framework {d['diff']:+.1f} ({d['lo']:+.1f} to {d['hi']:+.1f}, raw p {d['p']:.4f}, uncorrected)."
+        add("lecture answers, secondary", code, "multiple-choice accuracy (answer letter correct)", v, f"{round(v * n / 100)} / {n}",
+            cb, f"{v}% of {n} lecture questions answered correctly (4B answer model).{note} Secondary and descriptive; the"
+            f" question-only control gets {qa['conditions']['q_only']['accuracy']}% and the transcript-only control"
+            f" {qa['conditions']['t_only']['accuracy']}%.", model="Qwen3-VL-4B", txt=text.get(code, "none (pictures only)"))
+    return R
+
+
 def main() -> None:
     groups = load_rows()
-    rows = manual_rows() + v3_rows(groups) + open_rows()
+    rows = manual_rows() + v3_rows(groups) + open_rows() + lecture_rows()
     order = {"ALL_TEST": 9, "LECTURE_TEST": 10}
     rows.sort(key=lambda r: (r["stage"], r["sort"][0] == "m" and -1 or 0,
                              str(order.get(r["sort"][0], r["sort"][0])), str(r["sort"][1:])))
@@ -487,7 +551,8 @@ def main() -> None:
             ["95% interval / confirmed?", "paired bootstrap over videos; 'yes' when the interval excludes zero"],
             ["Answer model", "frozen vision-language model that reads the pictures and answers (2B small, 4B larger, both local; Nemotron 120B through an API, a follow-up diagnostic). Every comparison uses the same answer model"],
             ["Pooled rows (stage 11)", "the same system over all 459 test questions, or over the 404 lecture test questions"],
-            ["Fresh set (stage 13)", "894 LongVideoBench questions not used before; H1-H4 (reports/v3_confirmation) are the only confirmatory comparisons, all other rows there are descriptive"]]:
+            ["Fresh set (stage 13)", "894 LongVideoBench questions not used before; H1-H4 (reports/v3_confirmation) are the only confirmatory comparisons, all other rows there are descriptive"],
+            ["Lecture study (stage 14)", "853 frozen M3AV test questions (112 lectures). Only L1 (Head A on lectures vs R5) and L2 (vs best framework) on hit@4 are confirmatory (Holm); the answer-accuracy rows are secondary and descriptive, with uncorrected intervals"]]:
         gl.append(line)
     gl.column_dimensions["A"].width, gl.column_dimensions["B"].width = 26, 120
     wb.save(OUT / "all_results.xlsx")

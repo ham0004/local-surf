@@ -1,0 +1,32 @@
+{
+ "records": {
+  "file": "runs/m3av/qa/test/records.jsonl",
+  "rows": 10236,
+  "questions": 853,
+  "conditions": [
+   "S0",
+   "S1",
+   "S1t",
+   "S2c",
+   "S2m",
+   "S3",
+   "R2",
+   "R3",
+   "R4",
+   "R5",
+   "q_only",
+   "t_only"
+  ],
+  "sha256_lf": "78760d3248ccd6e7ba69dbdf420ad88b037340d44c4c60b57b8cd721f65cc51f"
+ },
+ "sessions": {
+  "file": "runs/m3av/qa/test/sessions.jsonl",
+  "sha256_lf": "72d62fe2891f26ba48435853b19ad5490dfb8c1eefae33c258a40ae23dccbf91"
+ },
+ "ledger": {
+  "max_calls": 10236,
+  "max_seconds": 345600.0,
+  "calls": 9893,
+  "seconds": 27386.006713900075
+ }
+}

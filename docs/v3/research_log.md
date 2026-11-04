@@ -1615,3 +1615,105 @@ Where the gain of the best framework with speech (S1t) over the starting design 
     fits in 16 GB needs this qualified.
 - **Estimate.** About 8 h of answer time for 853 test questions, plus pool loading.
 - The 24-question dev accuracies (`reports/m3av/qa_dev.md`) only test the pipeline. They are too few to read.
+
+## Step 92 (2026-11-04): lecture study, secondary answer-model evaluation on test
+- **What ran.** The sealed driver (`scripts/run_m3av_qa_test.sh`, third freeze supplement, step 91) ran the 10
+  systems and the two controls on all 853 test questions (112 lectures): 12 × 853 = 10,236 records. Every
+  condition used the same answer model, Qwen3-VL-4B (pinned revision, bfloat16, greedy), at most 4 frames and the
+  same prompt.
+  - `q_only` is the question-only control: it sees the question and the four options, nothing else.
+  - `t_only` is the transcript-only control: no frames, and 600 transcript words chosen by BM25 search over the
+    whole transcript.
+  - Each question has 4 options, so chance is 25%.
+- **Incident and deviation.** Session 1 started 2026-11-03 17:23 UTC.
+  - **What happened.** After 4,535 records (378 questions; 4,383 new calls, 152 reused, none failed), the
+    `t_only` request for m3av:NIH-D369A:1661.45 raised a driver-level CUDA out-of-memory error. The driver's
+    handler caught it, but its own `torch.cuda.empty_cache()` call raised the same error. The run stopped with no
+    record for that item, and session 1's record (model load, peak memory) was not written.
+  - **Handling.** The run was resumed through the sealed driver with the code unchanged, so the seal stays valid.
+    Session 2 started 2026-11-04 02:59 local time (20:59 UTC) and wrote the remaining 5,701 records without a
+    failure.
+  - **Deviation.** The crashed item was attempted again, although the sealed rule says an out-of-memory item is
+    "a failed record, wrong, never retried". On the second attempt it was answered, and wrongly.
+  - **Sensitivity.** Scoring it as failed instead leaves every accuracy on all questions unchanged, because a
+    failure also counts as wrong. It only removes that question from the "without t_only-correct" mask (322
+    instead of 323 questions). On that mask every contrast moves by at most 0.3 points, and every interval keeps
+    the same sign. For example, S2m − R5 is +5.9 (+1.6..+10.3) and S1t − S1 is −0.9 (−3.8..+2.0).
+- **Ledger.** 9,893 new calls and 343 reused identical requests, 0 failed, 27,386 s (7.6 h) of answer time.
+  - Session 2 peak GPU memory: torch allocated 11.49 GB, reserved 16.8 GB on the 15.93 GB card. Reserved memory
+    again exceeded the card, with spillover into Windows shared memory.
+  - "Runs on one 16 GB GPU" holds only with that qualification. The session-1 crash fits the same pressure.
+- **Accuracy, test (secondary, descriptive).**
+
+  | Condition | All 853 (%) | Without q_only-correct, 416 (%) | Without t_only-correct, 323 (%) |
+  |---|---|---|---|
+  | S0 starting design (120 words) | 79.5 | 69.0 | 65.3 |
+  | S1 best framework | 82.5 | 75.0 | 71.5 |
+  | S1t best framework + 600 words | 83.5 | 75.2 | 70.3 |
+  | S2c Head A (CG-Bench) | 88.2 | 82.2 | 80.8 |
+  | S2m Head A (lectures) | 87.2 | 81.2 | 80.8 |
+  | S3 Head B | 82.8 | 74.3 | 70.6 |
+  | R2 4 evenly spaced | 63.5 | 45.7 | 45.8 |
+  | R3 dense MobileCLIP top-4 | 78.3 | 67.5 | 68.1 |
+  | R4 dense option-aware top-4 | 84.8 | 77.2 | 76.2 |
+  | R5 VSI-inspired | 86.5 | 79.6 | 74.9 |
+  | q_only | 51.2 | 0 (by definition) | 18.3 |
+  | t_only | 62.1 | 36.5 | 0 (by definition) |
+
+- **Contrasts.** Paired bootstrap over lectures, 10,000 resamples, seed 20261101. Points with 95% interval, raw p
+  uncorrected. These 21 cells are outside the Holm family and confirm nothing.
+
+  | Contrast | All 853 | Without q_only-correct (416) | Without t_only-correct (323) |
+  |---|---|---|---|
+  | S2m − R5 | +0.7 (−1.7..+3.0), p 0.58 | +1.7 (−2.1..+5.4), p 0.39 | +5.9 (+1.6..+10.2), p 0.011 |
+  | S2m − S1 | +4.7 (+2.5..+6.9), p 0.0002 | +6.2 (+2.8..+9.7), p 0.0004 | +9.3 (+5.0..+13.6), p 0.0002 |
+  | S2m − S2c | −0.9 (−2.4..+0.5), p 0.22 | −1.0 (−3.4..+1.4), p 0.50 | +0.0 (−3.0..+2.8), p 1 |
+  | S2m − R3 | +8.9 (+5.9..+11.9), p 0.0002 | +13.7 (+9.1..+18.1), p 0.0002 | +12.7 (+7.6..+17.5), p 0.0002 |
+  | S2m − R4 | +2.5 (+0.0..+5.0), p 0.060 | +4.1 (−0.2..+8.2), p 0.066 | +4.6 (+0.3..+9.1), p 0.048 |
+  | S3 − S1 | +0.2 (−1.9..+2.4), p 0.87 | −0.7 (−4.1..+2.7), p 0.72 | −0.9 (−5.6..+3.8), p 0.76 |
+  | S1t − S1 | +0.9 (−0.8..+2.8), p 0.33 | +0.2 (−2.3..+2.8), p 0.93 | −1.2 (−4.1..+1.8), p 0.47 |
+
+- **Reading** (descriptive, in the order the primary results set):
+  - **Answers follow the primary pattern.** S2m answers 4.7 points more questions than S1 on all questions, the
+    same direction as the confirmed hit@4 gain L2 (+5.3). Against R5 there is no confirmed difference on all
+    questions (+0.7, −1.7..+3.0), as in L1.
+  - **One mask favours S2m over R5.** On the mask without t_only-correct questions, S2m − R5 is +5.9
+    (+1.6..+10.2). It is one of 21 uncorrected cells, and the mask is defined by this answer model's own
+    transcript answers. It is a lead to check on another set, not a finding.
+  - **No benefit of lecture training.** S2m − S2c is −0.9 on all questions. Head A trained on CG-Bench answers as
+    many questions as Head A trained on lectures. As in step 91, L2 compares the whole trained locator package
+    with S1.
+  - **No difference for Head B or speech text.** S3 − S1 is +0.2. S1t − S1 is +0.9 (−0.8..+2.8): 600 transcript
+    words on top of S1's frames add no confirmed accuracy here, and they cost 1,507 instead of 180 prompt text
+    tokens.
+  - **The questions are guessable without the video.** The question-only control answers 51.2% (chance 25%) and
+    the transcript-only control 62.1%. 437 questions are answered from the question alone, so accuracy on all
+    questions mixes visual and non-visual items. The masks exist for this reason, but they depend on Qwen3-VL-4B
+    and are not verified visually necessary subsets.
+  - **Hit@4 and accuracy rank the systems alike.** R2 has the lowest hit@4 (22.9) and the lowest accuracy (63.5).
+    R3 is below S1 on both, and S2c, S2m, R4 and R5 lead on both. No item-level link between hits and correct
+    answers is claimed here.
+- **Cost per answer** (medians):
+  - Without text: about 2.4 s, 180 prompt text tokens and 880 visual tokens (4 frames).
+  - S1t: 4.26 s and 1,507 prompt text tokens.
+  - t_only: 3.88 s. q_only: 1.47 s.
+  - Selection cost is in the primary report.
+- **Files.**
+  - Records seal `docs/v3/m3av_qa_test_outputs.json` (records LF sha256
+    `78760d3248ccd6e7ba69dbdf420ad88b037340d44c4c60b57b8cd721f65cc51f`). The seal file itself is LF
+    `5791bcb3659a9c262ea209dcea907f78c521f9385b0b8c1d89075bf69b3db414`, bytes
+    `51b8bbbd9bbcf413a90a055fcb86842b02df081a76d3c7f8c0fb02cc09436678`.
+  - `reports/m3av/qa_test.json`: LF `f65e5c06a5169e8dd5d19c0ff8f657d9d96e125aa2d1e5e5369a1617143e6dd1`, bytes
+    `b1d19db1321dcb791c5e132bd128112650d483e4aeca4656f39b97f7a4b16360`.
+  - `reports/m3av/qa_test.md`: LF `84fdbc9af85462109efbe669f9c4ae5358f80f0b872b275627e087dc0747774e`, bytes
+    `62541ed67d54a8c3a1d66b0c2df3ee85494d8cd306553ef00eaa26d630e039fb`.
+  - The run logs (`runs/m3av/qa_test_run.log`, `runs/m3av/qa_test_run2.log`) and records are local and
+    git-ignored.
+- **Results table.** `docs/report/all_results.*` now has stage 14, the lecture study, built from the two test
+  reports.
+  - The hit@4 rows label only L1 and L2 as confirmatory.
+  - The accuracy rows are labelled secondary, with uncorrected intervals against the best framework.
+- **Next.**
+  - The auditor checks this step and the deviation.
+  - The owner arranges the blind human review of the 100 packets (P105).
+  - Writing targets ICMR (31 Jan 2027) or a workshop rather than CVPR main.
