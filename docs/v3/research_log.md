@@ -1862,3 +1862,9 @@ Where the gain of the best framework with speech (S1t) over the starting design 
      B) under a fresh held-out protocol.
 
   No redesign is evaluated on the revealed test.
+- **Closure (P133-P139).** The auditor closed P121, P122 and P126, and with them the reporting for P110-P113.
+  - Two editorial fixes followed (P137). EXPERIMENTS row 16 now says the full-cohort results and the sensitivity
+    interpretation are unchanged, with the transcript-only mask at 322 instead of 323 questions. Current state
+    names the 459-question set as the earlier mixed benchmark (404 of its questions are Video-MMMU lectures).
+  - Still open, scientifically: the blind human review (owner), then lecture evidence-loss diagnostics and
+    resource profiling on dev.
