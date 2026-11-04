@@ -42,14 +42,16 @@
  "logs": [
   {
    "file": "runs/m3av/qa_test_run.log",
-   "sha256_lf": "26740b262df87263200972494ae9cc897dc171f38b9a8f59d954c59577f2a8e5",
+   "sha256_bytes": "26740b262df87263200972494ae9cc897dc171f38b9a8f59d954c59577f2a8e5",
+   "sha256_lf": "c87faaff041de06167f00ae71a9bef795ad32de9e106f0b8bd67a74a59f9a85a",
    "oom_errors": 2,
    "oom_inside_handler": 1,
    "ends": "exit 1"
   },
   {
    "file": "runs/m3av/qa_test_run2.log",
-   "sha256_lf": "fac48bbdf5a8068f1afbd8fc55341b8ef55a9b31858ba71cec285ea65cae7c09",
+   "sha256_bytes": "fac48bbdf5a8068f1afbd8fc55341b8ef55a9b31858ba71cec285ea65cae7c09",
+   "sha256_lf": "6e021519d5cb7f17e45d90ad3f8d12d2f059d1e21cb25b173daa6f07dac178b6",
    "oom_errors": 0,
    "oom_inside_handler": 0,
    "ends": "M3AV TEST QA DONE"

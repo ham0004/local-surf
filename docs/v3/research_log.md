@@ -1770,7 +1770,9 @@ Where the gain of the best framework with speech (S1t) over the starting design 
       within groups differs.
   - The controls show that this answer model answers many questions without the video. They do not show that each
     question a control answers correctly is non-visual. The masks remain Qwen3-VL-4B-dependent.
-  - S2m − R4 +2.5 (+0.0..+5.0), raw p 0.060, is not a positive effect: its interval reaches zero.
+  - S2m − R4 has a positive point estimate, +2.5 points, but **no confirmed positive effect**. The displayed
+    interval is +0.0 to +5.0 and raw p is about 0.060; it stays descriptive. (Wording corrected in step 94; it read
+    "is not a positive effect: its interval reaches zero".)
   - In the sensitivity paragraph:
     - "every contrast moves by at most 0.3 points" should be **about 0.34 points at most** (largest: S2m − S1,
       +0.3394; 0.3 at displayed precision);
@@ -1803,3 +1805,60 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   out-of-memory handler is a change for future runs only. It must be checked on dev or a synthetic case and
   cannot cause a replacement test run.
 - **Still open.** The blind human review of the 100 packets (P100, P105) is up to the owner.
+
+## Step 94 (2026-11-05): last reporting corrections (auditor P118-P132); project overview updated
+- **Audit (P118-P120).** The auditor reproduced all 42 appendix entries and the accounting, and confirmed that the
+  original records, seal, report and frozen code are unchanged. P112 and P113 are closed. Two finite corrections
+  remained, and both are made here. No answer-model run was needed or done.
+- **Log hashes (P121).**
+  - **The problem.** The first appendix labelled both run-log hashes `sha256_lf`. They were in fact raw-byte
+    hashes, because the frozen helper `sha()` normalizes line ends only for its listed text suffixes, and `.log`
+    is not one of them. The logs did not change.
+  - **The fix.** `scripts/m3av_qa_deviation.py` now computes both conventions for the logs itself; the frozen
+    helper is unchanged. It lists them in the Markdown and says "one recorded crash and one recorded restart"
+    instead of "no other restart happened".
+  - **New hashes:** `qa_test_run.log` bytes `26740b262df87263200972494ae9cc897dc171f38b9a8f59d954c59577f2a8e5`,
+    LF `c87faaff041de06167f00ae71a9bef795ad32de9e106f0b8bd67a74a59f9a85a`; `qa_test_run2.log` bytes
+    `fac48bbdf5a8068f1afbd8fc55341b8ef55a9b31858ba71cec285ea65cae7c09`, LF
+    `6e021519d5cb7f17e45d90ad3f8d12d2f059d1e21cb25b173daa6f07dac178b6`.
+  - **Nothing else changed.** Apart from the log hash fields, the regenerated JSON is identical to the previous
+    version.
+  - **Appendix hashes.**
+    - New: `.md` LF `36237ff8e4423a5af8961de7c37fee7205ac461676e4e67d4c6b806b57c55ac5`, bytes
+      `48bf16e53ea7e399f82ea89a009c3a54f811d2524b21a17ba2899a65fd2e321e`; `.json` LF
+      `bb28a031a98129c17dd96431a2ba611642d7bed36f26a8271201b137fcf126cd`, bytes
+      `ce9bc3a4c1d475fc68d30d8f4a200bce0a2a52e066f348d265062accb47c1f4d`.
+    - Previous (step 93, commit f1fe824, kept in git history): `.md` LF `e8e64290…`, `.json` LF `d42fd725…`.
+- **Wording (P122).** In step 93, S2m − R4 now reads: a positive point estimate (+2.5) but **no confirmed positive
+  effect** (+0.0 to +5.0, raw p about 0.060), descriptive. The old sentence is quoted there. A rounded interval
+  endpoint does not show a zero or negative true effect.
+- **Project overview (P126).**
+  - **`README.md`:**
+    - The opening now separates local answering from API-based question generation and the 120B follow-ups. It
+      qualifies the 16 GB claim: peak reserved 16.8 of 15.93 GiB, one out-of-memory restart, strict residence not
+      shown.
+    - Head A's "under confirmation" is replaced by the fresh-set result (no confirmed gain).
+    - A lecture-study section gives the confirmed narrow result (S2m − S1 +5.3 hit@4), the absent advantage over
+      R5, the descriptive answer results, and the proxy and human-review limits.
+    - The licence line is corrected: Video-MMMU annotations are CC BY-NC-ND 4.0 per the maintainers (raised
+      earlier as auditor P15), and M3AV is added.
+  - **`docs/EXPERIMENTS.md`:**
+    - Row 12 now says the oracle is complete (best of 5 placements, no text, CG-Bench test: 2B 70.9, 4B 61.8,
+      Nemotron 81.8), described as a lenient diagnostic, not an attainable ceiling.
+    - New rows 15 (lecture primary) and 16 (lecture answers, secondary).
+  - **Current state** (collaboration file):
+    - It now covers the lecture result and the goal question: the owner's CVPR choice, against the ICMR or
+      workshop recommendation.
+    - It names the biggest gap: human-validated, question-specific visual evidence.
+- **Auditor's system verdict (P123-P125), recorded.**
+  - **What holds:** the frozen locator package improves lecture frame selection over S1.
+  - **What does not:** it has no demonstrated advantage over R5, and lecture-specific training and Head B show no
+    confirmed incremental benefit.
+  - **Not measured:** the dominant lecture failure stage.
+- **Recommended order.**
+  1. Blind human review.
+  2. A lecture evidence-loss breakdown and resource profile, with decisions on dev only.
+  3. Then at most one redesign (visible slide-state ranking for Head A, or set-conditioned fact coverage for Head
+     B) under a fresh held-out protocol.
+
+  No redesign is evaluated on the revealed test.

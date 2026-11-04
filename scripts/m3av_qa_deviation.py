@@ -13,6 +13,7 @@ unknown control left out of the t_only mask).
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import statistics
 import sys
@@ -52,7 +53,8 @@ def main() -> None:
     for r in first:
         per_q[r["qa_id"]] = per_q.get(r["qa_id"], 0) + 1
     logs = [p.read_text(encoding="utf-8", errors="replace") for p in LOGS]
-    log_facts = [{"file": p.as_posix(), "sha256_lf": sha(p), "oom_errors": t.count(OOM),
+    log_facts = [{"file": p.as_posix(), "sha256_bytes": hashlib.sha256(p.read_bytes()).hexdigest(),
+                  "sha256_lf": hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest(), "oom_errors": t.count(OOM),
                   "oom_inside_handler": t.count("During handling of the above exception"),
                   "ends": [x for x in t.strip().splitlines() if x.strip()][-1]} for p, t in zip(LOGS, logs)]
     if log_facts[0]["oom_errors"] != 2 or log_facts[0]["oom_inside_handler"] != 1 or log_facts[1]["oom_errors"]:
@@ -149,8 +151,10 @@ def main() -> None:
              f"{out['session_1']['questions_touched']} ({out['session_1']['questions_touched']} touched). Its session "
              "summary (model load, peak memory) is unavailable.",
              f"- **Logs:** `{LOGS[0].as_posix()}` (one out-of-memory error, a second one inside the handler, ends "
-             f"`{log_facts[0]['ends']}`); `{LOGS[1].as_posix()}` (no error, ends `{log_facts[1]['ends']}`). One crash and one "
-             "restart; no other restart happened.", "",
+             f"`{log_facts[0]['ends']}`); `{LOGS[1].as_posix()}` (no error, ends `{log_facts[1]['ends']}`). One recorded crash and one "
+             "recorded restart.",
+             "- **Log hashes** (SHA-256 of the raw bytes, and after CRLF to LF): " + "; ".join(
+                 f"`{x['file']}` bytes `{x['sha256_bytes']}`, LF `{x['sha256_lf']}`" for x in log_facts) + ".", "",
              "## Failures and calls", "",
              "| | Count |", "|---|---:|",
              f"| saved rows | {len(rows):,} |",

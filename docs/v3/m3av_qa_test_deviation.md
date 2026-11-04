@@ -8,7 +8,8 @@ Additive appendix to `reports/m3av/qa_test.{json,md}` (auditor P109-P110, P113).
 - **Sealed rule** (third freeze supplement): "CUDA out of memory: a failed record, wrong, never retried; any other error stops the run without a record (unattempted, missing); no fallback model, precision or resolution".
 - **What happened:** session 1: a driver-level CUDA out-of-memory error during generation; the handler caught it, then its own torch.cuda.empty_cache() raised the same error, so no record and no ledger charge were written and the run stopped (exit 1). One restart (session 2) through the unchanged sealed driver attempted the same request again and answered it (wrong). The retry is a protocol deviation; the original records, seal and report are kept unchanged.
 - **Session 1** wrote 4,535 rows: 377 complete questions plus 11 conditions of question 378 (378 touched). Its session summary (model load, peak memory) is unavailable.
-- **Logs:** `runs/m3av/qa_test_run.log` (one out-of-memory error, a second one inside the handler, ends `exit 1`); `runs/m3av/qa_test_run2.log` (no error, ends `M3AV TEST QA DONE`). One crash and one restart; no other restart happened.
+- **Logs:** `runs/m3av/qa_test_run.log` (one out-of-memory error, a second one inside the handler, ends `exit 1`); `runs/m3av/qa_test_run2.log` (no error, ends `M3AV TEST QA DONE`). One recorded crash and one recorded restart.
+- **Log hashes** (SHA-256 of the raw bytes, and after CRLF to LF): `runs/m3av/qa_test_run.log` bytes `26740b262df87263200972494ae9cc897dc171f38b9a8f59d954c59577f2a8e5`, LF `c87faaff041de06167f00ae71a9bef795ad32de9e106f0b8bd67a74a59f9a85a`; `runs/m3av/qa_test_run2.log` bytes `fac48bbdf5a8068f1afbd8fc55341b8ef55a9b31858ba71cec285ea65cae7c09`, LF `6e021519d5cb7f17e45d90ad3f8d12d2f059d1e21cb25b173daa6f07dac178b6`.
 
 ## Failures and calls
 
