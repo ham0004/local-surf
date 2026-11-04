@@ -201,3 +201,8 @@ All other comparisons are secondary and uncorrected.
   - **Analysis.** Descriptive only, not part of the primary Holm family. Accuracy is reported on all questions and
     on two common masks, without the questions `q_only` answers correctly and without those `t_only` answers
     correctly. The contrasts are S2m − R5, S2m − S1, S2m − S2c, S2m − R3, S2m − R4, S3 − S1 and S1t − S1.
+- 2026-11-04, execution deviation in the secondary answer-model run on test (auditor P109-P110). One `t_only`
+  request (m3av:NIH-D369A:1661.45) ran out of GPU memory, the handler failed too, and no record was written. The
+  restart attempted it again, against the rule "failed, never retried". The records, seal and report are kept as
+  run. The crash-as-failed sensitivity (all-question results unchanged; t_only mask 322 instead of 323 questions)
+  and the complete call and resource accounting are in `docs/v3/m3av_qa_test_deviation.md`.

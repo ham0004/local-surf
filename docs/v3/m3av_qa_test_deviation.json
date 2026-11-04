@@ -1,0 +1,611 @@
+{
+ "item": {
+  "condition": "t_only",
+  "qa_id": "m3av:NIH-D369A:1661.45",
+  "lecture": "NIH-D369A"
+ },
+ "sealed_rule": "CUDA out of memory: a failed record, wrong, never retried; any other error stops the run without a record (unattempted, missing); no fallback model, precision or resolution",
+ "what_happened": "session 1: a driver-level CUDA out-of-memory error during generation; the handler caught it, then its own torch.cuda.empty_cache() raised the same error, so no record and no ledger charge were written and the run stopped (exit 1). One restart (session 2) through the unchanged sealed driver attempted the same request again and answered it (wrong). The retry is a protocol deviation; the original records, seal and report are kept unchanged.",
+ "re_answer": {
+  "option": 2,
+  "correct": false,
+  "failed": null,
+  "answer_seconds": 4.399,
+  "text_words": 588,
+  "prompt_text_tokens": 1427,
+  "generated_tokens": 64
+ },
+ "session_1": {
+  "rows_written": 4535,
+  "complete_questions": 377,
+  "questions_touched": 378,
+  "summary": "unavailable (not written before the crash; not substituted by session 2)"
+ },
+ "session_2": {
+  "start": "2026-11-04T02:59:44",
+  "split": "test",
+  "questions": 853,
+  "to_answer": 476,
+  "calls": 5510,
+  "reused": 191,
+  "failed": 0,
+  "model_load_seconds": 8.5,
+  "end": "2026-11-04T07:14:13",
+  "status": "done",
+  "ledger_calls": 9893,
+  "ledger_seconds": 27386.0,
+  "torch_peak_allocated_gb": 11.49,
+  "torch_peak_reserved_gb": 16.8,
+  "gpu": "NVIDIA GeForce RTX 5060 Ti",
+  "gpu_total_gb": 15.93
+ },
+ "logs": [
+  {
+   "file": "runs/m3av/qa_test_run.log",
+   "sha256_lf": "26740b262df87263200972494ae9cc897dc171f38b9a8f59d954c59577f2a8e5",
+   "oom_errors": 2,
+   "oom_inside_handler": 1,
+   "ends": "exit 1"
+  },
+  {
+   "file": "runs/m3av/qa_test_run2.log",
+   "sha256_lf": "fac48bbdf5a8068f1afbd8fc55341b8ef55a9b31858ba71cec285ea65cae7c09",
+   "oom_errors": 0,
+   "oom_inside_handler": 0,
+   "ends": "M3AV TEST QA DONE"
+  }
+ ],
+ "accounting": {
+  "saved_rows": 10236,
+  "saved_failed_rows": 0,
+  "physical_failed_attempts_known": 1,
+  "ledger_charged_new_calls": 9893,
+  "reused_rows": 343,
+  "attempted_answer_calls_at_least": 9894,
+  "ledger_answer_seconds": 27386.0,
+  "note": "ledger seconds cover completed new calls only: the failed attempt, model loading, pool loading, selection and restart time are not included, so this is not end-to-end runtime"
+ },
+ "memory_gib": {
+  "note": "session 2 only; torch.cuda.max_memory_allocated / max_memory_reserved divided by 2^30 (GiB; the report's 'gb' keys are GiB). Allocated = tensor storage; reserved = memory held by the caching allocator. Neither measures dedicated versus Windows shared residency; shared-memory backing is a plausible explanation for reserved above the card, not a measurement. Session 1 peak: unavailable",
+  "allocated": 11.49,
+  "reserved": 16.8,
+  "device_total": 15.93
+ },
+ "answer_seconds_median": {
+  "S0": {
+   "all_rows": 2.985,
+   "new_calls_only": 2.985
+  },
+  "S1": {
+   "all_rows": 2.41,
+   "new_calls_only": 2.41
+  },
+  "S1t": {
+   "all_rows": 4.264,
+   "new_calls_only": 4.264
+  },
+  "S2c": {
+   "all_rows": 2.365,
+   "new_calls_only": 2.365
+  },
+  "S2m": {
+   "all_rows": 2.363,
+   "new_calls_only": 2.335
+  },
+  "S3": {
+   "all_rows": 2.464,
+   "new_calls_only": 2.461
+  },
+  "R2": {
+   "all_rows": 2.646,
+   "new_calls_only": 2.646
+  },
+  "R3": {
+   "all_rows": 2.476,
+   "new_calls_only": 2.476
+  },
+  "R4": {
+   "all_rows": 2.414,
+   "new_calls_only": 2.396
+  },
+  "R5": {
+   "all_rows": 2.353,
+   "new_calls_only": 2.353
+  },
+  "q_only": {
+   "all_rows": 1.469,
+   "new_calls_only": 1.469
+  },
+  "t_only": {
+   "all_rows": 3.88,
+   "new_calls_only": 3.88
+  }
+ },
+ "answer_seconds_note": "time of the answer-model call (generation, incl. input processing), not end-to-end latency; reused rows copy the originating call's time",
+ "sensitivity": {
+  "all": {
+   "as_run": {
+    "questions": 853,
+    "lectures": 112
+   },
+   "crash_as_failed": {
+    "questions": 853,
+    "lectures": 112
+   },
+   "contrasts": [
+    {
+     "contrast": "S2m - R5",
+     "as_run": {
+      "diff": 0.7,
+      "lo": -1.7,
+      "hi": 3.0,
+      "p": 0.5763423657634237,
+      "n": 853,
+      "lectures": 112
+     },
+     "crash_as_failed": {
+      "diff": 0.7,
+      "lo": -1.7,
+      "hi": 3.0,
+      "p": 0.5763423657634237,
+      "n": 853,
+      "lectures": 112
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S2m - S1",
+     "as_run": {
+      "diff": 4.7,
+      "lo": 2.5,
+      "hi": 6.9,
+      "p": 0.00019998000199980003,
+      "n": 853,
+      "lectures": 112
+     },
+     "crash_as_failed": {
+      "diff": 4.7,
+      "lo": 2.5,
+      "hi": 6.9,
+      "p": 0.00019998000199980003,
+      "n": 853,
+      "lectures": 112
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S2m - S2c",
+     "as_run": {
+      "diff": -0.9,
+      "lo": -2.4,
+      "hi": 0.5,
+      "p": 0.22477752224777522,
+      "n": 853,
+      "lectures": 112
+     },
+     "crash_as_failed": {
+      "diff": -0.9,
+      "lo": -2.4,
+      "hi": 0.5,
+      "p": 0.22477752224777522,
+      "n": 853,
+      "lectures": 112
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S2m - R3",
+     "as_run": {
+      "diff": 8.9,
+      "lo": 5.9,
+      "hi": 11.9,
+      "p": 0.00019998000199980003,
+      "n": 853,
+      "lectures": 112
+     },
+     "crash_as_failed": {
+      "diff": 8.9,
+      "lo": 5.9,
+      "hi": 11.9,
+      "p": 0.00019998000199980003,
+      "n": 853,
+      "lectures": 112
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S2m - R4",
+     "as_run": {
+      "diff": 2.5,
+      "lo": 0.0,
+      "hi": 5.0,
+      "p": 0.05979402059794021,
+      "n": 853,
+      "lectures": 112
+     },
+     "crash_as_failed": {
+      "diff": 2.5,
+      "lo": 0.0,
+      "hi": 5.0,
+      "p": 0.05979402059794021,
+      "n": 853,
+      "lectures": 112
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S3 - S1",
+     "as_run": {
+      "diff": 0.2,
+      "lo": -1.9,
+      "hi": 2.4,
+      "p": 0.8685131486851315,
+      "n": 853,
+      "lectures": 112
+     },
+     "crash_as_failed": {
+      "diff": 0.2,
+      "lo": -1.9,
+      "hi": 2.4,
+      "p": 0.8685131486851315,
+      "n": 853,
+      "lectures": 112
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S1t - S1",
+     "as_run": {
+      "diff": 0.9,
+      "lo": -0.8,
+      "hi": 2.8,
+      "p": 0.3311668833116688,
+      "n": 853,
+      "lectures": 112
+     },
+     "crash_as_failed": {
+      "diff": 0.9,
+      "lo": -0.8,
+      "hi": 2.8,
+      "p": 0.3311668833116688,
+      "n": 853,
+      "lectures": 112
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    }
+   ]
+  },
+  "without q_only-correct": {
+   "as_run": {
+    "questions": 416,
+    "lectures": 109
+   },
+   "crash_as_failed": {
+    "questions": 416,
+    "lectures": 109
+   },
+   "contrasts": [
+    {
+     "contrast": "S2m - R5",
+     "as_run": {
+      "diff": 1.7,
+      "lo": -2.1,
+      "hi": 5.4,
+      "p": 0.39116088391160886,
+      "n": 416,
+      "lectures": 109
+     },
+     "crash_as_failed": {
+      "diff": 1.7,
+      "lo": -2.1,
+      "hi": 5.4,
+      "p": 0.39116088391160886,
+      "n": 416,
+      "lectures": 109
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S2m - S1",
+     "as_run": {
+      "diff": 6.2,
+      "lo": 2.8,
+      "hi": 9.7,
+      "p": 0.00039996000399960006,
+      "n": 416,
+      "lectures": 109
+     },
+     "crash_as_failed": {
+      "diff": 6.2,
+      "lo": 2.8,
+      "hi": 9.7,
+      "p": 0.00039996000399960006,
+      "n": 416,
+      "lectures": 109
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S2m - S2c",
+     "as_run": {
+      "diff": -1.0,
+      "lo": -3.4,
+      "hi": 1.4,
+      "p": 0.49535046495350465,
+      "n": 416,
+      "lectures": 109
+     },
+     "crash_as_failed": {
+      "diff": -1.0,
+      "lo": -3.4,
+      "hi": 1.4,
+      "p": 0.49535046495350465,
+      "n": 416,
+      "lectures": 109
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S2m - R3",
+     "as_run": {
+      "diff": 13.7,
+      "lo": 9.1,
+      "hi": 18.1,
+      "p": 0.00019998000199980003,
+      "n": 416,
+      "lectures": 109
+     },
+     "crash_as_failed": {
+      "diff": 13.7,
+      "lo": 9.1,
+      "hi": 18.1,
+      "p": 0.00019998000199980003,
+      "n": 416,
+      "lectures": 109
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S2m - R4",
+     "as_run": {
+      "diff": 4.1,
+      "lo": -0.2,
+      "hi": 8.2,
+      "p": 0.0655934406559344,
+      "n": 416,
+      "lectures": 109
+     },
+     "crash_as_failed": {
+      "diff": 4.1,
+      "lo": -0.2,
+      "hi": 8.2,
+      "p": 0.0655934406559344,
+      "n": 416,
+      "lectures": 109
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S3 - S1",
+     "as_run": {
+      "diff": -0.7,
+      "lo": -4.1,
+      "hi": 2.7,
+      "p": 0.7243275672432756,
+      "n": 416,
+      "lectures": 109
+     },
+     "crash_as_failed": {
+      "diff": -0.7,
+      "lo": -4.1,
+      "hi": 2.7,
+      "p": 0.7243275672432756,
+      "n": 416,
+      "lectures": 109
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S1t - S1",
+     "as_run": {
+      "diff": 0.2,
+      "lo": -2.3,
+      "hi": 2.8,
+      "p": 0.9321067893210679,
+      "n": 416,
+      "lectures": 109
+     },
+     "crash_as_failed": {
+      "diff": 0.2,
+      "lo": -2.3,
+      "hi": 2.8,
+      "p": 0.9321067893210679,
+      "n": 416,
+      "lectures": 109
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    }
+   ]
+  },
+  "without t_only-correct": {
+   "as_run": {
+    "questions": 323,
+    "lectures": 104
+   },
+   "crash_as_failed": {
+    "questions": 322,
+    "lectures": 104
+   },
+   "contrasts": [
+    {
+     "contrast": "S2m - R5",
+     "as_run": {
+      "diff": 5.9,
+      "lo": 1.6,
+      "hi": 10.2,
+      "p": 0.011198880111988802,
+      "n": 323,
+      "lectures": 104
+     },
+     "crash_as_failed": {
+      "diff": 5.9,
+      "lo": 1.6,
+      "hi": 10.3,
+      "p": 0.011198880111988802,
+      "n": 322,
+      "lectures": 104
+     },
+     "point_change": 0.0183,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S2m - S1",
+     "as_run": {
+      "diff": 9.3,
+      "lo": 5.0,
+      "hi": 13.6,
+      "p": 0.00019998000199980003,
+      "n": 323,
+      "lectures": 104
+     },
+     "crash_as_failed": {
+      "diff": 9.6,
+      "lo": 5.4,
+      "hi": 13.8,
+      "p": 0.00019998000199980003,
+      "n": 322,
+      "lectures": 104
+     },
+     "point_change": 0.3394,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S2m - S2c",
+     "as_run": {
+      "diff": 0.0,
+      "lo": -3.0,
+      "hi": 2.8,
+      "p": 1.0,
+      "n": 323,
+      "lectures": 104
+     },
+     "crash_as_failed": {
+      "diff": 0.0,
+      "lo": -3.0,
+      "hi": 2.8,
+      "p": 1.0,
+      "n": 322,
+      "lectures": 104
+     },
+     "point_change": 0.0,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S2m - R3",
+     "as_run": {
+      "diff": 12.7,
+      "lo": 7.6,
+      "hi": 17.5,
+      "p": 0.00019998000199980003,
+      "n": 323,
+      "lectures": 104
+     },
+     "crash_as_failed": {
+      "diff": 12.7,
+      "lo": 7.6,
+      "hi": 17.6,
+      "p": 0.00019998000199980003,
+      "n": 322,
+      "lectures": 104
+     },
+     "point_change": 0.0394,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S2m - R4",
+     "as_run": {
+      "diff": 4.6,
+      "lo": 0.3,
+      "hi": 9.1,
+      "p": 0.04839516048395161,
+      "n": 323,
+      "lectures": 104
+     },
+     "crash_as_failed": {
+      "diff": 4.7,
+      "lo": 0.3,
+      "hi": 9.1,
+      "p": 0.04839516048395161,
+      "n": 322,
+      "lectures": 104
+     },
+     "point_change": 0.0144,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S3 - S1",
+     "as_run": {
+      "diff": -0.9,
+      "lo": -5.6,
+      "hi": 3.8,
+      "p": 0.7621237876212379,
+      "n": 323,
+      "lectures": 104
+     },
+     "crash_as_failed": {
+      "diff": -0.9,
+      "lo": -5.7,
+      "hi": 3.8,
+      "p": 0.7621237876212379,
+      "n": 322,
+      "lectures": 104
+     },
+     "point_change": -0.0029,
+     "same_zero_crossing": true
+    },
+    {
+     "contrast": "S1t - S1",
+     "as_run": {
+      "diff": -1.2,
+      "lo": -4.1,
+      "hi": 1.8,
+      "p": 0.46795320467953205,
+      "n": 323,
+      "lectures": 104
+     },
+     "crash_as_failed": {
+      "diff": -0.9,
+      "lo": -3.8,
+      "hi": 2.0,
+      "p": 0.585941405859414,
+      "n": 322,
+      "lectures": 104
+     },
+     "point_change": 0.3067,
+     "same_zero_crossing": true
+    }
+   ]
+  }
+ },
+ "largest_point_change": 0.3394,
+ "inputs": {
+  "records_sha256_lf": "78760d3248ccd6e7ba69dbdf420ad88b037340d44c4c60b57b8cd721f65cc51f",
+  "outputs_seal_sha256_lf": "5791bcb3659a9c262ea209dcea907f78c521f9385b0b8c1d89075bf69b3db414",
+  "report_json_sha256_lf": "f65e5c06a5169e8dd5d19c0ff8f657d9d96e125aa2d1e5e5369a1617143e6dd1",
+  "report_md_sha256_lf": "84fdbc9af85462109efbe669f9c4ae5358f80f0b872b275627e087dc0747774e"
+ }
+}

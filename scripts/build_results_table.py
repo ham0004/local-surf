@@ -436,6 +436,10 @@ def lecture_rows():
     qa = json.loads(Path("reports/m3av/qa_test.json").read_text(encoding="utf-8"))
     n, vids = hits["questions"], hits["lectures"]
     bench = ("M3AV (lecture videos)", "recorded conference and course talks with slides", "test (frozen, used once)", n, vids)
+    qset_qa = ("test (frozen, used once; one control answer re-attempted after a crash, "
+               "docs/v3/m3av_qa_test_deviation.md)")
+    more = (" Summary row: the controls, the two control masks and the S-src sensitivity are in reports/m3av/hits_test.md,"
+            " reports/m3av/qa_test.md and docs/v3/m3av_qa_test_deviation.md.")
     ha, hb = "hybrid: 3 inside windows + 3 dense whole video", "Head A (trained on M3AV train) over the whole transcript"
     dense = "dense scan every 2 s, 96 ranked, first 4 distinct pictures"
     systems = {   # code: (hit report key, name, Path A, Path B, picker, trained)
@@ -461,11 +465,11 @@ def lecture_rows():
     text = {"S0": "BM25 excerpt, 120 words", "S1t": "speech around the chosen pictures + best lines (word + meaning search), 600 words"}
     R = []
 
-    def add(stage_exp, code, measure, res, ct, cb, meaning, model="-", txt="none (pictures only)"):
+    def add(stage_exp, code, measure, res, ct, cb, meaning, pics, model="-", txt="none (pictures only)", qset=bench[2]):
         key, name, a, b, pick, trained = systems[code]
-        R.append(dict(stage=14, exp=stage_exp, desc=dict(name=f"{code}: {name}", path_a=a, path_b=b, picker=pick, pics="4",
-                                                         text=txt, model=model, trained=trained),
-                      bench=bench[0], vtype=bench[1], qset=bench[2], n=n, vids=vids, measure=measure, res=res, ct=ct, cs=None,
+        R.append(dict(stage=14, exp=stage_exp, desc=dict(name=f"{code}: {name}", path_a=a, path_b=b, picker=pick,
+                                                         pics=f"up to 4 (mean {pics})", text=txt, model=model, trained=trained),
+                      bench=bench[0], vtype=bench[1], qset=qset, n=n, vids=vids, measure=measure, res=res, ct=ct, cs=None,
                       cb=cb, meaning=meaning, sort=("m", f"{len(R):03d}")))
     l1, l2 = hits["primary"]["L1"], hits["primary"]["L2"]
     for code, (key, *_ ) in systems.items():
@@ -477,8 +481,11 @@ def lecture_rows():
             cb = (l2["diff"], f"{l2['lo']:+.1f} to {l2['hi']:+.1f}", "yes (gain)" if l2["significant_at_0_05"] else "no")
             note = (f" Confirmatory (Holm over L1 and L2): vs best framework {l2['diff']:+.1f} (Holm p {l2['p_holm']:.4f});"
                     f" vs R5 {l1['diff']:+.1f} ({l1['lo']:+.1f} to {l1['hi']:+.1f}, Holm p {l1['p_holm']:.2f}): no confirmed difference.")
-        add("lecture locator, primary", code, "source-slide hit@4: at least one picture inside a span where the answer slide is on screen (+-1 s)",
-            v, f"{round(v * n / 100)} / {n}", cb, f"{v}% of {n} lecture questions had a picture on screen with the answer slide.{note}")
+        add("lecture locator, primary", code, "source-slide interval hit@4 (automatic visibility proxy): at least one picture"
+            " inside an automatically labelled interval where the question's source slide is on screen (+-1 s)",
+            v, f"{round(v * n / 100)} / {n}", cb, f"{v}% of {n} lecture questions had at least one picture inside an automatic"
+            f" source-slide interval (a visibility proxy with known false matches, not verified slide or fact"
+            f" visibility).{note}{more}", hits["systems"][key]["mean"])
     c = qa["contrasts"]["all"]
     for code in systems:
         v = qa["conditions"][code]["accuracy"]
@@ -487,10 +494,15 @@ def lecture_rows():
             d = c[f"{code} - S1"]
             cb = (d["diff"], f"{d['lo']:+.1f} to {d['hi']:+.1f}", "not tested (descriptive)")
             note = f" vs best framework {d['diff']:+.1f} ({d['lo']:+.1f} to {d['hi']:+.1f}, raw p {d['p']:.4f}, uncorrected)."
+            if code == "S2m":
+                e = c["S2m - R5"]
+                note += (f" vs R5, the strongest training-free rule: {e['diff']:+.1f} ({e['lo']:+.1f} to {e['hi']:+.1f},"
+                         f" raw p {e['p']:.2f}): no confirmed difference.")
         add("lecture answers, secondary", code, "multiple-choice accuracy (answer letter correct)", v, f"{round(v * n / 100)} / {n}",
             cb, f"{v}% of {n} lecture questions answered correctly (4B answer model).{note} Secondary and descriptive; the"
             f" question-only control gets {qa['conditions']['q_only']['accuracy']}% and the transcript-only control"
-            f" {qa['conditions']['t_only']['accuracy']}%.", model="Qwen3-VL-4B", txt=text.get(code, "none (pictures only)"))
+            f" {qa['conditions']['t_only']['accuracy']}%.{more}", qa["conditions"][code]["frames_mean"], model="Qwen3-VL-4B",
+            txt=text.get(code, "none (pictures only)"), qset=qset_qa)
     return R
 
 
@@ -552,7 +564,7 @@ def main() -> None:
             ["Answer model", "frozen vision-language model that reads the pictures and answers (2B small, 4B larger, both local; Nemotron 120B through an API, a follow-up diagnostic). Every comparison uses the same answer model"],
             ["Pooled rows (stage 11)", "the same system over all 459 test questions, or over the 404 lecture test questions"],
             ["Fresh set (stage 13)", "894 LongVideoBench questions not used before; H1-H4 (reports/v3_confirmation) are the only confirmatory comparisons, all other rows there are descriptive"],
-            ["Lecture study (stage 14)", "853 frozen M3AV test questions (112 lectures). Only L1 (Head A on lectures vs R5) and L2 (vs best framework) on hit@4 are confirmatory (Holm); the answer-accuracy rows are secondary and descriptive, with uncorrected intervals"]]:
+            ["Lecture study (stage 14)", "853 frozen M3AV test questions (112 lectures). Only L1 (Head A on lectures vs R5) and L2 (vs best framework) on source-slide interval hit@4, an automatic visibility proxy, are confirmatory (Holm); the answer-accuracy rows are secondary and descriptive, with uncorrected intervals"]]:
         gl.append(line)
     gl.column_dimensions["A"].width, gl.column_dimensions["B"].width = 26, 120
     wb.save(OUT / "all_results.xlsx")
