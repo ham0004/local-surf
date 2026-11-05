@@ -1,0 +1,251 @@
+{
+ "split": "dev",
+ "questions": 514,
+ "lectures": 96,
+ "labels": "automatic source-slide intervals (visibility proxy, known false matches); not human-verified",
+ "systems": {
+  "S0": {
+   "pool": "v2",
+   "pool_is_the_chosen_frames": false,
+   "candidates_mean": 8.6,
+   "candidates_median": 9.0,
+   "in_pool": [
+    71.8,
+    67.6,
+    75.9
+   ],
+   "picked_hit@4": [
+    64.2,
+    59.8,
+    68.6
+   ],
+   "lost_candidate_stage": [
+    28.2,
+    24.1,
+    32.4
+   ],
+   "lost_selection_stage": [
+    7.6,
+    5.4,
+    9.9
+   ],
+   "picked_given_in_pool": 89.4
+  },
+  "S1": {
+   "pool": "hybrid",
+   "pool_is_the_chosen_frames": false,
+   "candidates_mean": 8.9,
+   "candidates_median": 9.0,
+   "in_pool": [
+    77.8,
+    73.6,
+    81.9
+   ],
+   "picked_hit@4": [
+    70.2,
+    66.1,
+    74.3
+   ],
+   "lost_candidate_stage": [
+    22.2,
+    18.1,
+    26.4
+   ],
+   "lost_selection_stage": [
+    7.6,
+    5.4,
+    10.0
+   ],
+   "picked_given_in_pool": 90.2
+  },
+  "S2c": {
+   "pool": "hybrid_ahead",
+   "pool_is_the_chosen_frames": false,
+   "candidates_mean": 9.0,
+   "candidates_median": 9.0,
+   "in_pool": [
+    85.8,
+    82.5,
+    89.0
+   ],
+   "picked_hit@4": [
+    77.2,
+    73.3,
+    81.0
+   ],
+   "lost_candidate_stage": [
+    14.2,
+    11.0,
+    17.5
+   ],
+   "lost_selection_stage": [
+    8.6,
+    6.0,
+    11.4
+   ],
+   "picked_given_in_pool": 90.0
+  },
+  "S2m": {
+   "pool": "hybrid_ahead_m3av",
+   "pool_is_the_chosen_frames": false,
+   "candidates_mean": 9.0,
+   "candidates_median": 9.0,
+   "in_pool": [
+    85.8,
+    82.5,
+    89.0
+   ],
+   "picked_hit@4": [
+    77.0,
+    73.0,
+    80.9
+   ],
+   "lost_candidate_stage": [
+    14.2,
+    11.0,
+    17.5
+   ],
+   "lost_selection_stage": [
+    8.8,
+    6.1,
+    11.6
+   ],
+   "picked_given_in_pool": 89.8
+  },
+  "S3": {
+   "pool": "hybrid",
+   "pool_is_the_chosen_frames": false,
+   "candidates_mean": 8.9,
+   "candidates_median": 9.0,
+   "in_pool": [
+    77.8,
+    73.6,
+    81.9
+   ],
+   "picked_hit@4": [
+    70.8,
+    66.5,
+    75.1
+   ],
+   "lost_candidate_stage": [
+    22.2,
+    18.1,
+    26.4
+   ],
+   "lost_selection_stage": [
+    7.0,
+    4.9,
+    9.3
+   ],
+   "picked_given_in_pool": 91.0
+  },
+  "R2": {
+   "pool": "uniform4d",
+   "pool_is_the_chosen_frames": true,
+   "candidates_mean": 4.0,
+   "candidates_median": 4.0,
+   "in_pool": [
+    26.5,
+    22.4,
+    30.7
+   ],
+   "picked_hit@4": [
+    26.5,
+    22.4,
+    30.7
+   ],
+   "lost_candidate_stage": [
+    73.5,
+    69.3,
+    77.6
+   ],
+   "lost_selection_stage": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "picked_given_in_pool": 100.0
+  },
+  "R3": {
+   "pool": "dense4x",
+   "pool_is_the_chosen_frames": true,
+   "candidates_mean": 3.9,
+   "candidates_median": 4.0,
+   "in_pool": [
+    62.6,
+    58.1,
+    67.5
+   ],
+   "picked_hit@4": [
+    62.6,
+    58.1,
+    67.5
+   ],
+   "lost_candidate_stage": [
+    37.4,
+    32.5,
+    41.9
+   ],
+   "lost_selection_stage": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "picked_given_in_pool": 100.0
+  },
+  "R4": {
+   "pool": "dense4ox",
+   "pool_is_the_chosen_frames": true,
+   "candidates_mean": 3.9,
+   "candidates_median": 4.0,
+   "in_pool": [
+    75.1,
+    70.7,
+    79.6
+   ],
+   "picked_hit@4": [
+    75.1,
+    70.7,
+    79.6
+   ],
+   "lost_candidate_stage": [
+    24.9,
+    20.4,
+    29.3
+   ],
+   "lost_selection_stage": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "picked_given_in_pool": 100.0
+  },
+  "R5": {
+   "pool": "vsi4x",
+   "pool_is_the_chosen_frames": true,
+   "candidates_mean": 4.0,
+   "candidates_median": 4.0,
+   "in_pool": [
+    76.1,
+    72.1,
+    79.8
+   ],
+   "picked_hit@4": [
+    76.1,
+    72.1,
+    79.8
+   ],
+   "lost_candidate_stage": [
+    23.9,
+    20.2,
+    27.9
+   ],
+   "lost_selection_stage": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "picked_given_in_pool": 100.0
+  }
+ }
+}

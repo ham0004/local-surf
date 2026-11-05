@@ -1898,3 +1898,48 @@ Where the gain of the best framework with speech (S1t) over the starting design 
 - **Next.** Once the human verdicts are in, compare them with the two model reviews (step 89). Then compute the
   sample rejection rate and the human-validated S-src sensitivity, as declared in the protocol, without changing
   L1, L2 or any method.
+
+## Step 96 (2026-11-05): where the source slide is lost (auditor P125)
+- **What.** `scripts/m3av_evidence_loss.py` reads saved files only: the candidate pools, the hit reports and the
+  test answer records. It runs no model and needs no GPU. For every frozen system and question it asks at which
+  stage the source slide is lost, using the primary measure's test (a frame within 1 s of a visible span):
+  - **not in pool:** no candidate in the saved pool is inside a span (candidate stage);
+  - **in pool, not picked:** some candidate is, but none of the 4 chosen frames (selection stage);
+  - **picked:** = source-slide interval hit@4.
+
+  The script checks that its picked column equals the hit reports and the answer records' `primary_hit`. Labels
+  are automatic (the visibility proxy), not human-verified. R2-R5 save only the frames they show, so their loss
+  cannot be split by stage.
+- **Dev (514 questions, 96 lectures): the basis for any redesign.** Percent of questions, 95% lecture-bootstrap
+  intervals.
+
+  | System | Slide in pool | Lost at candidates | Lost at selection | Picked (hit@4) |
+  |---|---|---|---|---|
+  | S1 | 77.8 (73.6..81.9) | 22.2 | 7.6 (5.4..10.0) | 70.2 |
+  | S2c | 85.8 (82.5..89.0) | 14.2 | 8.6 (6.0..11.4) | 77.2 |
+  | S2m | 85.8 (82.5..89.0) | 14.2 (11.0..17.5) | 8.8 (6.1..11.6) | 77.0 |
+  | S3 | 77.8 | 22.2 | 7.0 | 70.8 |
+  | R5 | (only the chosen frames saved) | | | 76.1 |
+
+  - Head A's gain over S1 is entirely at the candidate stage: the slide is in the pool for 85.8% of questions
+    instead of 77.8%. Selection keeps about 90% of what the pool holds in every framework system (S1 90.2%,
+    S2m 89.8%). Head B does not change the pool and picks about as well as S1.
+  - S2m's two losses are of similar size: 14.2 points at the candidates and 8.8 at selection. With perfect
+    selection from its own pool, S2m would reach 85.8 on dev against R5's 76.1. This is an upper bound, not a
+    result.
+  - So for a redesign, dev points first at the selection step over the Head A pool (P124's visible slide-state
+    ranking), and second at candidate recall. This is a lead for a fresh held-out protocol, not a finding.
+- **Test (853 questions): post hoc and descriptive.** The test is revealed, so nothing here chooses a method. The
+  stage split matches dev: S2m slide in pool 89.0%, lost at candidates 11.0, at selection 9.6, picked 79.4.
+  - Seeing the slide goes with correct answers. When S2m picked the slide, the answer model was right on 93.9% of
+    677 questions. When the slide was in the pool but not picked, 56.1% of 82; when it was not in the pool, 66.0%
+    of 94.
+  - Without questions the question-only control answers correctly: 90.5% of 328, 35.9% of 39 and 55.1% of 49.
+    Every framework system and R3-R5 show the same pattern (picked 91-95%, otherwise 49-67%).
+  - S2m outcomes on all 853 questions: picked and correct 636; picked and wrong 41 (answer-stage loss, 4.8%); not
+    picked and correct 108; not picked and wrong 68.
+  - This is the item-level link that step 92 did not claim. It is an association (questions where the slide is
+    easy to find may also be easier), not a causal effect.
+- **Unchanged.** L1, L2, every frozen file and the method. The human review (step 95) is still the check on the
+  labels themselves.
+- **Files.** `reports/m3av/evidence_loss_{dev,test}.{json,md}`.
