@@ -1958,12 +1958,17 @@ Where the gain of the best framework with speech (S1t) over the starting design 
 
   | Stage | S1 | S2m | R5 |
   |---|---|---|---|
-  | Pool per question (retrieval + Head A + frame decoding + MobileCLIP) | 0.67 | 0.97 (Head A 0.34) | 1.42 |
+  | Pool per question: sum of the four instrumented components (retrieval, speech/Head A scorer, frame decoding, MobileCLIP) | 0.67 | 0.97 (scorer 0.34) | 1.42 |
   | One answer call, 4 frames, Qwen3-VL-4B (mean / p95) | 2.47 / 3.63 | 2.41 / 3.58 | 2.44 / 3.57 |
 
   S1t (600 transcript words, about 1,520 text tokens): 4.55 s per call. q_only 1.48 s; t_only 3.97 s. The 2 s
   feature pass over a whole lecture takes about 9 s (test: 112 lectures, 19 min each, 955 s in all). Per question
-  the answer call dominates; Head A adds about 0.3 s, and R5 is slower than S2m because it decodes 96 ranked times.
+  the answer call dominates. The scorer column holds the ordinary speech scorer in every system; with the learned
+  head it rises from about 0.04 to 0.34 s. R5's pool is slower than S2m's because it decodes 96 ranked times.
+  The pool sum leaves out OCR and text embeddings (about 0.01-0.02 s), serialisation, other uninstrumented work, the
+  per-lecture feature index, R5's separate scoring pass (93 s for 514 dev questions), model loading, selection and
+  transcript building. Answer times exclude reused replies, so unequal fresh-call subsets do not show that one
+  selector's answers are faster (step 100 adds these limits).
 - **Memory, measured again on dev** (`gpu`, first 100 dev questions in hash order, R5 scoring over all 514;
   `reports/m3av/profile_gpu.md`).
   - **How.** Each frozen stage is re-run with the frozen code into `runs/m3av/profile/`. For each stage the script
@@ -1984,14 +1989,27 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   | Answers capped at 14.28 GiB (600 calls) | 11.46 | 14.19 | 14.13 | 0.08 |
 
   All figures are GiB; the card has 15.93 GiB and 14.79 GiB were free at the start.
-  - **What this shows.** The 4B answerer's tensors never need more than 11.5 GiB, and its weights take 8.4 GiB.
-    PyTorch's cache, however, grows past the card (17.3 GiB reserved), and Windows then places 1.6 GiB in system
-    RAM. That is how the frozen test run reached 16.8 GiB reserved.
-  - With the cap, all 600 replies are identical to the uncapped pass, the process stays on the card (dedicated
-    14.13 GiB, shared unchanged), and the pass is about 6% faster (1,518 s against 1,620 s).
-  - **Claim, qualified.** The pipeline can run strictly within the card with an allocator cap, shown on 100 dev
-    questions and six conditions. The frozen test runs were not capped, so the step-93 qualification stands for
-    them.
+  - **What this shows.** In this replay, PyTorch's peak allocated memory was 11.46 GiB, and the weights take
+    8.4 GiB. The cache grew past the card (17.3 GiB reserved), and Windows reported 1.6 GiB of the process in shared
+    system memory. This is consistent with the frozen test run's 16.8 GiB reserved, but does not measure that run's
+    mechanism directly (step 100 corrects "tensors never need more than 11.5 GiB" and "That is how the frozen test run
+    reached 16.8 GiB").
+  - With the cap, all 600 replies are identical to the uncapped pass. Peak reserved memory was 14.19 GiB,
+    dedicated 14.13 GiB, and shared memory did not rise above 0.08 GiB at one-second sampling.
+  - The capped pass took 6.3% less time (1,518 s against 1,620 s). This is one fixed-order replay: the capped pass ran
+    second with the model already loaded, and the auditor's CPU checks overlapped the first pass. It is therefore an
+    observed difference, not a speed-up caused by the cap.
+  - **Claim, bounded.** This was a 100-question, six-condition dev replay of the answer stage. With a 14.28 GiB cap on
+    PyTorch's caching allocator, it completed 600 calls with identical replies and 14.19 GiB peak reserved memory,
+    and shared GPU memory did not rise above 0.08 GiB at one-second sampling.
+    - The cap limits PyTorch's allocator, not every driver allocation.
+    - One-second samples can miss brief spills.
+    - The cap was not run end to end for every system.
+    - It does not show zero transient spill, a universal memory need, or a resident full test run.
+    - The frozen test runs were not capped, so the step-93 qualification and the crash and restart stand for them.
+
+    (Step 100 corrects "the process stays on the card", "about 6% faster" and "the pipeline can run strictly within
+    the card".)
 - **Report fix before commit.** The per-call peak reset also reset each answer stage's own torch peak. The stage
     rows are therefore built from the maximum over calls (`report` re-renders them from `runs/m3av/profile/answers.jsonl`);
     no re-run was needed.
@@ -2111,3 +2129,61 @@ Where the gain of the best framework with speech (S1t) over the starting design 
     - the 41 wrong answers with a picked slide are "proxy hit with a wrong answer, cause not yet adjudicated";
     - selection is no longer ranked first.
   - The replaced phrases are quoted in place.
+
+## Step 100 (2026-11-06): input guards, per-reviewer drafts, bounded resource wording (auditor P152-P162)
+- **Still no human answer seen.** The store has not been read since step 99's access record.
+- **Input guards (P157)** in `scripts/m3av_human_review.py`:
+  - **One snapshot, one answer.** Within one snapshot, a reviewer has at most one answer per question. A second,
+    different answer, even with a later time, stops the run; latest-time revisions apply only across snapshots.
+  - **Raw inventory.** Every file in `raw/` must be listed in `identities.json`, and every listed file must exist.
+  - **Model reviews.** Each must give exactly one valid verdict per sampled question. Duplicates or other values
+    stop the run. Their own historical reason codes are not read.
+  - **Recorded hashes.** The frozen inputs must match the hashes recorded before any human verdict, or the run
+    stops (`EXPECTED`):
+    - the sample;
+    - the hit report: the step-90 byte hash `6ef21809...`, as in supplement 3;
+    - the QA records: the seal's `sha256_lf` `78760d32...`;
+    - both model reviews: the step-88 and step-89 hashes;
+    - the page files: version 4 below.
+
+    The page files are now required, not optional.
+  - **Pseudonymous labels.** Output source labels look like "raw source 1 (store, cutoff)", so no file name can
+    leak a reviewer's name.
+  - **Snapshots (P154).** The owner saves the store at the cutoff (role "cutoff") before any clarification is
+    requested, then saves a separate later snapshot for clarifications. Neither snapshot is edited.
+  - **Tests.** 5 new synthetic tests cover a conflict inside one store snapshot, an unlisted or missing raw file,
+    pseudonymous labels, the model-review checks and the hash check. 16 of 16 pass. The end-to-end dry run still
+    reproduces the frozen full-cohort row.
+- **Review page, version 4 (P158).** Same link, same storage rules; saved answers are untouched.
+  - **The defect.** Versions 1-3 kept one browser draft (`lsc-draft`) per browser, loaded it before sign-in, and
+    could upload it into a new reviewer's record.
+  - **Now.**
+    - Drafts are kept per signed-in reviewer (`lsc-draft:<id>`) and read only after sign-in.
+    - The old shared draft is never loaded or uploaded by itself, and it is not deleted.
+    - Its owner can restore it only by an explicit click. Each restored answer is then marked `restored`, and the
+      analysis reports how many were restored per reviewer.
+    - Signed-out or view-only visitors still share one draft per browser (`lsc-draft:this-browser`), so each
+      reviewer needs their own browser profile or device in that case.
+  - **Files.** The version-3 source is kept in `collab/review_page/v3/`. Version 4: `index.html` SHA-256
+    `0f2a69f4c2120a28d7e7b1e4554026dd9b98a0924f0dd4fcd00c37088f19d597`, `template.html`
+    `1ebb157d3508d050c84829fca6bdee48c4bb9167500324a7d069e97a6c5fc7b3`.
+  - **Limits, disclosed.**
+    - The page's "Done" checks completeness only, not the analysis's contradiction rule, so a "Done" item can still
+      need clarification.
+    - The page suggests a reason from the checks (SPAN whenever legibility is "n", unless the reviewer changes it).
+      Reason counts therefore include these defaults and are not wholly unaided judgments; they are not recoded.
+  - **Not yet verified.** A synthetic two-account check of the live page has not been run, and the invite list is
+    the owner's to confirm.
+- **Resource wording (P159, P160).** Step 97 is narrowed to the observed replay, with the old phrases quoted, and the
+  README, Current state, both profile reports and the teacher deck say the same.
+  - **The memory claim.** This was a 100-question, six-condition dev replay of the answer stage. With a 14.28 GiB
+    cap on PyTorch's caching allocator, it completed 600 calls with identical replies and 14.19 GiB peak reserved
+    memory. Shared memory did not rise above 0.08 GiB at one-second sampling. This is not proof of:
+    - zero transient spill;
+    - a universal memory need;
+    - a capped end-to-end run of every system;
+    - the mechanism of the test run's 16.8 GiB.
+  - **The 6.3% time difference** between the two passes is observed in one fixed-order replay, not a speed-up
+    caused by the cap.
+  - **Pool times** are the sum of four instrumented components. What they leave out is listed. The scorer column
+    includes the ordinary speech scorer in every system.

@@ -100,7 +100,12 @@ def stage_saved(_a) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "profile_saved.json").write_text(json.dumps(rep, indent=1), encoding="utf-8")
     md = ["# Lecture study: time per stage from the frozen runs' own records",
-          "", "Saved files only; no model was run. Seconds. Pools: per question; answers: per new answer call.", ""]
+          "", "Saved files only; no model was run. Seconds. Pools: per question, the sum of the four instrumented "
+          "components (retrieval, the speech/Head A scorer, frame decoding, MobileCLIP); it leaves out OCR and text "
+          "embeddings, serialisation, the per-lecture feature index, R5's separate scoring pass, model loading, "
+          "selection and transcript building. The 'Head A' column holds the ordinary speech scorer in systems without "
+          "the learned head. Answers: per new answer call; reused replies are excluded, so unequal fresh-call subsets "
+          "do not show that one selector's answers are faster.", ""]
     for split in ("dev", "test"):
         md += [f"## Pool building, {split}", "",
                "| System | pool | retrieval | Head A | decode | MobileCLIP | total (mean) | total (median) | total (p95) |",
@@ -377,7 +382,13 @@ def render(rep: dict) -> None:
             md.append(f"| {pas} | {c} | {r['seconds']['mean']:.2f} | {r['seconds']['p95']:.2f} | "
                       f"{r['peak_allocated_gb']['max']:.2f} | {r['peak_reserved_gb']['max']:.2f} | "
                       f"{r['text_tokens'].get('mean', 0):.0f} |")
-    md += ["", "## Checks", "", *[f"- {k}: {v}" for k, v in checks.items()]]
+    md += ["", "## Checks", "", *[f"- {k}: {v}" for k, v in checks.items()],
+           "", "## Scope", "",
+           "- The cap limits PyTorch's caching allocator, not every driver allocation; counters are 1 s samples and can "
+           "miss brief spills. The capped replay covers the answer stage for six conditions on 100 dev questions, not a "
+           "capped end-to-end run of every system, and the frozen test runs were not capped.",
+           "- The two answer passes ran once, in a fixed order (capped second, model loaded), with other CPU work "
+           "overlapping the first; their time difference is observed, not a speed-up caused by the cap."]
     (OUT / "profile_gpu.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     print("\n".join(md))
 

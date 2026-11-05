@@ -1,6 +1,6 @@
 # Lecture study: time per stage from the frozen runs' own records
 
-Saved files only; no model was run. Seconds. Pools: per question; answers: per new answer call.
+Saved files only; no model was run. Seconds. Pools: per question, the sum of the four instrumented components (retrieval, the speech/Head A scorer, frame decoding, MobileCLIP); it leaves out OCR and text embeddings, serialisation, the per-lecture feature index, R5's separate scoring pass, model loading, selection and transcript building. The 'Head A' column holds the ordinary speech scorer in systems without the learned head. Answers: per new answer call; reused replies are excluded, so unequal fresh-call subsets do not show that one selector's answers are faster.
 
 ## Pool building, dev
 

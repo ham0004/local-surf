@@ -1,5 +1,6 @@
-"""Synthetic checks of the human-review rules (scripts/m3av_human_review.py; auditor P143-P146). No real answers."""
+"""Synthetic checks of the human-review rules (scripts/m3av_human_review.py; auditor P143-P146, P157). No real answers."""
 
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -18,18 +19,23 @@ T0, T1 = "2026-11-08T10:00:00+06:00", "2026-11-08T12:00:00+06:00"
 LATE, CLAR, TOO_LATE = "2026-11-09T08:00:00+06:00", "2026-11-09T20:00:00+06:00", "2026-11-10T08:00:00+06:00"
 
 
+def raw(tmp):
+    (tmp / "raw").mkdir(exist_ok=True)
+    return tmp / "raw"
+
+
 def store(tmp, name, docs):
     """docs: {doc id: {qa_id: (answer, t)}} in the page's shape."""
     body = [{"id": d, "data": {"name": "x", "answers": {f"p{i:03d}": dict(a, qa_id=q, item=i, t=t)
                                                         for i, (q, (a, t)) in enumerate(ans.items(), 1)}}}
             for d, ans in docs.items()]
-    (tmp / name).write_text(json.dumps(body), encoding="utf-8")
+    (raw(tmp) / name).write_text(json.dumps(body), encoding="utf-8")
 
 
 def csvfile(tmp, name, rows):
     lines = ['reviewer,"x"', "item,qa_id,verdict,key,one,slide,legible,shortcut,reason,note"]
     lines += [",".join([str(i), q, *(a[f] for f in hr.FIELDS)]) for i, (q, a) in enumerate(rows, 1)]
-    (tmp / name).write_text("\n".join(lines), encoding="utf-8")
+    (raw(tmp) / name).write_text("\n".join(lines), encoding="utf-8")
 
 
 def run(tmp, sources, resolutions=None):
@@ -37,11 +43,11 @@ def run(tmp, sources, resolutions=None):
 
 
 def src_store(name, docs, role="cutoff"):
-    return {"file": name, "kind": "store", "role": role, "docs": docs}
+    return {"file": f"raw/{name}", "kind": "store", "role": role, "docs": docs}
 
 
 def src_csv(name, rev, received=T1):
-    return {"file": name, "kind": "csv", "role": "cutoff", "reviewer": rev, "received": received}
+    return {"file": f"raw/{name}", "kind": "csv", "role": "cutoff", "reviewer": rev, "received": received}
 
 
 def test_strict_majority():
@@ -72,7 +78,7 @@ def test_csv_store_conflict_stops_unless_resolved(tmp_path):
     srcs = [src_store("s.json", {"people/a": "r1"}), src_csv("a.csv", "r1")]
     with pytest.raises(hr.InputError):
         run(tmp_path, srcs)
-    got = run(tmp_path, srcs, {"r1": {SAMPLE[0]: "a.csv"}})
+    got = run(tmp_path, srcs, {"r1": {SAMPLE[0]: "raw/a.csv"}})
     assert got["final"][("r1", SAMPLE[0])]["verdict"] == "reject"
 
 
@@ -82,19 +88,43 @@ def test_conflicting_rows_in_one_file_stop(tmp_path):
         run(tmp_path, [src_csv("a.csv", "r1")])
 
 
+def test_conflict_inside_one_store_snapshot_stops(tmp_path):
+    body = [{"id": "people/a", "data": {"answers": {"p001": dict(OK, qa_id=SAMPLE[0], t=T0),
+                                                    "p002": dict(REJ, qa_id=SAMPLE[0], t=T1)}}}]
+    (raw(tmp_path) / "s.json").write_text(json.dumps(body), encoding="utf-8")
+    with pytest.raises(hr.InputError):
+        run(tmp_path, [src_store("s.json", {"people/a": "r1"})])
+
+
 def test_invalid_values_and_ids_stop(tmp_path):
     csvfile(tmp_path, "a.csv", [(SAMPLE[0], dict(OK, reason="GARBAGE"))])
     with pytest.raises(hr.InputError):
         run(tmp_path, [src_csv("a.csv", "r1")])
-    csvfile(tmp_path, "b.csv", [("m3av:NOPE:1", OK)])
+    csvfile(tmp_path, "a.csv", [("m3av:NOPE:1", OK)])
     with pytest.raises(hr.InputError):
-        run(tmp_path, [src_csv("b.csv", "r1")])
+        run(tmp_path, [src_csv("a.csv", "r1")])
 
 
 def test_unlisted_document_stops(tmp_path):
     store(tmp_path, "s.json", {"people/a": {SAMPLE[0]: (OK, T0)}, "people/b": {SAMPLE[1]: (OK, T0)}})
     with pytest.raises(hr.InputError):
         run(tmp_path, [src_store("s.json", {"people/a": "r1"})])
+
+
+def test_raw_inventory_must_match(tmp_path):
+    store(tmp_path, "s.json", {"people/a": {SAMPLE[0]: (OK, T0)}})
+    csvfile(tmp_path, "forgotten.csv", [(SAMPLE[1], OK)])
+    with pytest.raises(hr.InputError):                        # a raw export not listed
+        run(tmp_path, [src_store("s.json", {"people/a": "r1"})])
+    with pytest.raises(hr.InputError):                        # a listed export that does not exist
+        run(tmp_path, [src_store("s.json", {"people/a": "r1"}), src_csv("forgotten.csv", "r2"),
+                       src_csv("gone.csv", "r3")])
+
+
+def test_output_labels_are_pseudonymous(tmp_path):
+    csvfile(tmp_path, "alice_smith.csv", [(SAMPLE[0], OK)])
+    got = run(tmp_path, [src_csv("alice_smith.csv", "r1")])
+    assert not any("alice" in k for k in got["hashes"])
 
 
 def test_incomplete_and_late(tmp_path):
@@ -110,11 +140,35 @@ def test_contradiction_needs_clarification(tmp_path):
     assert hr.contradictory(dict(REJ, reason="KEY")) and not hr.contradictory(REJ)
     store(tmp_path, "s.json", {"people/a": {SAMPLE[0]: (bad, T0), SAMPLE[1]: (bad, T0)}})
     store(tmp_path, "c.json", {"people/a": {SAMPLE[0]: (REJ, CLAR), SAMPLE[1]: (REJ, TOO_LATE), SAMPLE[2]: (OK, CLAR)}})
-    got = run(tmp_path, [src_store("s.json", {"people/a": "r1"}), src_store("c.json", {"people/a": "r1"}, "clarification")])
+    got = run(tmp_path, [src_store("s.json", {"people/a": "r1"}),
+                         src_store("c.json", {"people/a": "r1"}, "clarification")])
     assert got["status"][("r1", SAMPLE[0])] == "clarified"
     assert got["status"][("r1", SAMPLE[1])] == "contradictory, unresolved"
     assert ("r1", SAMPLE[2]) not in got["final"]             # clarification sources only answer flagged items
     assert got["clarification_records_unused"] == 1
+
+
+def test_model_review_must_be_one_valid_verdict_each(tmp_path):
+    head = "n,qa_id,verdict (accept/reject/uncertain),key correct (y/n)\n"
+    (tmp_path / "ok.csv").write_text(head + "".join(f"{i},{q},accept,y\n" for i, q in enumerate(SAMPLE, 1)),
+                                     encoding="utf-8")
+    assert set(hr.read_model(tmp_path / "ok.csv", SAMPLE).values()) == {"accept"}
+    (tmp_path / "dup.csv").write_text(head + f"1,{SAMPLE[0]},accept,y\n" * 2, encoding="utf-8")
+    (tmp_path / "bad.csv").write_text(head + "".join(f"{i},{q},maybe,y\n" for i, q in enumerate(SAMPLE, 1)),
+                                      encoding="utf-8")
+    for name in ("dup.csv", "bad.csv"):
+        with pytest.raises(hr.InputError):
+            hr.read_model(tmp_path / name, SAMPLE)
+
+
+def test_frozen_hash_mismatch_stops(tmp_path):
+    (tmp_path / "a.jsonl").write_bytes(b"x\r\n")
+    lf = hashlib.sha256(b"x\n").hexdigest()
+    assert hr.verify_expected({"a.jsonl": ("lf", lf)}, tmp_path)
+    with pytest.raises(hr.InputError):
+        hr.verify_expected({"a.jsonl": ("bytes", lf)}, tmp_path)
+    with pytest.raises(hr.InputError):
+        hr.verify_expected({"missing.json": ("bytes", lf)}, tmp_path)
 
 
 def fake_cohort():
@@ -123,7 +177,8 @@ def fake_cohort():
     cohort = sorted(SAMPLE + [f"m3av:L{i:03d}:2" for i in range(1, 6)])
     prim = {s: {q: (i + j) % 2 for j, q in enumerate(cohort)} for i, s in enumerate(SYSTEMS)}
     return {"sample": SAMPLE, "cohort": cohort, "lecture": {q: q.split(":")[1] for q in cohort}, "prim": prim,
-            "ssrc": prim, "qa": {c: {q: 1 for q in cohort} for c in ("S1", "S2m", "R5", "q_only", "t_only")}, "codes": {s: s.split()[0] for s in SYSTEMS},
+            "ssrc": prim, "qa": {c: {q: 1 for q in cohort} for c in ("S1", "S2m", "R5", "q_only", "t_only")},
+            "codes": {s: s.split()[0] for s in SYSTEMS},
             "model": {"builder": {q: "accept" for q in SAMPLE}, "auditor": {q: "accept" for q in SAMPLE}},
             "page_item": {q: i + 1 for i, q in enumerate(SAMPLE)}, "hashes": {}}
 

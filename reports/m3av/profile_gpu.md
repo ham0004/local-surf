@@ -43,3 +43,8 @@ Answer weights resident after load: 8.364 GiB. Allocator cap in the capped pass:
 - capped_out_of_memory: 0
 - frozen_out_of_memory: 0
 - replies_identical_to_dev_check_records: {'n': 144, 'identical': 144}
+
+## Scope
+
+- The cap limits PyTorch's caching allocator, not every driver allocation; counters are 1 s samples and can miss brief spills. The capped replay covers the answer stage for six conditions on 100 dev questions, not a capped end-to-end run of every system, and the frozen test runs were not capped.
+- The two answer passes ran once, in a fixed order (capped second, model loaded), with other CPU work overlapping the first; their time difference is observed, not a speed-up caused by the cap.

@@ -24,6 +24,12 @@ Rules (fixed now):
     Different store versions: the one with the latest `t` (a revision). Any other difference (a CSV against the
     store or another CSV, two rows in one file, equal times) is a conflict. It stops the run unless identities.json
     names the source the reviewer confirms as final; import order never decides.
+  - Inputs: every file in raw/ must be listed in identities.json and every listed file must exist; one snapshot
+    holds one answer per reviewer and question (a different second answer stops the run). The frozen inputs must
+    match their recorded hashes (EXPECTED); each model review must give exactly one valid verdict per sampled
+    question. Output source labels are pseudonymous ("raw source 1 (store, cutoff)").
+  - Snapshots: the owner saves the store at the cutoff (role "cutoff") before any clarification is asked, and a
+    separate later snapshot for the clarifications (role "clarification"); neither is edited.
   - Validity: a field left empty makes the answer incomplete (missing for that reviewer, not a vote). A non-empty
     value outside the vocabulary (verdict accept/reject/uncertain; checks y/n; shortcut none/knowledge/transcript;
     reason OK, KEY, AMB, UNSUP, ILLEG, SPAN, UI, OTHER) or a question outside the sample stops the run. Reject and
@@ -89,15 +95,55 @@ REASON_CHECK = {"KEY": "key", "AMB": "one", "UNSUP": "slide", "ILLEG": "legible"
 BLOCKS = {"h1": (1, 50), "h2": (51, 100), "t1": (1, 34), "t2": (35, 67), "t3": (68, 100),
           "q1": (1, 25), "q2": (26, 50), "q3": (51, 75), "q4": (76, 100)}   # the page's blocks, in page order
 MODEL_REVIEWS = {"builder": Path("collab/review_builder_test.csv"), "auditor": Path("collab/review_auditor_test.csv")}
-PAGE_FILES = (Path("collab/review_page/index.html"), Path("collab/review_page/template.html"))
+PAGE_FILES = (Path("collab/review_page/index.html"), Path("collab/review_page/template.html"),
+              Path("collab/review_page/items.json"))
+# The frozen inputs and the hashes recorded for them before any human verdict (research log steps 88-90, 95, 99):
+# raw bytes, except the QA records, sealed with line ends normalised (docs/v3/m3av_qa_test_outputs.json, sha256_lf).
+EXPECTED = {
+    "reports/m3av/review_sample_test.json": ("bytes", "32f36bf9dfe6aa3e88ad74409c0f783436c9d195c4933a7e7647285b330e5057"),
+    "reports/m3av/hits_test.json": ("bytes", "6ef21809895cab37194152733ba31a9ae4b68ed2f4aef6dafeac980716088ef1"),
+    "runs/m3av/qa/test/records.jsonl": ("lf", "78760d3248ccd6e7ba69dbdf420ad88b037340d44c4c60b57b8cd721f65cc51f"),
+    "collab/review_builder_test.csv": ("bytes", "8e77f77745f2ad65715662d7a112b215a35ccbee509aacdedaf6245426f699f9"),
+    "collab/review_auditor_test.csv": ("bytes", "b60a0bf85e0fba92ef2e2ecc2b12a7736c7092f4cd0b5a77c29cec92befe2cb4"),
+    "collab/review_page/index.html": ("bytes", "0f2a69f4c2120a28d7e7b1e4554026dd9b98a0924f0dd4fcd00c37088f19d597"),
+    "collab/review_page/template.html": ("bytes", "1ebb157d3508d050c84829fca6bdee48c4bb9167500324a7d069e97a6c5fc7b3"),
+    "collab/review_page/items.json": ("bytes", "dc258efe612668436a2c766c80062efe369c7606c5eb12b0b2aeab1a4886031d"),
+}
 
 
 class InputError(SystemExit):
     pass
 
 
-def sha(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def sha(path: Path, lf: bool = False) -> str:
+    b = path.read_bytes()
+    return hashlib.sha256(b.replace(b"\r\n", b"\n") if lf else b).hexdigest()
+
+
+def verify_expected(expected: dict, root: Path = Path(".")) -> dict:
+    """Every frozen input must exist and match its recorded hash; otherwise the run stops."""
+    for rel, (kind, h) in expected.items():
+        p = root / rel
+        if not p.exists():
+            raise InputError(f"missing frozen input: {rel}")
+        if sha(p, kind == "lf") != h:
+            raise InputError(f"{rel} does not match its recorded SHA-256 ({kind})")
+    return {rel: h for rel, (_k, h) in expected.items()}
+
+
+def read_model(path: Path, sample: list) -> dict:
+    """One valid verdict per sampled question from a model review; duplicates or other values stop the run."""
+    out = {}
+    for r in read_csv(path):
+        q = r.get("qa_id", "")
+        if q in out:
+            raise InputError(f"{path.name}: {q} appears twice")
+        if r.get("verdict") not in VERDICTS:
+            raise InputError(f"{path.name}: {q} has verdict {r.get('verdict')!r}")
+        out[q] = r["verdict"]
+    if set(out) != set(sample):
+        raise InputError(f"{path.name} does not cover exactly the sample")
+    return out
 
 
 def when(s: str) -> datetime.datetime:
@@ -160,9 +206,15 @@ def read_store(path: Path) -> dict:
 def records(ident: dict, base: Path) -> tuple[list, dict]:
     """Every answer record (reviewer, qa_id, answer, time, source, role, kind) and the raw-file hashes."""
     out, hashes = [], {}
-    for s in ident["sources"]:
+    listed = {str(Path(s["file"]).as_posix()) for s in ident["sources"]}
+    raw = base / "raw"
+    present = {p.relative_to(base).as_posix() for p in raw.rglob("*") if p.is_file()} if raw.exists() else set()
+    if present - listed or listed - present:
+        raise InputError(f"raw/ and identities.json disagree: unlisted {sorted(present - listed)}, "
+                         f"missing {sorted(listed - present)}")
+    for i, s in enumerate(ident["sources"], 1):
         f = base / s["file"]
-        hashes[s["file"]] = sha(f)
+        hashes[f"raw source {i} ({s['kind']}, {s.get('role', 'cutoff')})"] = sha(f)
         role = s.get("role", "cutoff")
         if role not in ("cutoff", "clarification"):
             raise InputError(f"{s['file']}: role must be cutoff or clarification")
@@ -179,9 +231,16 @@ def records(ident: dict, base: Path) -> tuple[list, dict]:
                 for k, v in doc["answers"].items():
                     if not isinstance(v, dict) or not v.get("t"):
                         raise InputError(f"{s['file']}: {did} {k} has no answer time")
-                    out.append((s["docs"][did], str(v.get("qa_id", "")), norm(v), when(v["t"]), s["file"], role, "store"))
+                    a = norm(v)
+                    if v.get("restored"):          # restored by its reviewer from an old shared browser draft (P158)
+                        a["restored"] = str(v["restored"])
+                    out.append((s["docs"][did], str(v.get("qa_id", "")), a, when(v["t"]), s["file"], role, "store"))
         else:
             raise InputError(f"{s['file']}: kind must be store or csv")
+    seen: dict = {}
+    for rev, q, a, _t, src, _role, _kind in out:            # one answer per reviewer and question in one snapshot
+        if seen.setdefault((src, rev, q), answer_of(a)) != answer_of(a):
+            raise InputError(f"{src}: two different answers to {q} from one reviewer in one snapshot")
     return out, hashes
 
 
@@ -307,6 +366,7 @@ def cohort_inputs() -> dict:
     from m3av_hits import SYSTEMS  # noqa: PLC0415
     from m3av_qa import CONDITIONS  # noqa: PLC0415
 
+    verified = verify_expected(EXPECTED)
     sample_doc = json.loads(Path("reports/m3av/review_sample_test.json").read_text(encoding="utf-8"))
     sample = sample_doc["qa_ids"]
     hits = json.loads(Path("reports/m3av/hits_test.json").read_text(encoding="utf-8"))
@@ -329,20 +389,13 @@ def cohort_inputs() -> dict:
             qa[r["condition"]][r["qa_id"]] = int(r["correct"])
     if set(qa) != set(CONDITIONS) or any(sorted(v) != cohort for v in qa.values()):
         raise InputError("the QA records do not cover every condition and question exactly once")
-    model = {}
-    for k, f in MODEL_REVIEWS.items():
-        rows = {r["qa_id"]: r["verdict"] for r in read_csv(f)}
-        if set(rows) != set(sample):
-            raise InputError(f"the {k} review does not cover the sample")
-        model[k] = rows
+    model = {k: read_model(f, sample) for k, f in MODEL_REVIEWS.items()}
     order = sorted(sample, key=lambda q: hashlib.sha256(f"human-review:{q}".encode()).hexdigest())
-    files = [Path("reports/m3av/review_sample_test.json"), Path("reports/m3av/hits_test.json"),
-             Path("runs/m3av/qa/test/records.jsonl"), Path("docs/v3/m3av_qa_test_outputs.json"),
-             Path(__file__), *MODEL_REVIEWS.values(), *[p for p in PAGE_FILES if p.exists()]]
+    files = [Path("docs/v3/m3av_qa_test_outputs.json"), Path("scripts/m3av_human_review.py")]
     return {"sample": sample, "cohort": cohort, "lecture": lecture, "prim": prim, "ssrc": ssrc, "qa": dict(qa),
             "model": model, "page_item": {q: i + 1 for i, q in enumerate(order)},
             "codes": {s: s.split()[0] for s in SYSTEMS},
-            "hashes": {str(p).replace("\\", "/"): sha(p) for p in files}}
+            "hashes": {**verified, **{p.as_posix(): sha(p) for p in files}}}
 
 
 def analyse(c: dict, got: dict) -> dict:  # noqa: PLR0915
@@ -368,12 +421,14 @@ def analyse(c: dict, got: dict) -> dict:  # noqa: PLR0915
     rep = {"what": "blind human review of the 100 test packets (protocol 'Question review'; research log steps 98-99)",
            "rules": {"cutoff": CUTOFF.isoformat(), "clarification_cutoff": CLARIFICATION_CUTOFF.isoformat(),
                      "combination": "strict majority of valid votes, else uncertain"},
-           "input_hashes": {**c["hashes"], **{f"raw/{k}": v for k, v in got["hashes"].items()}},
+           "input_hashes": {**c["hashes"], **got["hashes"]},
            "reviewers": {alias[r]: {"valid": sum(1 for k, s in got["status"].items() if k[0] == r and s in
                                                  ("valid", "clarified")),
                                     **{s: sum(1 for k, x in got["status"].items() if k[0] == r and x == s)
                                        for s in ("incomplete", "contradictory, unresolved", "clarified")},
-                                    "late": got["late"].get(r, 0)} for r in revs},
+                                    "late": got["late"].get(r, 0),
+                                    "restored_from_browser_draft": sum(1 for (x, _q), a in got["final"].items()
+                                                                       if x == r and a.get("restored"))} for r in revs},
            "answer_status": dict(st), "clarification_records_unused": got["clarification_records_unused"],
            "coverage": {"items_reviewed": len(reviewed), "items_unreviewed": len(missing),
                         "votes_per_item": dict(collections.Counter(len(votes.get(q, {})) for q in sample)),
