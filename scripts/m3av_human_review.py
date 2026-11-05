@@ -1,31 +1,59 @@
 """Blind human review of the 100 lecture test packets: the analyses declared in docs/v3/m3av_protocol.md
-("Question review", amendment 3) and research log steps 95 and 98. Written and checked before any human verdict
-was seen; reads saved files only, runs no model.
+("Question review", amendment 3), fixed in research log steps 98-99 before any human verdict was seen (auditor
+P142-P146). Reads saved files only, runs no model. Everything below is fixed before the human answers are opened.
 
-Inputs: the human reviewers' answers, one or more files, each either
-  - the review page's shared store as saved by the owner (JSON; every document holding an `answers` map), or
-  - the page's "Copy my answers" text (CSV: a `reviewer,<name>` line, then item, qa_id, verdict, key, one, slide,
-    legible, shortcut, reason, note), or a filled form.csv (same fields, the packet form's column names).
-  An answer counts only if it is complete as the page defines it: the four checks, the shortcut, a verdict, a reason
-  code, and a note for reject or uncertain. Reviewers are reported as H1, H2, ... (names stay out of git).
+Inputs, all under one private folder (default runs/m3av/review_human/, not in git):
+  - raw/: the exports exactly as received. The review page's shared store saved by the owner (JSON; each reviewer's
+    document holds an `answers` map, one record per item with an ISO time `t`), or a reviewer's "Copy my answers"
+    text (CSV: `reviewer,<name>`, then item, qa_id, verdict, key, one, slide, legible, shortcut, reason, note), or a
+    filled form.csv. The script hashes every raw file it reads.
+  - identities.json: the private provenance map. It lists every source and gives each a stable private reviewer
+    key; names never leave this file. A store source maps each document id; a CSV source names its reviewer and
+    the time it was received. Unlisted sources or documents stop the run.
+        {"sources": [{"file": "raw/store_cutoff.json", "kind": "store", "role": "cutoff", "docs": {"<doc id>": "r1"}},
+                     {"file": "raw/bob.csv", "kind": "csv", "role": "cutoff", "reviewer": "r2",
+                      "received": "2026-11-08T21:00:00+06:00"}],
+         "resolutions": {"r2": {"<qa_id>": "raw/bob.csv"}}}
 
-Combination rule (fixed before any human verdict was seen): one reviewer on an item, that verdict; several, the
-majority verdict; a tie, uncertain. Items no human completed are reported as unreviewed and left out of every rate.
+Rules (fixed now):
+  - Eligibility: reviewers are the owner's group members, blind to systems, results and both model reviews. The
+    builder, the auditor and the owner are not reviewers.
+  - Cutoff: an answer counts only if made (store: its `t`) or received (CSV: `received`) by CUTOFF, 8 November 2026,
+    23:59 Dhaka. Later answers are late, reported and not used.
+  - One final answer per reviewer and question. Identical copies (another export, another snapshot) count once.
+    Different store versions: the one with the latest `t` (a revision). Any other difference (a CSV against the
+    store or another CSV, two rows in one file, equal times) is a conflict. It stops the run unless identities.json
+    names the source the reviewer confirms as final; import order never decides.
+  - Validity: a field left empty makes the answer incomplete (missing for that reviewer, not a vote). A non-empty
+    value outside the vocabulary (verdict accept/reject/uncertain; checks y/n; shortcut none/knowledge/transcript;
+    reason OK, KEY, AMB, UNSUP, ILLEG, SPAN, UI, OTHER) or a question outside the sample stops the run. Reject and
+    uncertain need a note. The shortcut never affects validity.
+  - Contradiction: accept with a check answered n or a reason other than OK; reject or uncertain with reason OK;
+    reason KEY with key y, AMB with one y, UNSUP with slide y, ILLEG with legible y. Nothing is inferred from the
+    fields. A contradictory answer is sent back to its reviewer, blind, to recheck. A revision of that item made by
+    CLARIFICATION_CUTOFF (9 November, 23:59 Dhaka) in a source with role "clarification" replaces it. Otherwise it
+    stays unresolved and is not a vote. Clarification sources are read for flagged items only.
+  - Combination: the verdict that has a strict majority of an item's valid votes; no strict majority, uncertain
+    (reported as "no majority"). Items with no valid vote are unreviewed, which is distinct from uncertain.
 
 Analyses:
-  1. Rejection rate of the reviewed sample: lecture-balanced (mean over sampled lectures; one question each) and the
-     cohort's question-weighted rate sum(n_l r_l) / sum(n_l), n_l = the lecture's cohort questions; 95% lecture-
-     bootstrap intervals (10,000 draws, seed 20261101). Also the reject-or-uncertain rate.
-  2. The four checks, the shortcut and the reason codes; agreement of the combined human verdict with each model
-     review (builder, auditor): percent agreement, Cohen's kappa, the 3 x 3 table; and between humans where they
-     overlap.
-  3. Secondary 1 (sensitivity, never promoted over the primary): every system's hit@4 and S-src hit@4 on the cohort
-     without the human-rejected sampled questions (one mask for all systems), L1 and L2 on it with paired lecture-
-     bootstrap intervals, no p-values or Holm; the same with rejected-or-uncertain removed; hit@4 on the accepted
-     sample questions alone; the answer model's accuracy (descriptive) under the same masks.
+  1. Rejection rate (and reject-or-uncertain rate): lecture-balanced and the cohort's question-weighted
+     sum(n_l r_l) / sum(n_l), with 95% lecture-bootstrap intervals (10,000 draws, seed 20261101). These are the
+     planned estimates only when all 100 items are reviewed; otherwise they are observed-review rates conditional on
+     the responders, with the missing items and page blocks listed. The intervals cover sampling only, not
+     annotator error or non-response.
+  2. Coverage per item and per reviewer; counts of the checks, shortcuts and reason codes over complete human
+     answers (which can exceed 100 when reviewers overlap); agreement of the combined verdict with each model review
+     and between humans (percent, Cohen's kappa, 3 x 3 tables); per-item votes under pseudonyms H1, H2, ...
+  3. Secondary 1 (declared): every system's hit@4 and S-src hit@4 and every condition's answer accuracy, on the
+     cohort without the human-rejected sample questions, with one mask for all systems. Uncertain and unreviewed
+     questions are kept, which does not validate them. L1 and L2 use paired lecture-bootstrap intervals, with no
+     p-values or Holm. Also, labelled separately: the conservative mask without rejected-or-uncertain items, and
+     hit@4 on the accepted sample alone (descriptive, not a cohort estimate). Each mask lists its dropped ids and
+     reasons, its retained and removed questions and lectures, and its per-lecture attrition.
 
-    python scripts/m3av_human_review.py --human runs/m3av/review_human/people.json [more files]
-        # reports/m3av/human_review_test.{json,md}
+    python scripts/m3av_human_review.py                     # reports/m3av/human_review_test.{json,md}
+    python scripts/m3av_human_review.py --dir <folder> --out <folder>
 """
 
 from __future__ import annotations
@@ -33,6 +61,8 @@ from __future__ import annotations
 import argparse
 import collections
 import csv
+import datetime
+import hashlib
 import io
 import json
 import sys
@@ -42,71 +72,200 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from m3av_hits import PRIMARY, SYSTEMS, paired  # noqa: E402
-
 B, SEED = 10_000, 20261101
+DHAKA = datetime.timezone(datetime.timedelta(hours=6))
+CUTOFF = datetime.datetime(2026, 11, 8, 23, 59, 59, tzinfo=DHAKA)
+CLARIFICATION_CUTOFF = datetime.datetime(2026, 11, 9, 23, 59, 59, tzinfo=DHAKA)
 VERDICTS = ("accept", "reject", "uncertain")
 CHECKS = ("key", "one", "slide", "legible")
+VOCAB = {"verdict": VERDICTS, "key": ("y", "n"), "one": ("y", "n"), "slide": ("y", "n"), "legible": ("y", "n"),
+         "shortcut": ("none", "knowledge", "transcript"),
+         "reason": ("OK", "KEY", "AMB", "UNSUP", "ILLEG", "SPAN", "UI", "OTHER")}
+FIELDS = ("verdict", *CHECKS, "shortcut", "reason", "note")
 FORM_COLS = {"verdict": "verdict", "key correct": "key", "one best answer": "one", "supported by the slide": "slide",
              "legible at 360p": "legible", "shortcut": "shortcut", "reason code": "reason", "note": "note",
              "qa_id": "qa_id", "n": "item", "item": "item"}
+REASON_CHECK = {"KEY": "key", "AMB": "one", "UNSUP": "slide", "ILLEG": "legible"}
+BLOCKS = {"h1": (1, 50), "h2": (51, 100), "t1": (1, 34), "t2": (35, 67), "t3": (68, 100),
+          "q1": (1, 25), "q2": (26, 50), "q3": (51, 75), "q4": (76, 100)}   # the page's blocks, in page order
 MODEL_REVIEWS = {"builder": Path("collab/review_builder_test.csv"), "auditor": Path("collab/review_auditor_test.csv")}
-CODES = {name: name.split()[0] for name in SYSTEMS}
+PAGE_FILES = (Path("collab/review_page/index.html"), Path("collab/review_page/template.html"))
 
 
-def complete(a: dict) -> bool:
-    return (all(a.get(c) in ("y", "n") for c in CHECKS) and a.get("shortcut") in ("none", "knowledge", "transcript")
-            and a.get("verdict") in VERDICTS and bool(a.get("reason"))
-            and (a["verdict"] == "accept" or bool((a.get("note") or "").strip())))
+class InputError(SystemExit):
+    pass
 
 
-def _norm(row: dict) -> dict:
-    out = {}
-    page = set(FORM_COLS.values())
+def sha(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def when(s: str) -> datetime.datetime:
+    t = datetime.datetime.fromisoformat(s.replace("Z", "+00:00"))
+    if t.tzinfo is None:
+        raise InputError(f"time without a zone: {s}")
+    return t
+
+
+def norm(row: dict) -> dict:
+    """Page field names (or the packet form's column names) -> the page's fields, values stripped."""
+    page, out = set(FORM_COLS.values()), {}
     for k, v in row.items():
         k = (k or "").strip().lower()
         key = k if k in page else next((FORM_COLS[c] for c in FORM_COLS if k.startswith(c)), None)
         if key:
             out[key] = str("" if v is None else v).strip()
-    for c in (*CHECKS, "verdict", "shortcut"):
+    for c in ("verdict", *CHECKS, "shortcut"):
         out[c] = out.get(c, "").lower()
+    out["reason"] = out.get("reason", "").upper()
     return out
 
 
-def read_csv(path: Path) -> list[tuple[str, dict]]:
+def answer_of(a: dict) -> tuple:
+    return tuple(a.get(f, "") for f in FIELDS)
+
+
+def read_csv(path: Path) -> list[dict]:
     text = path.read_text(encoding="utf-8-sig")
     lines = text.splitlines()
-    name = path.stem
     if lines and lines[0].lower().startswith("reviewer,"):
-        name = next(csv.reader([lines[0]]))[1] or name
         text = "\n".join(lines[1:])
-    answers = {}
-    for r in csv.DictReader(io.StringIO(text)):
-        a = _norm(r)
-        if a.get("qa_id"):
-            answers[a["qa_id"]] = a
-    return [(name, answers)]
+    return [norm(r) for r in csv.DictReader(io.StringIO(text))]
 
 
-def read_store(path: Path) -> list[tuple[str, dict]]:
-    """Every object in the saved JSON that holds an `answers` map is one reviewer."""
-    found = []
+def read_store(path: Path) -> dict:
+    """Document id -> document, for every object holding an `answers` map; the id is the object's own id field, or
+    else the key it sits under."""
+    docs: dict = {}
 
-    def walk(x, uid=None):
+    def walk(x, key=None):
         if isinstance(x, dict):
             if isinstance(x.get("answers"), dict):
-                ans = {v.get("qa_id"): _norm(v) | {"qa_id": v.get("qa_id")} for v in x["answers"].values()
-                       if isinstance(v, dict) and v.get("qa_id")}
-                found.append((x.get("name") or uid or f"{path.stem}#{len(found) + 1}", ans))
+                did = str(x.get("id") or x.get("doc_id") or x.get("path") or key)
+                if did in docs:
+                    raise InputError(f"{path.name}: document {did} appears twice")
+                docs[did] = x
                 return
+            inner = x.get("id") or x.get("doc_id") or x.get("path")
             for k, v in x.items():
-                walk(v, x.get("id") or x.get("doc_id") or k)
+                walk(v, inner or k)
         elif isinstance(x, list):
             for v in x:
-                walk(v, uid)
+                walk(v, key)
 
     walk(json.loads(path.read_text(encoding="utf-8")))
-    return found
+    return docs
+
+
+def records(ident: dict, base: Path) -> tuple[list, dict]:
+    """Every answer record (reviewer, qa_id, answer, time, source, role, kind) and the raw-file hashes."""
+    out, hashes = [], {}
+    for s in ident["sources"]:
+        f = base / s["file"]
+        hashes[s["file"]] = sha(f)
+        role = s.get("role", "cutoff")
+        if role not in ("cutoff", "clarification"):
+            raise InputError(f"{s['file']}: role must be cutoff or clarification")
+        if s["kind"] == "csv":
+            t = when(s["received"])
+            for a in read_csv(f):
+                out.append((s["reviewer"], a.get("qa_id", ""), a, t, s["file"], role, "csv"))
+        elif s["kind"] == "store":
+            docs = read_store(f)
+            unknown = sorted(set(docs) - set(s["docs"]))
+            if unknown:
+                raise InputError(f"{s['file']}: documents not in identities.json: {unknown}")
+            for did, doc in docs.items():
+                for k, v in doc["answers"].items():
+                    if not isinstance(v, dict) or not v.get("t"):
+                        raise InputError(f"{s['file']}: {did} {k} has no answer time")
+                    out.append((s["docs"][did], str(v.get("qa_id", "")), norm(v), when(v["t"]), s["file"], role, "store"))
+        else:
+            raise InputError(f"{s['file']}: kind must be store or csv")
+    return out, hashes
+
+
+def check_values(a: dict, qa_id: str, sample: set, where: str) -> None:
+    if qa_id not in sample:
+        raise InputError(f"{where}: question not in the review sample: {qa_id!r}")
+    for f, ok in VOCAB.items():
+        if a.get(f) and a[f] not in ok:
+            raise InputError(f"{where} {qa_id}: {f} = {a[f]!r} is not one of {ok}")
+
+
+def complete(a: dict) -> bool:
+    return all(a.get(f) for f in VOCAB) and (a["verdict"] == "accept" or bool(a.get("note")))
+
+
+def contradictory(a: dict) -> bool:
+    v, r = a["verdict"], a["reason"]
+    if v == "accept":
+        return r != "OK" or any(a[c] == "n" for c in CHECKS)
+    return r == "OK" or (r in REASON_CHECK and a[REASON_CHECK[r]] == "y")
+
+
+def pick(cands: list, rev: str, q: str, resolutions: dict) -> tuple:
+    """One final answer from a reviewer's candidate records for one question (see the module rules)."""
+    distinct = {answer_of(c[2]) for c in cands}
+    if len(distinct) == 1:
+        return max(cands, key=lambda c: c[3])
+    chosen = resolutions.get(rev, {}).get(q)
+    if chosen:
+        mine = [c for c in cands if c[4] == chosen]
+        if not mine or len({answer_of(c[2]) for c in mine}) != 1:
+            raise InputError(f"resolution for {q} names {chosen}, which holds no single answer for it")
+        return mine[0]
+    if all(c[6] == "store" for c in cands):
+        latest = max(c[3] for c in cands)
+        top = {answer_of(c[2]) for c in cands if c[3] == latest}
+        if len(top) == 1:
+            return next(c for c in cands if c[3] == latest)
+    raise InputError(f"conflicting answers for one reviewer and question {q} in {sorted({c[4] for c in cands})}; "
+                     "name the confirmed source in identities.json resolutions")
+
+
+def collect(ident: dict, base: Path, sample: set) -> dict:
+    """Final answers per reviewer and question, with the reasons any answer was not used."""
+    recs, hashes = records(ident, base)
+    for rev, q, a, _t, src, _role, _kind in recs:
+        check_values(a, q, sample, src)
+    res = ident.get("resolutions", {})
+    late, cut, clar = collections.Counter(), collections.defaultdict(list), collections.defaultdict(list)
+    for r in recs:
+        rev, q, _a, t, _src, role, _kind = r
+        if role == "cutoff":
+            if t <= CUTOFF:
+                cut[(rev, q)].append(r)
+            else:
+                late[rev] += 1
+        elif CUTOFF < t <= CLARIFICATION_CUTOFF:
+            clar[(rev, q)].append(r)
+    final, status = {}, {}
+    for key, cands in cut.items():
+        a = pick(cands, *key, res)[2]
+        if not complete(a):
+            status[key] = "incomplete"
+            continue
+        if contradictory(a):
+            if key in clar:
+                b = pick(clar[key], *key, res)[2]
+                if complete(b) and not contradictory(b):
+                    final[key], status[key] = b, "clarified"
+                    continue
+            status[key] = "contradictory, unresolved"
+            continue
+        final[key], status[key] = a, "valid"
+    unused = sum(len(v) for k, v in clar.items() if status.get(k) != "clarified")
+    return {"final": final, "status": status, "late": dict(late), "clarification_records_unused": unused,
+            "hashes": hashes}
+
+
+def combine(votes: list) -> tuple:
+    """(verdict, no_majority): the strict-majority verdict of the valid votes, else uncertain."""
+    c = collections.Counter(votes).most_common()
+    if c[0][1] * 2 > len(votes):
+        return c[0][0], False
+    return "uncertain", True
 
 
 def kappa(a: list, b: list) -> float | None:
@@ -128,11 +287,9 @@ def agreement(a: dict, b: dict) -> dict:
 
 
 def boot_rate(r: dict, w: dict) -> tuple:
-    """Weighted mean of r_l with weights w_l and a 95% bootstrap interval over the sampled lectures."""
     ls = sorted(r)
     rv, wv = np.array([r[x] for x in ls], float), np.array([w[x] for x in ls], float)
-    rng = np.random.default_rng(SEED)
-    idx = rng.integers(0, len(ls), (B, len(ls)))
+    idx = np.random.default_rng(SEED).integers(0, len(ls), (B, len(ls)))
     boots = (rv[idx] * wv[idx]).sum(1) / wv[idx].sum(1)
     return (round(100 * float((rv * wv).sum() / wv.sum()), 1), round(100 * float(np.percentile(boots, 2.5)), 1),
             round(100 * float(np.percentile(boots, 97.5)), 1))
@@ -140,157 +297,227 @@ def boot_rate(r: dict, w: dict) -> tuple:
 
 def rates(flag: dict, lecture: dict, n_l: dict) -> dict:
     r = {lecture[q]: float(v) for q, v in flag.items()}
-    return {"lecture_balanced": boot_rate(r, {x: 1.0 for x in r}), "question_weighted": boot_rate(r, {x: n_l[x] for x in r}),
-            "count": int(sum(flag.values())), "of": len(flag)}
+    return {"lecture_balanced": boot_rate(r, {x: 1.0 for x in r}),
+            "question_weighted": boot_rate(r, {x: n_l[x] for x in r}), "count": int(sum(flag.values())),
+            "of": len(flag)}
 
 
-def main() -> None:  # noqa: C901, PLR0915
-    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--human", nargs="+", required=True, type=Path)
-    p.add_argument("--out", type=Path, default=Path("reports/m3av"), help="folder for human_review_test.{json,md}")
-    a = p.parse_args()
-    sys.stdout.reconfigure(encoding="utf-8")
+def cohort_inputs() -> dict:
+    """The frozen inputs, each checked fail-closed."""
+    from m3av_hits import SYSTEMS  # noqa: PLC0415
+    from m3av_qa import CONDITIONS  # noqa: PLC0415
 
-    sample =json.loads(Path("reports/m3av/review_sample_test.json").read_text(encoding="utf-8"))
-    sample_ids = [x if isinstance(x, str) else x["qa_id"] for x in (sample.get("qa_ids") or sample.get("sample"))]
+    sample_doc = json.loads(Path("reports/m3av/review_sample_test.json").read_text(encoding="utf-8"))
+    sample = sample_doc["qa_ids"]
     hits = json.loads(Path("reports/m3av/hits_test.json").read_text(encoding="utf-8"))
     prim, ssrc = hits["per_question"], hits["s_src"]["per_question"]
+    if set(prim) != set(SYSTEMS) or set(ssrc) != set(SYSTEMS):
+        raise InputError("the hit report's systems are not the frozen roster")
     cohort = sorted(next(iter(prim.values())))
+    if len(cohort) != 853 or any(sorted(v) != cohort for d in (prim, ssrc) for v in d.values()):
+        raise InputError("the hit report does not cover the 853-question cohort for every system")
     lecture = {q: q.split(":")[1] for q in cohort}
-    n_l = collections.Counter(lecture.values())
-    if set(sample_ids) - set(cohort) or len(sample_ids) != 100:
-        raise SystemExit("the review sample does not match the cohort")
-
-    reviewers = []
-    for f in a.human:
-        reviewers += read_store(f) if f.suffix.lower() == ".json" else read_csv(f)
-    humans = {}
-    for i, (name, ans) in enumerate(reviewers, 1):
-        ok = {q: v for q, v in ans.items() if q in sample_ids and complete(v)}
-        humans[f"H{i}"] = {"answers": ok, "incomplete": sum(1 for q, v in ans.items() if q in sample_ids and not complete(v)),
-                           "outside_sample": sum(1 for q in ans if q not in sample_ids), "_name": name}
-    combined, votes = {}, {}
-    for q in sample_ids:
-        vs = [h["answers"][q]["verdict"] for h in humans.values() if q in h["answers"]]
-        if not vs:
-            continue
-        c = collections.Counter(vs).most_common()
-        combined[q] = c[0][0] if len(c) == 1 or c[0][1] > c[1][1] else "uncertain"
-        votes[q] = vs
-    reviewed = [q for q in sample_ids if q in combined]
-    rep = {"what": "blind human review of the 100 test packets (protocol 'Question review'; research log step 98)",
-           "reviewers": {k: {"complete": len(h["answers"]), "incomplete": h["incomplete"],
-                             "outside_sample": h["outside_sample"]} for k, h in humans.items()},
-           "items_reviewed": len(reviewed), "items_unreviewed": 100 - len(reviewed),
-           "items_with_several_reviewers": sum(len(v) > 1 for v in votes.values()),
-           "combined_counts": {v: sum(combined[q] == v for q in reviewed) for v in VERDICTS}}
-    if not reviewed:
-        raise SystemExit("no complete human answer for a sampled question")
-    rep["rejection_rate"] = rates({q: combined[q] == "reject" for q in reviewed}, lecture, n_l)
-    rep["reject_or_uncertain_rate"] = rates({q: combined[q] != "accept" for q in reviewed}, lecture, n_l)
-
-    def per_item(field):
-        out = collections.Counter()
-        for h in humans.values():
-            for v in h["answers"].values():
-                out[v[field]] += 1
-        return dict(out)
-
-    rep["checks"] = {c: per_item(c) for c in (*CHECKS, "shortcut", "reason")}
+    if len(sample) != 100 or len(set(sample)) != 100 or len({lecture.get(q) for q in sample}) != 100 \
+            or set(sample) - set(cohort):
+        raise InputError("the review sample is not 100 distinct cohort questions from 100 lectures")
+    qa = collections.defaultdict(dict)
+    for line in Path("runs/m3av/qa/test/records.jsonl").read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            r = json.loads(line)
+            if r["qa_id"] in qa[r["condition"]]:
+                raise InputError(f"repeated QA record: {r['condition']} {r['qa_id']}")
+            qa[r["condition"]][r["qa_id"]] = int(r["correct"])
+    if set(qa) != set(CONDITIONS) or any(sorted(v) != cohort for v in qa.values()):
+        raise InputError("the QA records do not cover every condition and question exactly once")
     model = {}
     for k, f in MODEL_REVIEWS.items():
-        model[k] = {r["qa_id"]: r["verdict"] for r in read_csv(f)[0][1].values() if r.get("verdict") in VERDICTS}
-    rep["agreement"] = {f"human vs {k}": agreement(combined, m) for k, m in model.items()}
-    rep["agreement"]["builder vs auditor"] = agreement(model["builder"], model["auditor"])
-    hk = list(humans)
-    for i, x in enumerate(hk):
-        for y in hk[i + 1:]:
-            g = agreement({q: v["verdict"] for q, v in humans[x]["answers"].items()},
-                          {q: v["verdict"] for q, v in humans[y]["answers"].items()})
+        rows = {r["qa_id"]: r["verdict"] for r in read_csv(f)}
+        if set(rows) != set(sample):
+            raise InputError(f"the {k} review does not cover the sample")
+        model[k] = rows
+    order = sorted(sample, key=lambda q: hashlib.sha256(f"human-review:{q}".encode()).hexdigest())
+    files = [Path("reports/m3av/review_sample_test.json"), Path("reports/m3av/hits_test.json"),
+             Path("runs/m3av/qa/test/records.jsonl"), Path("docs/v3/m3av_qa_test_outputs.json"),
+             Path(__file__), *MODEL_REVIEWS.values(), *[p for p in PAGE_FILES if p.exists()]]
+    return {"sample": sample, "cohort": cohort, "lecture": lecture, "prim": prim, "ssrc": ssrc, "qa": dict(qa),
+            "model": model, "page_item": {q: i + 1 for i, q in enumerate(order)},
+            "codes": {s: s.split()[0] for s in SYSTEMS},
+            "hashes": {str(p).replace("\\", "/"): sha(p) for p in files}}
+
+
+def analyse(c: dict, got: dict) -> dict:  # noqa: PLR0915
+    from m3av_hits import PRIMARY, paired  # noqa: PLC0415
+
+    sample, cohort, lecture = c["sample"], c["cohort"], c["lecture"]
+    n_l = collections.Counter(lecture.values())
+    revs = sorted({k[0] for k in got["status"]} | set(got["late"]))
+    alias = {r: f"H{i}" for i, r in enumerate(revs, 1)}
+    votes = collections.defaultdict(dict)
+    for (rev, q), a in got["final"].items():
+        votes[q][alias[rev]] = a["verdict"]
+    combined, no_major = {}, []
+    for q in sample:
+        if votes.get(q):
+            combined[q], nm = combine(list(votes[q].values()))
+            if nm:
+                no_major.append(q)
+    reviewed = [q for q in sample if q in combined]
+    missing = [q for q in sample if q not in combined]
+    full = not missing
+    st = collections.Counter(got["status"].values())
+    rep = {"what": "blind human review of the 100 test packets (protocol 'Question review'; research log steps 98-99)",
+           "rules": {"cutoff": CUTOFF.isoformat(), "clarification_cutoff": CLARIFICATION_CUTOFF.isoformat(),
+                     "combination": "strict majority of valid votes, else uncertain"},
+           "input_hashes": {**c["hashes"], **{f"raw/{k}": v for k, v in got["hashes"].items()}},
+           "reviewers": {alias[r]: {"valid": sum(1 for k, s in got["status"].items() if k[0] == r and s in
+                                                 ("valid", "clarified")),
+                                    **{s: sum(1 for k, x in got["status"].items() if k[0] == r and x == s)
+                                       for s in ("incomplete", "contradictory, unresolved", "clarified")},
+                                    "late": got["late"].get(r, 0)} for r in revs},
+           "answer_status": dict(st), "clarification_records_unused": got["clarification_records_unused"],
+           "coverage": {"items_reviewed": len(reviewed), "items_unreviewed": len(missing),
+                        "votes_per_item": dict(collections.Counter(len(votes.get(q, {})) for q in sample)),
+                        "complete": full, "unreviewed": [{"qa_id": q, "page_item": c["page_item"][q],
+                                                          "blocks": [b for b, (x, y) in BLOCKS.items()
+                                                                     if x <= c["page_item"][q] <= y]}
+                                                         for q in missing]},
+           "combined_counts": {v: sum(combined[q] == v for q in reviewed) for v in VERDICTS},
+           "no_majority": len(no_major)}
+    if not reviewed:
+        raise InputError("no valid human vote for any sampled question")
+    label = ("planned estimate (all 100 sampled items reviewed)" if full else
+             f"observed reviews only: {len(reviewed)} of 100 items, conditional on the responders; not the planned "
+             "cohort estimate")
+    rep["rejection_rate"] = {"label": label, **rates({q: combined[q] == "reject" for q in reviewed}, lecture, n_l)}
+    rep["reject_or_uncertain_rate"] = {"label": label,
+                                       **rates({q: combined[q] != "accept" for q in reviewed}, lecture, n_l)}
+    counts = {f: collections.Counter(a[f] for a in got["final"].values()) for f in (*CHECKS, "shortcut", "reason")}
+    rep["counts_over_valid_human_answers"] = {"answers": len(got["final"]), **{f: dict(v) for f, v in counts.items()}}
+    rep["agreement"] = {f"human vs {k}": agreement(combined, m) for k, m in c["model"].items()}
+    rep["agreement"]["builder vs auditor"] = agreement(c["model"]["builder"], c["model"]["auditor"])
+    hs = sorted(alias.values(), key=lambda h: int(h[1:]))
+    for i, x in enumerate(hs):
+        for y in hs[i + 1:]:
+            g = agreement({q: v[x] for q, v in votes.items() if x in v}, {q: v[y] for q, v in votes.items() if y in v})
             if g["n"]:
                 rep["agreement"][f"{x} vs {y}"] = g
-    rep["model_reviews_on_reviewed_items"] = {k: {v: sum(m.get(q) == v for q in reviewed) for v in VERDICTS}
-                                             for k, m in model.items()}
+    masks = {"secondary 1: without human-rejected": {q for q in reviewed if combined[q] == "reject"},
+             "conservative: without human-rejected or uncertain": {q for q in reviewed if combined[q] != "accept"}}
+    prim, ssrc, qa, codes = c["prim"], c["ssrc"], c["qa"], c["codes"]
 
-    masks = {"full cohort": set(),
-             "without human-rejected": {q for q in reviewed if combined[q] == "reject"},
-             "without human-rejected or uncertain": {q for q in reviewed if combined[q] != "accept"}}
-    rep["masks"] = {k: len(v) for k, v in masks.items()}
-    rec = [json.loads(x) for x in Path("runs/m3av/qa/test/records.jsonl").read_text(encoding="utf-8").splitlines()
-           if x.strip()]
-    qa = collections.defaultdict(dict)
-    for r in rec:
-        qa[r["condition"]][r["qa_id"]] = int(r["correct"])
-    rep["secondary_1"] = {}
-    for mk, drop in masks.items():
-        keep = [q for q in cohort if q not in drop]
+    def scores(keep):
         sub = {"questions": len(keep), "lectures": len({lecture[q] for q in keep}),
-               "hit@4": {CODES[s]: round(100 * float(np.mean([prim[s][q] for q in keep])), 1) for s in SYSTEMS},
-               "s_src_hit@4": {CODES[s]: round(100 * float(np.mean([ssrc[s][q] for q in keep])), 1) for s in SYSTEMS},
-               "qa_accuracy": {c: round(100 * float(np.mean([v[q] for q in keep])), 1) for c, v in qa.items()},
+               "hit@4": {codes[s]: round(100 * float(np.mean([prim[s][q] for q in keep])), 1) for s in prim},
+               "s_src_hit@4": {codes[s]: round(100 * float(np.mean([ssrc[s][q] for q in keep])), 1) for s in ssrc},
+               "qa_accuracy": {k: round(100 * float(np.mean([v[q] for q in keep])), 1) for k, v in qa.items()},
                "contrasts": {}}
         for name, (x, y) in PRIMARY.items():
             d = paired({q: prim[x][q] for q in keep}, {q: prim[y][q] for q in keep}, lecture)
             s = paired({q: ssrc[x][q] for q in keep}, {q: ssrc[y][q] for q in keep}, lecture)
             sub["contrasts"][name] = {"hit@4": {k: d[k] for k in ("diff", "lo", "hi")},
                                       "s_src": {k: s[k] for k in ("diff", "lo", "hi")}}
-        rep["secondary_1"][mk] = sub
-    acc = [q for q in reviewed if combined[q] == "accept"]
-    rep["accepted_sample_only"] = {"questions": len(acc),
-                                   "hit@4": {CODES[s]: round(100 * float(np.mean([prim[s][q] for q in acc])), 1)
-                                             if acc else None for s in SYSTEMS}}
-    rep["per_item"] = {q: {"combined": combined.get(q), "votes": votes.get(q, []),
-                           "builder": model["builder"].get(q), "auditor": model["auditor"].get(q)} for q in sample_ids}
-    a.out.mkdir(parents=True, exist_ok=True)
-    (a.out / "human_review_test.json").write_text(json.dumps(rep, indent=1), encoding="utf-8")
+        return sub
 
+    rep["full_cohort"] = scores(cohort)
+    rep["masks"] = {}
+    for mk, drop in masks.items():
+        sub = scores([q for q in cohort if q not in drop])
+        kept_l = {lecture[q] for q in cohort if q not in drop}
+        sub.update({"removed_questions": len(drop), "removed_lectures": len({lecture[q] for q in drop} - kept_l),
+                    "dropped": [{"qa_id": q, "combined": combined[q], "votes": votes[q],
+                                 "reasons": sorted({got["final"][(r, q)]["reason"] for r in revs if (r, q) in got["final"]})}
+                                for q in sorted(drop)],
+                    "per_lecture_attrition": dict(collections.Counter(lecture[q] for q in drop)),
+                    "note": "uncertain and unreviewed questions kept" if mk.startswith("secondary") else
+                    "unreviewed questions kept"})
+        rep["masks"][mk] = sub
+    acc = [q for q in reviewed if combined[q] == "accept"]
+    rep["accepted_sample_only"] = {"label": "descriptive; the accepted sampled cases, not a cohort estimate",
+                                   "questions": len(acc), "lectures": len({lecture[q] for q in acc}),
+                                   "hit@4": {codes[s]: round(100 * float(np.mean([prim[s][q] for q in acc])), 1)
+                                             if acc else None for s in prim}}
+    rep["per_item"] = {q: {"page_item": c["page_item"][q], "combined": combined.get(q, "unreviewed"),
+                           "votes": votes.get(q, {}), "no_majority": q in no_major,
+                           "builder": c["model"]["builder"][q], "auditor": c["model"]["auditor"][q]} for q in sample}
+    return rep
+
+
+def markdown(rep: dict) -> str:
     def ci(t):
         return f"{t[0]} ({t[1]}..{t[2]})"
 
+    cov = rep["coverage"]
     md = ["# Lecture study: blind human review of the 100 test packets", "",
-          "Analyses declared in the protocol (Question review, amendment 3) and fixed in research log step 98 before any "
-          "human verdict was seen. Labels of the cohort are otherwise automatic. Sensitivity results are descriptive and "
-          "never replace the primary result.", "",
-          f"Reviewers: {len(humans)} ({', '.join(f'{k} {v['complete']} items' for k, v in rep['reviewers'].items())}). "
-          f"Items reviewed: {len(reviewed)} of 100; with several reviewers: {rep['items_with_several_reviewers']}.", "",
-          "| Combined human verdict | accept | reject | uncertain |", "|---|---|---|---|",
-          "| items | " + " | ".join(str(rep["combined_counts"][v]) for v in VERDICTS) + " |", "",
-          "| Rate, percent (95% lecture-bootstrap interval) | lecture-balanced | cohort question-weighted |",
-          "|---|---|---|",
-          f"| rejected | {ci(rep['rejection_rate']['lecture_balanced'])} | {ci(rep['rejection_rate']['question_weighted'])} |",
-          f"| rejected or uncertain | {ci(rep['reject_or_uncertain_rate']['lecture_balanced'])} | "
-          f"{ci(rep['reject_or_uncertain_rate']['question_weighted'])} |", "",
-          "## Agreement", "", "| Pair | items | agree | percent | Cohen's kappa |", "|---|---|---|---|---|"]
+          "Analyses declared in the protocol (Question review, amendment 3) and fixed in research log steps 98-99 before "
+          "any human verdict was seen. The cohort's labels are otherwise automatic. Sensitivity results are descriptive "
+          "and never replace the primary result. Intervals cover sampling only, not annotator error or non-response.", "",
+          f"Reviewers {len(rep['reviewers'])}: " + "; ".join(
+              f"{k} {v['valid']} valid, {v['incomplete']} incomplete, {v['contradictory, unresolved']} unresolved, "
+              f"{v['late']} late" for k, v in rep["reviewers"].items()) + ".",
+          f"Items reviewed {cov['items_reviewed']} of 100 (votes per item: {cov['votes_per_item']}); "
+          f"no strict majority: {rep['no_majority']}."]
+    if cov["unreviewed"]:
+        md.append("Unreviewed items (page number): " + ", ".join(str(u["page_item"]) for u in cov["unreviewed"]) + ".")
+    md += ["", "| Combined human verdict | accept | reject | uncertain |", "|---|---|---|---|",
+           "| items | " + " | ".join(str(rep["combined_counts"][v]) for v in VERDICTS) + " |", "",
+           f"Rates: {rep['rejection_rate']['label']}.", "",
+           "| Rate, percent (95% lecture-bootstrap interval) | lecture-balanced | cohort question-weighted |",
+           "|---|---|---|",
+           f"| rejected | {ci(rep['rejection_rate']['lecture_balanced'])} | {ci(rep['rejection_rate']['question_weighted'])} |",
+           f"| rejected or uncertain | {ci(rep['reject_or_uncertain_rate']['lecture_balanced'])} | "
+           f"{ci(rep['reject_or_uncertain_rate']['question_weighted'])} |", "",
+           "## Agreement", "", "| Pair | items | agree | percent | Cohen's kappa |", "|---|---|---|---|---|"]
     for k, g in rep["agreement"].items():
         md.append(f"| {k} | {g['n']} | {g['agree']} | {g['percent']} | {g['kappa']} |")
-    md += ["", "## Checks (all complete human answers)", ""]
-    for k, v in rep["checks"].items():
-        md.append(f"- {k}: " + ", ".join(f"{x} {n}" for x, n in sorted(v.items())))
-    md += ["", "## Secondary 1: the cohort with the human-rejected sample questions removed (descriptive)", "",
-           "| Mask | questions | S1 | S2m | R5 | L1 S2m − R5 (95% interval) | L2 S2m − S1 (95% interval) |",
+    cnt = rep["counts_over_valid_human_answers"]
+    md += ["", f"## Counts over the {cnt['answers']} valid human answers (reviewers can overlap)", ""]
+    for k, v in cnt.items():
+        if k != "answers":
+            md.append(f"- {k}: " + ", ".join(f"{x} {n}" for x, n in sorted(v.items())))
+    md += ["", "## Hit@4 with the human-rejected sample questions removed (descriptive)", "",
+           "| Cohort | questions | S1 | S2m | R5 | L1 S2m − R5 (95% interval) | L2 S2m − S1 (95% interval) |",
            "|---|---|---|---|---|---|---|"]
-    for mk, sub in rep["secondary_1"].items():
+    rows = {"full cohort (primary)": rep["full_cohort"], **rep["masks"]}
+
+    def d(x):
+        return f"{x['diff']:+.1f} ({x['lo']:+.1f}..{x['hi']:+.1f})"
+
+    for mk, sub in rows.items():
         h, c = sub["hit@4"], sub["contrasts"]
-        md.append(f"| {mk} | {sub['questions']} | {h['S1']} | {h['S2m']} | {h['R5']} | "
-                  f"{c['L1']['hit@4']['diff']:+.1f} ({c['L1']['hit@4']['lo']:+.1f}..{c['L1']['hit@4']['hi']:+.1f}) | "
-                  f"{c['L2']['hit@4']['diff']:+.1f} ({c['L2']['hit@4']['lo']:+.1f}..{c['L2']['hit@4']['hi']:+.1f}) |")
-    md += ["", "S-src hit@4 under the same masks:", "",
-           "| Mask | S1 | S2m | R5 | L1 (95% interval) | L2 (95% interval) |", "|---|---|---|---|---|---|"]
-    for mk, sub in rep["secondary_1"].items():
+        md.append(f"| {mk} | {sub['questions']} | {h['S1']} | {h['S2m']} | {h['R5']} | {d(c['L1']['hit@4'])} | "
+                  f"{d(c['L2']['hit@4'])} |")
+    md += ["", "S-src hit@4:", "", "| Cohort | S1 | S2m | R5 | L1 | L2 |", "|---|---|---|---|---|---|"]
+    for mk, sub in rows.items():
         h, c = sub["s_src_hit@4"], sub["contrasts"]
-        md.append(f"| {mk} | {h['S1']} | {h['S2m']} | {h['R5']} | "
-                  f"{c['L1']['s_src']['diff']:+.1f} ({c['L1']['s_src']['lo']:+.1f}..{c['L1']['s_src']['hi']:+.1f}) | "
-                  f"{c['L2']['s_src']['diff']:+.1f} ({c['L2']['s_src']['lo']:+.1f}..{c['L2']['s_src']['hi']:+.1f}) |")
-    md += ["", "Answer-model accuracy under the same masks (descriptive):", "",
-           "| Mask | S1 | S2m | R5 | q_only | t_only |", "|---|---|---|---|---|---|"]
-    for mk, sub in rep["secondary_1"].items():
+        md.append(f"| {mk} | {h['S1']} | {h['S2m']} | {h['R5']} | {d(c['L1']['s_src'])} | {d(c['L2']['s_src'])} |")
+    md += ["", "Answer-model accuracy (descriptive):", "", "| Cohort | S1 | S2m | R5 | q_only | t_only |",
+           "|---|---|---|---|---|---|"]
+    for mk, sub in rows.items():
         q = sub["qa_accuracy"]
         md.append(f"| {mk} | {q['S1']} | {q['S2m']} | {q['R5']} | {q['q_only']} | {q['t_only']} |")
     s = rep["accepted_sample_only"]
-    md += ["", f"Accepted sample questions alone ({s['questions']}): hit@4 "
-           + ", ".join(f"{k} {v}" for k, v in s["hit@4"].items()) + "."]
-    (a.out / "human_review_test.md").write_text("\n".join(md) + "\n", encoding="utf-8")
-    print("\n".join(md))
+    md += ["", f"Accepted sample questions alone ({s['questions']} questions, {s['lectures']} lectures; {s['label']}): "
+           "hit@4 " + ", ".join(f"{k} {v}" for k, v in s["hit@4"].items()) + ".",
+           "", "All systems and conditions, dropped ids and reasons, and per-lecture attrition: human_review_test.json."]
+    return "\n".join(md) + "\n"
+
+
+def main() -> None:
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--dir", type=Path, default=Path("runs/m3av/review_human"), help="raw/ and identities.json")
+    p.add_argument("--out", type=Path, default=Path("reports/m3av"), help="folder for human_review_test.{json,md}")
+    a = p.parse_args()
+    sys.stdout.reconfigure(encoding="utf-8")
+    c = cohort_inputs()
+    ident = json.loads((a.dir / "identities.json").read_text(encoding="utf-8"))
+    got = collect(ident, a.dir, set(c["sample"]))
+    rep = analyse(c, got)
+    rep["input_hashes"]["identities.json (private)"] = sha(a.dir / "identities.json")
+    a.out.mkdir(parents=True, exist_ok=True)
+    (a.out / "human_review_test.json").write_text(json.dumps(rep, indent=1), encoding="utf-8")
+    md = markdown(rep)
+    (a.out / "human_review_test.md").write_text(md, encoding="utf-8")
+    print(md)
 
 
 if __name__ == "__main__":

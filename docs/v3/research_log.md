@@ -1896,7 +1896,8 @@ Where the gain of the best framework with speech (S1t) over the starting design 
 - **Generator.** `scripts/m3av_review_site.py` reads the packets and writes the page data and images to a folder
   outside the repo.
 - **Next.** Once the human verdicts are in, compare them with the two model reviews (step 89). Then compute the
-  sample rejection rate and the human-validated S-src sensitivity, as declared in the protocol, without changing
+  sample rejection rate and the human-review-filtered sensitivity of the automatic source-slide proxy (step 99
+  corrects "human-validated S-src sensitivity"), as declared in the protocol, without changing
   L1, L2 or any method.
 
 ## Step 96 (2026-11-05): where the source slide is lost (auditor P125)
@@ -1921,14 +1922,18 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   | S3 | 77.8 | 22.2 | 7.0 | 70.8 |
   | R5 | (only the chosen frames saved) | | | 76.1 |
 
-  - Head A's gain over S1 is entirely at the candidate stage: the slide is in the pool for 85.8% of questions
-    instead of 77.8%. Selection keeps about 90% of what the pool holds in every framework system (S1 90.2%,
+  - S2m's saved pool covers the slide (proxy) for 85.8% of questions instead of S1's 77.8%, partly offset by
+    selection losses. "Pool" means the retained pool after proposal, sampling, caps and merging, so this does not
+    isolate retrieval, does not show the fact is absent from the video, and does not attribute the gain to the
+    learned residual alone (step 99 corrects "Head A's gain over S1 is entirely at the candidate stage"). Selection keeps about 90% of what the pool holds in every framework system (S1 90.2%,
     S2m 89.8%). Head B does not change the pool and picks about as well as S1.
   - S2m's two losses are of similar size: 14.2 points at the candidates and 8.8 at selection. With perfect
     selection from its own pool, S2m would reach 85.8 on dev against R5's 76.1. This is an upper bound, not a
     result.
-  - So for a redesign, dev points first at the selection step over the Head A pool (P124's visible slide-state
-    ranking), and second at candidate recall. This is a lead for a fresh held-out protocol, not a finding.
+  - For a redesign, both losses are candidates; pool loss (14.2) is the larger. Selection first is an engineering
+    hypothesis that needs cost and fact-visibility evidence, and 85.8 is a proxy upper bound under perfect
+    selection, not an attainable gain over R5 (step 99 corrects "dev points first at the selection step"). Any
+    choice is made on dev and confirmed on fresh held-out lectures.
 - **Test (853 questions): post hoc and descriptive.** The test is revealed, so nothing here chooses a method. The
   stage split matches dev: S2m slide in pool 89.0%, lost at candidates 11.0, at selection 9.6, picked 79.4.
   - Seeing the slide goes with correct answers. When S2m picked the slide, the answer model was right on 93.9% of
@@ -1936,7 +1941,8 @@ Where the gain of the best framework with speech (S1t) over the starting design 
     of 94.
   - Without questions the question-only control answers correctly: 90.5% of 328, 35.9% of 39 and 55.1% of 49.
     Every framework system and R3-R5 show the same pattern (picked 91-95%, otherwise 49-67%).
-  - S2m outcomes on all 853 questions: picked and correct 636; picked and wrong 41 (answer-stage loss, 4.8%); not
+  - S2m outcomes on all 853 questions: picked and correct 636; picked and wrong 41 (proxy hit with a wrong answer, 4.8%; cause not yet adjudicated: unreadable frames, false
+    visibility matches, missing facts, ambiguous keys or answerer errors; step 99 corrects "answer-stage loss"); not
     picked and correct 108; not picked and wrong 68.
   - This is the item-level link that step 92 did not claim. It is an association (questions where the slide is
     easy to find may also be easier), not a causal effect.
@@ -2019,3 +2025,89 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   84 / 10 / 6.
 - **Next.** When the human answers arrive (owner: about 8 November), save the store to `runs/m3av/review_human/`
   and run the script once. The outputs are `reports/m3av/human_review_test.{json,md}`.
+
+## Step 99 (2026-11-06): human-review analysis corrected before any human verdict (auditor P140-P151)
+- **Access record (P146, P151).** Nobody on the analysis side has seen a human answer.
+  - The builder read the review page's store once, on 2026-11-05 at 16:43 UTC (22:43 Dhaka), to test the page
+    before it was shared. The store was empty ("No documents matched"), and it has not been read since.
+  - Known before this plan: the primary and test QA results and both model reviews.
+  - This plan is a descriptive supplement written before any human outcome, not a retroactive preregistration of
+    the test study. The step-98 version stays in git (commit 560c33f).
+- **Corrections to `scripts/m3av_human_review.py`.**
+  - **Vote (P143).** A strict majority of an item's valid votes decides; otherwise the item is uncertain, reported
+    as "no majority". Step 98's code took a plurality: for example, 2 accept, 1 reject and 1 uncertain gave accept.
+  - **Identity and revisions (P143).**
+    - A private `identities.json` lists every source and gives each a stable reviewer key; unlisted sources or
+      documents stop the run.
+    - Each reviewer has one final answer per question. Identical copies count once. Between differing store
+      versions, the latest answer time is a revision and wins. Any other difference stops the run unless the
+      reviewer's confirmed source is named: a CSV against the store, two rows in one file, or equal times. Import
+      order never decides.
+    - Reviewers appear as H1, H2, ... with per-item votes. The raw exports and the map stay private and are hashed.
+  - **Validity (P144).**
+    - An empty field makes the answer incomplete: missing for that reviewer, not a vote.
+    - A non-empty value outside the page's vocabulary, or a question outside the sample, stops the run. Reason
+      codes are limited to OK, KEY, AMB, UNSUP, ILLEG, SPAN, UI and OTHER.
+    - The shortcut never affects validity.
+  - **Contradictions (P144).** The following are contradictory:
+    - an accept with any check answered n, or with any reason other than OK;
+    - a reject or uncertain with reason OK;
+    - KEY with key y, AMB with one y, UNSUP with slide y, and ILLEG with legible y.
+
+    Nothing is inferred from the fields. The owner asks the reviewer, blind, to recheck the item. A revision made by
+    9 November, 23:59 Dhaka, in a snapshot marked "clarification", replaces the answer. Otherwise the answer is
+    unresolved and is not a vote.
+  - **Cutoff and eligibility (P146).** Answers count if made (store time) or received (CSV) by 8 November, 23:59
+    Dhaka; later ones are reported as late. Reviewers are the owner's group members, blind to systems, results and
+    model reviews. The builder, the auditor and the owner are not reviewers.
+  - **Coverage (P145).**
+    - Missing is kept distinct from uncertain.
+    - The rates are the planned estimates only if all 100 items are reviewed. Otherwise they are labelled
+      observed-review rates, conditional on the responders, and the missing items and page blocks are listed.
+    - The intervals cover sampling only. Check and reason counts are over valid answers, so they can exceed 100.
+  - **Masks (P142, P146).**
+    - **Secondary 1** is the declared mask: the human-rejected sample questions are removed. Uncertain and
+      unreviewed questions are kept, which does not validate them.
+    - **Conservative:** the reject-or-uncertain mask, labelled as such.
+    - **Accepted sample only:** labelled descriptive, with its question and lecture counts.
+
+    Each mask lists its dropped ids and reasons, the questions and lectures retained and removed, the per-lecture
+    attrition, and every system and condition, controls included.
+  - **Fail-closed checks (P146).** The run stops unless:
+    - the sample is exactly 100 distinct cohort questions from 100 lectures;
+    - the hit report's systems are the frozen roster and cover all 853 questions;
+    - every QA condition covers every question exactly once;
+    - both model reviews cover the sample.
+
+    The output records the SHA-256 of the sample, the hit report, the QA records and seal, the model reviews, the
+    page files, the script, every raw export and the identity map.
+- **Tests.** `tests/test_m3av_human_review.py` holds 11 synthetic cases, all passing:
+  - strict majority, and no majority;
+  - identical exports;
+  - store revisions;
+  - a CSV-against-store conflict, with and without a resolution;
+  - a conflict inside one file;
+  - invalid reasons and ids;
+  - an unlisted document;
+  - incomplete and late answers;
+  - contradictions, with and without a timely clarification;
+  - missing items, with an observed-review label;
+  - zero accepted items;
+  - no valid vote.
+- **Dry run.** The two model reviews stood in for reviewers, and the output went to a scratch folder. The auditor's
+  own codes (for example SMALL_TEXT) were stopped by the vocabulary check, as intended; for this dry run only, they
+  were mapped onto the page's codes. The full-cohort row reproduces the frozen report: S2m 79.4; L1 −0.5
+  (−3.8..+2.9); L2 +5.3 (+2.7..+7.8).
+- **Review page (P147).** Its source and a manifest are in the local collaboration folder, outside git:
+  `collab/review_page/{index,template}.html`, `items.json` and `manifest.json`. `index.html` has SHA-256
+  `941fb430457eb522626446de427643f72562651ba8d54f5abffa31a1a6798159`.
+  - **Storage rules.** `people`: read admin, write owner. `people/{self}`: read view, write interact.
+  - So a Contributor reads and writes only their own document, and reading all documents needs the owner or an
+    Editor. Reviewers must be invited as Contributors, not Editors.
+- **Wording (P147, P148).**
+  - Step 95 now speaks of a human-review-filtered sensitivity of the automatic proxy, not human validation.
+  - In step 96:
+    - "candidate stage" becomes the retained pool's proxy coverage, not a gain caused by Head A;
+    - the 41 wrong answers with a picked slide are "proxy hit with a wrong answer, cause not yet adjudicated";
+    - selection is no longer ranked first.
+  - The replaced phrases are quoted in place.
