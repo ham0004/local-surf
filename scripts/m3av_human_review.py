@@ -105,8 +105,8 @@ EXPECTED = {
     "runs/m3av/qa/test/records.jsonl": ("lf", "78760d3248ccd6e7ba69dbdf420ad88b037340d44c4c60b57b8cd721f65cc51f"),
     "collab/review_builder_test.csv": ("bytes", "8e77f77745f2ad65715662d7a112b215a35ccbee509aacdedaf6245426f699f9"),
     "collab/review_auditor_test.csv": ("bytes", "b60a0bf85e0fba92ef2e2ecc2b12a7736c7092f4cd0b5a77c29cec92befe2cb4"),
-    "collab/review_page/index.html": ("bytes", "0f2a69f4c2120a28d7e7b1e4554026dd9b98a0924f0dd4fcd00c37088f19d597"),
-    "collab/review_page/template.html": ("bytes", "1ebb157d3508d050c84829fca6bdee48c4bb9167500324a7d069e97a6c5fc7b3"),
+    "collab/review_page/index.html": ("bytes", "8c6e4b4368b221ad9fe586300db5b0e94b570604e44487f925a4948042ae5ef5"),
+    "collab/review_page/template.html": ("bytes", "7b5d9c3ec89e36261cdcd8ababf4b59e9bb9a4a64d5b4f6dba6651c122f4c418"),
     "collab/review_page/items.json": ("bytes", "dc258efe612668436a2c766c80062efe369c7606c5eb12b0b2aeab1a4886031d"),
 }
 

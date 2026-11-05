@@ -2187,3 +2187,12 @@ Where the gain of the best framework with speech (S1t) over the starting design 
     caused by the cap.
   - **Pool times** are the sum of four instrumented components. What they leave out is listed. The scorer column
     includes the ordinary speech scorer in every system.
+- **Review page, version 5 (same day).** The owner asked what happens when a reviewer signs out. In version 4,
+  answers made while signed out stayed in that browser's shared draft, and after signing in they were not offered,
+  so they were not lost but did not appear. The explicit "Restore" offer now covers them too; nothing is loaded or
+  uploaded without the click.
+  - Saved answers in the shared record are untouched by a sign-out: they reappear when the reviewer signs in again
+    with the same account.
+  - `index.html` SHA-256 `8c6e4b4368b221ad9fe586300db5b0e94b570604e44487f925a4948042ae5ef5`. The version-4 source is kept in `collab/review_page/v4/`,
+    and EXPECTED is updated.
+
