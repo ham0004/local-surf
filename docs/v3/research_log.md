@@ -2196,3 +2196,22 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   - `index.html` SHA-256 `8c6e4b4368b221ad9fe586300db5b0e94b570604e44487f925a4948042ae5ef5`. The version-4 source is kept in `collab/review_page/v4/`,
     and EXPECTED is updated.
 
+## Step 101 (2026-11-06): owner-only progress box on the review page; no answers read
+- **Why.** The owner asked how many people have answered. Reading the store would show the builder every verdict,
+  so the builder still does not read it. Instead, the review page (version 6, same link) gives the owner a box that
+  shows counts only.
+- **What the box shows.** The number of reviewers who started. For each reviewer, their name, block and the number
+  of items finished, by the page's own completeness rule. The item numbers nobody has finished, and how many items
+  have two or more reviewers.
+- **What it never shows:** verdicts, checks, shortcuts, reasons or notes.
+- **How it works.** The box appears only when `user.isOwner()` is true. The storage rules already let the owner read
+  `people`, so the owner's browser loads the documents to count them; the code displays only the counts. Reviewers
+  see no change.
+- **Why counts are allowed.** Counts say nothing about outcomes, and they let the owner fill gaps before the cutoff.
+  Using them to reassign blocks is allowed. Using them to steer what reviewers answer is not: no reviewer is told
+  another's verdict.
+- **Builder access stays as recorded in step 99.** The builder reads the store once, at the 8 November 23:59
+  cutoff, saves it unedited as the cutoff snapshot, and only then runs the fixed analysis.
+- **Files.** `index.html` SHA-256 `7f3024ee058a4f2f8d44aa20c13142ce0d05d750d459489e132e856ff2f935cb`. Version 5 is kept in `collab/review_page/v5/`,
+  and EXPECTED is updated.
+
