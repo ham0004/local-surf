@@ -1868,3 +1868,33 @@ Where the gain of the best framework with speech (S1t) over the starting design 
     names the 459-question set as the earlier mixed benchmark (404 of its questions are Video-MMMU lectures).
   - Still open, scientifically: the blind human review (owner), then lecture evidence-loss diagnostics and
     resource profiling on dev.
+
+## Step 95 (2026-11-05): blind human review set up
+- **What.** The 100 sealed review packets (`runs/m3av/review_test/`, step 87) are now a private review page for
+  the owner's group. The packets themselves are unchanged. The page is not in git because it holds test
+  questions and M3AV images.
+- **What a reviewer sees per item.**
+  - The question with the key marked, and the evidence text.
+  - The saved slide at full resolution, and the three 360p frames from the proposed span.
+  - The transcript lines inside the span.
+  - YouTube links that open at the slide start, at each proposed span and at each frame. The video IDs come
+    from M3AV's `.ytbUrl` files; YouTube times can differ from ours by a second or two (step 80 video check).
+- **What a reviewer does not see:** system names, outputs, results, or the builder and auditor verdicts.
+- **Order.** Items are shown in the order of SHA-256 of `human-review:<qa_id>`. This differs from the packet
+  order the builder and auditor used, as the protocol asks ("in random order").
+- **Form.** The form has the same fields as `form.csv`, in plain words:
+  - key correct; one best answer; supported by the slide; legible at 360p in the span (slide on screen and fact
+    readable);
+  - shortcut (none / general knowledge / speech), recorded separately and not part of the verdict;
+  - verdict (accept / reject / uncertain) and a reason code (OK, KEY, AMB, UNSUP, ILLEG, SPAN, UI, OTHER);
+  - a note, required for reject or uncertain.
+- **How answers are stored.** Each reviewer's answers go to their own record, which other reviewers cannot
+  read. A copy-to-text fallback covers viewers who cannot save.
+- **Blocks and deadline.** Reviewers pick a block (all 100, halves, thirds or quarters) so a group can split the
+  work. The deadline is Sunday 8 November 2026, 23:59 (Dhaka time), ahead of the CVPR registration decision
+  (10 Nov).
+- **Generator.** `scripts/m3av_review_site.py` reads the packets and writes the page data and images to a folder
+  outside the repo.
+- **Next.** Once the human verdicts are in, compare them with the two model reviews (step 89). Then compute the
+  sample rejection rate and the human-validated S-src sensitivity, as declared in the protocol, without changing
+  L1, L2 or any method.
