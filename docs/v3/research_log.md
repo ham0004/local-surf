@@ -1943,3 +1943,79 @@ Where the gain of the best framework with speech (S1t) over the starting design 
 - **Unchanged.** L1, L2, every frozen file and the method. The human review (step 95) is still the check on the
   labels themselves.
 - **Files.** `reports/m3av/evidence_loss_{dev,test}.{json,md}`.
+
+## Step 97 (2026-11-06): lecture resource profile (auditor P125)
+- **What.** `scripts/m3av_profile.py` measures time and memory per stage. It runs no new method and changes no
+  frozen file or output.
+- **Time from the frozen runs' own records** (`saved`, CPU only; `reports/m3av/profile_saved.md`). Seconds; test
+  figures, dev within a few hundredths:
+
+  | Stage | S1 | S2m | R5 |
+  |---|---|---|---|
+  | Pool per question (retrieval + Head A + frame decoding + MobileCLIP) | 0.67 | 0.97 (Head A 0.34) | 1.42 |
+  | One answer call, 4 frames, Qwen3-VL-4B (mean / p95) | 2.47 / 3.63 | 2.41 / 3.58 | 2.44 / 3.57 |
+
+  S1t (600 transcript words, about 1,520 text tokens): 4.55 s per call. q_only 1.48 s; t_only 3.97 s. The 2 s
+  feature pass over a whole lecture takes about 9 s (test: 112 lectures, 19 min each, 955 s in all). Per question
+  the answer call dominates; Head A adds about 0.3 s, and R5 is slower than S2m because it decodes 96 ranked times.
+- **Memory, measured again on dev** (`gpu`, first 100 dev questions in hash order, R5 scoring over all 514;
+  `reports/m3av/profile_gpu.md`).
+  - **How.** Each frozen stage is re-run with the frozen code into `runs/m3av/profile/`. For each stage the script
+    records the wall time, the torch allocated and reserved peaks, and the process's Windows counters: dedicated
+    memory (on the card) and shared memory (GPU memory held in system RAM), sampled each second. The answers run
+    twice on the saved pools: first as frozen, then with PyTorch's allocator capped at 14.28 GiB (free card memory
+    minus 0.5 GiB).
+  - **Checks.** The features (maximum difference 0.0), the R5 times (514 of 514) and the S1, S2m and R5 pools
+    (100 of 100 each) are identical to the saved ones. The 144 replies that overlap the earlier dev check records
+    are identical to them. No out-of-memory error occurred in either pass.
+
+  | Stage | torch peak allocated | torch peak reserved | dedicated peak | shared peak |
+  |---|---|---|---|---|
+  | Features | 1.68 | 2.04 | 2.19 | 0.08 |
+  | R5 scoring (MobileCLIP + MPNet) | 3.48 | 4.93 | 5.08 | 0.08 |
+  | Pools S2m (MiniLM + BGE + Head A) | 1.85 | 3.60 | 3.75 | 0.08 |
+  | Answers as frozen (600 calls) | 11.46 | **17.26** | 15.23 | **1.56** |
+  | Answers capped at 14.28 GiB (600 calls) | 11.46 | 14.19 | 14.13 | 0.08 |
+
+  All figures are GiB; the card has 15.93 GiB and 14.79 GiB were free at the start.
+  - **What this shows.** The 4B answerer's tensors never need more than 11.5 GiB, and its weights take 8.4 GiB.
+    PyTorch's cache, however, grows past the card (17.3 GiB reserved), and Windows then places 1.6 GiB in system
+    RAM. That is how the frozen test run reached 16.8 GiB reserved.
+  - With the cap, all 600 replies are identical to the uncapped pass, the process stays on the card (dedicated
+    14.13 GiB, shared unchanged), and the pass is about 6% faster (1,518 s against 1,620 s).
+  - **Claim, qualified.** The pipeline can run strictly within the card with an allocator cap, shown on 100 dev
+    questions and six conditions. The frozen test runs were not capped, so the step-93 qualification stands for
+    them.
+- **Report fix before commit.** The per-call peak reset also reset each answer stage's own torch peak. The stage
+    rows are therefore built from the maximum over calls (`report` re-renders them from `runs/m3av/profile/answers.jsonl`);
+    no re-run was needed.
+
+## Step 98 (2026-11-06): human-review analysis fixed before any human verdict
+- **What.** `scripts/m3av_human_review.py` implements the declared analyses (protocol "Question review",
+  amendment 3). It was written and committed before any human verdict existed, and it reads saved files only.
+- **Inputs.** The review page's saved store, or a reviewer's "Copy my answers" text, or a filled `form.csv`.
+  - An answer counts only if it is complete as the page defines it: four checks, the shortcut, a verdict, a
+    reason code, and a note for reject or uncertain.
+  - Reviewers are reported as H1, H2, and so on; names stay out of git.
+- **Combination rule.** If one reviewer judged an item, that verdict stands. If several did, the majority verdict
+  stands, and a tie counts as uncertain. Items no one completed are reported as unreviewed and left out of every
+  rate.
+- **Analyses.**
+  1. The sample's rejection rate, lecture-balanced and cohort question-weighted (Σ n_l r_l / Σ n_l), with 95%
+     lecture-bootstrap intervals (10,000 draws, seed 20261101). The rate of rejected or uncertain items is also
+     reported.
+  2. The four checks, the shortcut and the reason codes. Agreement of the combined human verdict with the builder
+     and auditor reviews (percent and Cohen's kappa), and between humans where they overlap.
+  3. Secondary 1 (sensitivity; never promoted over the primary): every system's hit@4 and S-src hit@4, and L1 and
+     L2 with paired lecture-bootstrap intervals (no p-values, no Holm), on the cohort without the human-rejected
+     sample questions, with one mask for all systems. The same with rejected or uncertain items removed, hit@4 on
+     the accepted sample alone, and the answer model's accuracy (descriptive) under the same masks.
+- **Dry run.** The two model reviews stood in for humans, and the output went to a scratch folder, not
+  `reports/`. The full-cohort row reproduces the frozen reports (S2m 79.4; L1 −0.5 (−3.8..+2.9); L2 +5.3
+  (+2.7..+7.8); answer accuracy S1 82.5, S2m 87.2, R5 86.5). Builder against auditor gives 84 of 100, as in step
+  89.
+- **Input check.** A synthetic store (60 answers and 1 incomplete) and a copied text (60 answers, overlapping by 20)
+  were read correctly. The incomplete answer was excluded, and fed alone, the builder's verdicts reproduce its
+  84 / 10 / 6.
+- **Next.** When the human answers arrive (owner: about 8 November), save the store to `runs/m3av/review_human/`
+  and run the script once. The outputs are `reports/m3av/human_review_test.{json,md}`.

@@ -1,0 +1,479 @@
+{
+ "what": "dev resource profile with the frozen code (outputs under runs/m3av/profile/, checked against the saved ones)",
+ "questions": 100,
+ "gpu": "NVIDIA GeForce RTX 5060 Ti",
+ "card_gib": 15.93,
+ "free_at_start_gib": 14.79,
+ "counter_paths": [
+  "\\GPU Process Memory(pid_53828_luid_0x00000000_0x00011BB1_phys_0)\\Shared Usage",
+  "\\GPU Process Memory(pid_53828_luid_0x00000000_0x00011BB1_phys_0)\\Dedicated Usage"
+ ],
+ "start": "2026-11-06T00:11:10",
+ "weights_resident_gib": 8.364,
+ "cap_gib": 14.28,
+ "answers": {
+  "frozen": {
+   "S1": {
+    "seconds": {
+     "n": 100,
+     "mean": 2.196,
+     "median": 2.183,
+     "p95": 3.118,
+     "max": 3.788
+    },
+    "peak_allocated_gb": {
+     "n": 100,
+     "mean": 8.959,
+     "median": 8.964,
+     "p95": 8.99,
+     "max": 9.019
+    },
+    "peak_reserved_gb": {
+     "n": 100,
+     "mean": 13.172,
+     "median": 12.879,
+     "p95": 14.979,
+     "max": 16.432
+    },
+    "text_tokens": {
+     "n": 100,
+     "mean": 185.31,
+     "median": 182.0,
+     "p95": 218.0,
+     "max": 253.0
+    }
+   },
+   "S2m": {
+    "seconds": {
+     "n": 100,
+     "mean": 2.143,
+     "median": 2.156,
+     "p95": 3.102,
+     "max": 3.722
+    },
+    "peak_allocated_gb": {
+     "n": 100,
+     "mean": 8.959,
+     "median": 8.963,
+     "p95": 8.99,
+     "max": 9.016
+    },
+    "peak_reserved_gb": {
+     "n": 100,
+     "mean": 13.172,
+     "median": 12.879,
+     "p95": 14.979,
+     "max": 16.432
+    },
+    "text_tokens": {
+     "n": 100,
+     "mean": 185.25,
+     "median": 182.0,
+     "p95": 217.05,
+     "max": 252.0
+    }
+   },
+   "R5": {
+    "seconds": {
+     "n": 100,
+     "mean": 2.098,
+     "median": 2.025,
+     "p95": 3.137,
+     "max": 3.692
+    },
+    "peak_allocated_gb": {
+     "n": 100,
+     "mean": 8.946,
+     "median": 8.963,
+     "p95": 8.98,
+     "max": 8.997
+    },
+    "peak_reserved_gb": {
+     "n": 100,
+     "mean": 13.172,
+     "median": 12.879,
+     "p95": 14.979,
+     "max": 16.432
+    },
+    "text_tokens": {
+     "n": 100,
+     "mean": 184.58,
+     "median": 182.0,
+     "p95": 209.2,
+     "max": 252.0
+    }
+   },
+   "S1t": {
+    "seconds": {
+     "n": 100,
+     "mean": 4.713,
+     "median": 4.372,
+     "p95": 7.175,
+     "max": 19.596
+    },
+    "peak_allocated_gb": {
+     "n": 100,
+     "mean": 10.533,
+     "median": 10.529,
+     "p95": 10.819,
+     "max": 11.459
+    },
+    "peak_reserved_gb": {
+     "n": 100,
+     "mean": 13.292,
+     "median": 12.879,
+     "p95": 14.979,
+     "max": 17.256
+    },
+    "text_tokens": {
+     "n": 100,
+     "mean": 1532.55,
+     "median": 1527.0,
+     "p95": 1702.35,
+     "max": 2073.0
+    }
+   },
+   "q_only": {
+    "seconds": {
+     "n": 100,
+     "mean": 1.626,
+     "median": 1.597,
+     "p95": 2.414,
+     "max": 3.008
+    },
+    "peak_allocated_gb": {
+     "n": 100,
+     "mean": 8.414,
+     "median": 8.412,
+     "p95": 8.427,
+     "max": 8.445
+    },
+    "peak_reserved_gb": {
+     "n": 100,
+     "mean": 13.231,
+     "median": 12.879,
+     "p95": 14.979,
+     "max": 16.432
+    },
+    "text_tokens": {
+     "n": 100,
+     "mean": 133.62,
+     "median": 130.0,
+     "p95": 166.05,
+     "max": 200.0
+    }
+   },
+   "t_only": {
+    "seconds": {
+     "n": 100,
+     "mean": 3.417,
+     "median": 3.375,
+     "p95": 4.254,
+     "max": 5.037
+    },
+    "peak_allocated_gb": {
+     "n": 100,
+     "mean": 9.304,
+     "median": 9.29,
+     "p95": 9.471,
+     "max": 9.76
+    },
+    "peak_reserved_gb": {
+     "n": 100,
+     "mean": 13.231,
+     "median": 12.879,
+     "p95": 14.979,
+     "max": 16.432
+    },
+    "text_tokens": {
+     "n": 100,
+     "mean": 1480.13,
+     "median": 1471.5,
+     "p95": 1638.65,
+     "max": 1883.0
+    }
+   }
+  },
+  "capped": {
+   "S1": {
+    "seconds": {
+     "n": 100,
+     "mean": 2.105,
+     "median": 2.1,
+     "p95": 2.935,
+     "max": 3.481
+    },
+    "peak_allocated_gb": {
+     "n": 100,
+     "mean": 8.959,
+     "median": 8.963,
+     "p95": 8.989,
+     "max": 9.019
+    },
+    "peak_reserved_gb": {
+     "n": 100,
+     "mean": 11.916,
+     "median": 11.467,
+     "p95": 13.977,
+     "max": 13.977
+    },
+    "text_tokens": {
+     "n": 100,
+     "mean": 185.31,
+     "median": 182.0,
+     "p95": 218.0,
+     "max": 253.0
+    }
+   },
+   "S2m": {
+    "seconds": {
+     "n": 100,
+     "mean": 2.069,
+     "median": 2.077,
+     "p95": 2.863,
+     "max": 3.535
+    },
+    "peak_allocated_gb": {
+     "n": 100,
+     "mean": 8.959,
+     "median": 8.963,
+     "p95": 8.989,
+     "max": 9.016
+    },
+    "peak_reserved_gb": {
+     "n": 100,
+     "mean": 11.917,
+     "median": 11.467,
+     "p95": 13.977,
+     "max": 13.977
+    },
+    "text_tokens": {
+     "n": 100,
+     "mean": 185.25,
+     "median": 182.0,
+     "p95": 217.05,
+     "max": 252.0
+    }
+   },
+   "R5": {
+    "seconds": {
+     "n": 100,
+     "mean": 2.031,
+     "median": 1.99,
+     "p95": 2.996,
+     "max": 3.426
+    },
+    "peak_allocated_gb": {
+     "n": 100,
+     "mean": 8.946,
+     "median": 8.963,
+     "p95": 8.981,
+     "max": 8.997
+    },
+    "peak_reserved_gb": {
+     "n": 100,
+     "mean": 11.917,
+     "median": 11.467,
+     "p95": 13.977,
+     "max": 13.977
+    },
+    "text_tokens": {
+     "n": 100,
+     "mean": 184.58,
+     "median": 182.0,
+     "p95": 209.2,
+     "max": 252.0
+    }
+   },
+   "S1t": {
+    "seconds": {
+     "n": 100,
+     "mean": 4.093,
+     "median": 4.022,
+     "p95": 5.525,
+     "max": 5.91
+    },
+    "peak_allocated_gb": {
+     "n": 100,
+     "mean": 10.533,
+     "median": 10.529,
+     "p95": 10.818,
+     "max": 11.459
+    },
+    "peak_reserved_gb": {
+     "n": 100,
+     "mean": 12.019,
+     "median": 11.467,
+     "p95": 13.977,
+     "max": 14.189
+    },
+    "text_tokens": {
+     "n": 100,
+     "mean": 1532.55,
+     "median": 1527.0,
+     "p95": 1702.35,
+     "max": 2073.0
+    }
+   },
+   "q_only": {
+    "seconds": {
+     "n": 100,
+     "mean": 1.589,
+     "median": 1.554,
+     "p95": 2.301,
+     "max": 2.808
+    },
+    "peak_allocated_gb": {
+     "n": 100,
+     "mean": 8.414,
+     "median": 8.412,
+     "p95": 8.427,
+     "max": 8.445
+    },
+    "peak_reserved_gb": {
+     "n": 100,
+     "mean": 11.961,
+     "median": 11.467,
+     "p95": 13.977,
+     "max": 13.977
+    },
+    "text_tokens": {
+     "n": 100,
+     "mean": 133.62,
+     "median": 130.0,
+     "p95": 166.05,
+     "max": 200.0
+    }
+   },
+   "t_only": {
+    "seconds": {
+     "n": 100,
+     "mean": 3.287,
+     "median": 3.216,
+     "p95": 4.036,
+     "max": 4.428
+    },
+    "peak_allocated_gb": {
+     "n": 100,
+     "mean": 9.304,
+     "median": 9.29,
+     "p95": 9.471,
+     "max": 9.76
+    },
+    "peak_reserved_gb": {
+     "n": 100,
+     "mean": 11.961,
+     "median": 11.467,
+     "p95": 13.977,
+     "max": 13.977
+    },
+    "text_tokens": {
+     "n": 100,
+     "mean": 1480.13,
+     "median": 1471.5,
+     "p95": 1638.65,
+     "max": 1883.0
+    }
+   }
+  }
+ },
+ "stages": [
+  {
+   "stage": "features (68 lectures)",
+   "start": "2026-11-06T00:11:12.744741",
+   "end": "2026-11-06T00:22:29.565950",
+   "seconds": 676.83,
+   "torch_peak_allocated_gb": 1.68,
+   "torch_peak_reserved_gb": 2.041,
+   "dedicated_peak_gib": 2.189,
+   "shared_peak_gib": 0.076
+  },
+  {
+   "stage": "R5 scoring (514 questions)",
+   "start": "2026-11-06T00:22:29.619020",
+   "end": "2026-11-06T00:24:02.690793",
+   "seconds": 93.07,
+   "torch_peak_allocated_gb": 3.479,
+   "torch_peak_reserved_gb": 4.932,
+   "dedicated_peak_gib": 5.08,
+   "shared_peak_gib": 0.076
+  },
+  {
+   "stage": "pools S1 (hybrid)",
+   "start": "2026-11-06T00:24:02.740188",
+   "end": "2026-11-06T00:25:19.900457",
+   "seconds": 77.16,
+   "torch_peak_allocated_gb": 1.038,
+   "torch_peak_reserved_gb": 2.18,
+   "dedicated_peak_gib": 2.328,
+   "shared_peak_gib": 0.076
+  },
+  {
+   "stage": "pools S2m (hybrid_ahead_m3av)",
+   "start": "2026-11-06T00:25:33.413441",
+   "end": "2026-11-06T00:27:27.070859",
+   "seconds": 113.66,
+   "torch_peak_allocated_gb": 1.849,
+   "torch_peak_reserved_gb": 3.602,
+   "dedicated_peak_gib": 3.75,
+   "shared_peak_gib": 0.076
+  },
+  {
+   "stage": "pools R5 (vsi4x)",
+   "start": "2026-11-06T00:27:40.951677",
+   "end": "2026-11-06T00:30:21.795091",
+   "seconds": 160.84,
+   "torch_peak_allocated_gb": 1.767,
+   "torch_peak_reserved_gb": 1.865,
+   "dedicated_peak_gib": 2.015,
+   "shared_peak_gib": 0.076
+  },
+  {
+   "stage": "answer model load",
+   "start": "2026-11-06T00:30:58.878328",
+   "end": "2026-11-06T00:31:07.917054",
+   "seconds": 9.04,
+   "torch_peak_allocated_gb": 8.364,
+   "torch_peak_reserved_gb": 8.381,
+   "dedicated_peak_gib": 8.511,
+   "shared_peak_gib": 0.076
+  },
+  {
+   "stage": "answers, frozen (600 calls)",
+   "start": "2026-11-06T00:31:07.918051",
+   "end": "2026-11-06T00:58:07.432219",
+   "seconds": 1619.53,
+   "torch_peak_allocated_gb": 11.459,
+   "torch_peak_reserved_gb": 17.256,
+   "dedicated_peak_gib": 15.231,
+   "shared_peak_gib": 1.557,
+   "torch_peaks_from": "maximum over the pass's calls"
+  },
+  {
+   "stage": "answers, capped (600 calls)",
+   "start": "2026-11-06T00:58:07.482504",
+   "end": "2026-11-06T01:23:25.086727",
+   "seconds": 1517.62,
+   "torch_peak_allocated_gb": 11.459,
+   "torch_peak_reserved_gb": 14.189,
+   "dedicated_peak_gib": 14.129,
+   "shared_peak_gib": 0.076,
+   "torch_peaks_from": "maximum over the pass's calls"
+  }
+ ],
+ "checks": {
+  "features_max_abs_diff": 0.0,
+  "vsi_times_identical": 1.0,
+  "pool_times_identical_S1": 1.0,
+  "pool_times_identical_S2m": 1.0,
+  "pool_times_identical_R5": 1.0,
+  "capped_replies_identical": 1.0,
+  "capped_out_of_memory": 0,
+  "frozen_out_of_memory": 0,
+  "replies_identical_to_dev_check_records": {
+   "n": 144,
+   "identical": 144
+  }
+ },
+ "end": "2026-11-06T01:23:27"
+}
