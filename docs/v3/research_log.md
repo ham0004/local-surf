@@ -2245,3 +2245,8 @@ Where the gain of the best framework with speech (S1t) over the starting design 
     −0.5 and −0.4, not significant either way.
   - Reported as notes, not votes: one of the three split items was also rejected by both model reviews as ambiguous;
     one reviewer accepted an item while noting that the slide appears later than the marked start.
+- **Update: exact receipt times from the group chat.** Screenshots of the three chat messages are kept privately
+  with SHA-256 (`runs/m3av/review_human/evidence/`). Receipt times, Dhaka: H-c 8 November 00:59, H-a 21:42, H-b
+  23:59, all before the cutoff. The identity map now holds these times; the rerun gives the same report. Two of the
+  texts were posted by group members under a different name from the reviewer name inside the text; the owner is
+  asked to confirm these are the same people (nickname and formal name).

@@ -19,7 +19,7 @@
   "raw source 1 (csv, cutoff)": "5e9b827f5cca384490945e3e969b9e515e705af125445811ad7f61784403eadf",
   "raw source 2 (csv, cutoff)": "616770d02470774abe326f98b5234971847f868407b7e90cc05efdc6eb1ddef8",
   "raw source 3 (csv, cutoff)": "9d352a00d396f7b60eccd2adf184921d2c9aba290a9a3d9e0d269a7b05b46c74",
-  "identities.json (private)": "733a76fcd481d7b518dcf7f76cbb05609f7b6f6330ea2304606044e8982723fe"
+  "identities.json (private)": "6243b8b3ce95eb12c2b0d51601c7cf6462bb6adcab078c235d23c16e111bd695"
  },
  "reviewers": {
   "H1": {
@@ -485,9 +485,9 @@
     }
    ],
    "per_lecture_attrition": {
-    "CHI-2944C": 1,
     "Ubi-968A7": 1,
-    "CHI-655DC": 1
+    "CHI-655DC": 1,
+    "CHI-2944C": 1
    },
    "note": "unreviewed questions kept"
   }
