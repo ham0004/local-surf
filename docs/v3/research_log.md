@@ -2250,3 +2250,5 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   23:59, all before the cutoff. The identity map now holds these times; the rerun gives the same report. Two of the
   texts were posted by group members under a different name from the reviewer name inside the text; the owner is
   asked to confirm these are the same people (nickname and formal name).
+- **Update: identities confirmed.** The owner confirms that the two posters are the reviewers named in the texts
+  (thesis group members; chat name and nickname differ). The human review is closed with no open item.
