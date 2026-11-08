@@ -1,0 +1,1580 @@
+{
+ "what": "blind human review of the 100 test packets (protocol 'Question review'; research log steps 98-99)",
+ "rules": {
+  "cutoff": "2026-11-08T23:59:59+06:00",
+  "clarification_cutoff": "2026-11-09T23:59:59+06:00",
+  "combination": "strict majority of valid votes, else uncertain"
+ },
+ "input_hashes": {
+  "reports/m3av/review_sample_test.json": "32f36bf9dfe6aa3e88ad74409c0f783436c9d195c4933a7e7647285b330e5057",
+  "reports/m3av/hits_test.json": "6ef21809895cab37194152733ba31a9ae4b68ed2f4aef6dafeac980716088ef1",
+  "runs/m3av/qa/test/records.jsonl": "78760d3248ccd6e7ba69dbdf420ad88b037340d44c4c60b57b8cd721f65cc51f",
+  "collab/review_builder_test.csv": "8e77f77745f2ad65715662d7a112b215a35ccbee509aacdedaf6245426f699f9",
+  "collab/review_auditor_test.csv": "b60a0bf85e0fba92ef2e2ecc2b12a7736c7092f4cd0b5a77c29cec92befe2cb4",
+  "collab/review_page/index.html": "7f3024ee058a4f2f8d44aa20c13142ce0d05d750d459489e132e856ff2f935cb",
+  "collab/review_page/template.html": "1d805dbcd6488f9ece4dfc4c04116d88c4d780a999f9edd63688103b68f22ef0",
+  "collab/review_page/items.json": "dc258efe612668436a2c766c80062efe369c7606c5eb12b0b2aeab1a4886031d",
+  "docs/v3/m3av_qa_test_outputs.json": "51b8bbbd9bbcf413a90a055fcb86842b02df081a76d3c7f8c0fb02cc09436678",
+  "scripts/m3av_human_review.py": "5fffd761c70338c483571daa663bc4aff5e8a3fdd2269268a34bc1edc33223b3",
+  "raw source 1 (csv, cutoff)": "5e9b827f5cca384490945e3e969b9e515e705af125445811ad7f61784403eadf",
+  "raw source 2 (csv, cutoff)": "616770d02470774abe326f98b5234971847f868407b7e90cc05efdc6eb1ddef8",
+  "raw source 3 (csv, cutoff)": "9d352a00d396f7b60eccd2adf184921d2c9aba290a9a3d9e0d269a7b05b46c74",
+  "identities.json (private)": "733a76fcd481d7b518dcf7f76cbb05609f7b6f6330ea2304606044e8982723fe"
+ },
+ "reviewers": {
+  "H1": {
+   "valid": 100,
+   "incomplete": 0,
+   "contradictory, unresolved": 0,
+   "clarified": 0,
+   "late": 0,
+   "restored_from_browser_draft": 0
+  },
+  "H2": {
+   "valid": 34,
+   "incomplete": 0,
+   "contradictory, unresolved": 0,
+   "clarified": 0,
+   "late": 0,
+   "restored_from_browser_draft": 0
+  },
+  "H3": {
+   "valid": 33,
+   "incomplete": 0,
+   "contradictory, unresolved": 0,
+   "clarified": 0,
+   "late": 0,
+   "restored_from_browser_draft": 0
+  }
+ },
+ "answer_status": {
+  "valid": 167
+ },
+ "clarification_records_unused": 0,
+ "coverage": {
+  "items_reviewed": 100,
+  "items_unreviewed": 0,
+  "votes_per_item": {
+   "1": 33,
+   "2": 67
+  },
+  "complete": true,
+  "unreviewed": []
+ },
+ "combined_counts": {
+  "accept": 97,
+  "reject": 0,
+  "uncertain": 3
+ },
+ "no_majority": 3,
+ "rejection_rate": {
+  "label": "planned estimate (all 100 sampled items reviewed)",
+  "lecture_balanced": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "question_weighted": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "count": 0,
+  "of": 100
+ },
+ "reject_or_uncertain_rate": {
+  "label": "planned estimate (all 100 sampled items reviewed)",
+  "lecture_balanced": [
+   3.0,
+   0.0,
+   7.0
+  ],
+  "question_weighted": [
+   2.7,
+   0.0,
+   6.4
+  ],
+  "count": 3,
+  "of": 100
+ },
+ "counts_over_valid_human_answers": {
+  "answers": 167,
+  "key": {
+   "y": 164,
+   "n": 3
+  },
+  "one": {
+   "y": 165,
+   "n": 2
+  },
+  "slide": {
+   "y": 166,
+   "n": 1
+  },
+  "legible": {
+   "y": 167
+  },
+  "shortcut": {
+   "transcript": 81,
+   "none": 85,
+   "knowledge": 1
+  },
+  "reason": {
+   "OK": 164,
+   "KEY": 3
+  }
+ },
+ "agreement": {
+  "human vs builder": {
+   "n": 100,
+   "agree": 82,
+   "percent": 82.0,
+   "kappa": 0.019,
+   "table": {
+    "accept": {
+     "accept": 82,
+     "reject": 9,
+     "uncertain": 6
+    },
+    "reject": {
+     "accept": 0,
+     "reject": 0,
+     "uncertain": 0
+    },
+    "uncertain": {
+     "accept": 2,
+     "reject": 1,
+     "uncertain": 0
+    }
+   }
+  },
+  "human vs auditor": {
+   "n": 100,
+   "agree": 77,
+   "percent": 77.0,
+   "kappa": 0.074,
+   "table": {
+    "accept": {
+     "accept": 76,
+     "reject": 6,
+     "uncertain": 15
+    },
+    "reject": {
+     "accept": 0,
+     "reject": 0,
+     "uncertain": 0
+    },
+    "uncertain": {
+     "accept": 1,
+     "reject": 1,
+     "uncertain": 1
+    }
+   }
+  },
+  "builder vs auditor": {
+   "n": 100,
+   "agree": 84,
+   "percent": 84.0,
+   "kappa": 0.525,
+   "table": {
+    "accept": {
+     "accept": 76,
+     "reject": 0,
+     "uncertain": 8
+    },
+    "reject": {
+     "accept": 0,
+     "reject": 5,
+     "uncertain": 5
+    },
+    "uncertain": {
+     "accept": 1,
+     "reject": 2,
+     "uncertain": 3
+    }
+   }
+  },
+  "H1 vs H2": {
+   "n": 34,
+   "agree": 31,
+   "percent": 91.2,
+   "kappa": 0.0,
+   "table": {
+    "accept": {
+     "accept": 31,
+     "reject": 3,
+     "uncertain": 0
+    },
+    "reject": {
+     "accept": 0,
+     "reject": 0,
+     "uncertain": 0
+    },
+    "uncertain": {
+     "accept": 0,
+     "reject": 0,
+     "uncertain": 0
+    }
+   }
+  },
+  "H1 vs H3": {
+   "n": 33,
+   "agree": 33,
+   "percent": 100.0,
+   "kappa": null,
+   "table": {
+    "accept": {
+     "accept": 33,
+     "reject": 0,
+     "uncertain": 0
+    },
+    "reject": {
+     "accept": 0,
+     "reject": 0,
+     "uncertain": 0
+    },
+    "uncertain": {
+     "accept": 0,
+     "reject": 0,
+     "uncertain": 0
+    }
+   }
+  }
+ },
+ "full_cohort": {
+  "questions": 853,
+  "lectures": 112,
+  "hit@4": {
+   "S0": 67.4,
+   "S1": 74.1,
+   "S2c": 79.7,
+   "S2m": 79.4,
+   "S3": 73.6,
+   "R2": 22.9,
+   "R3": 64.1,
+   "R4": 76.9,
+   "R5": 79.8
+  },
+  "s_src_hit@4": {
+   "S0": 63.1,
+   "S1": 68.2,
+   "S2c": 73.4,
+   "S2m": 73.3,
+   "S3": 68.6,
+   "R2": 18.6,
+   "R3": 60.0,
+   "R4": 72.2,
+   "R5": 74.8
+  },
+  "qa_accuracy": {
+   "S0": 79.5,
+   "S1": 82.5,
+   "S1t": 83.5,
+   "S2c": 88.2,
+   "S2m": 87.2,
+   "S3": 82.8,
+   "R2": 63.5,
+   "R3": 78.3,
+   "R4": 84.8,
+   "R5": 86.5,
+   "q_only": 51.2,
+   "t_only": 62.1
+  },
+  "contrasts": {
+   "L1": {
+    "hit@4": {
+     "diff": -0.5,
+     "lo": -3.8,
+     "hi": 2.9
+    },
+    "s_src": {
+     "diff": -1.5,
+     "lo": -4.9,
+     "hi": 1.8
+    }
+   },
+   "L2": {
+    "hit@4": {
+     "diff": 5.3,
+     "lo": 2.7,
+     "hi": 7.8
+    },
+    "s_src": {
+     "diff": 5.0,
+     "lo": 2.4,
+     "hi": 7.6
+    }
+   }
+  }
+ },
+ "masks": {
+  "secondary 1: without human-rejected": {
+   "questions": 853,
+   "lectures": 112,
+   "hit@4": {
+    "S0": 67.4,
+    "S1": 74.1,
+    "S2c": 79.7,
+    "S2m": 79.4,
+    "S3": 73.6,
+    "R2": 22.9,
+    "R3": 64.1,
+    "R4": 76.9,
+    "R5": 79.8
+   },
+   "s_src_hit@4": {
+    "S0": 63.1,
+    "S1": 68.2,
+    "S2c": 73.4,
+    "S2m": 73.3,
+    "S3": 68.6,
+    "R2": 18.6,
+    "R3": 60.0,
+    "R4": 72.2,
+    "R5": 74.8
+   },
+   "qa_accuracy": {
+    "S0": 79.5,
+    "S1": 82.5,
+    "S1t": 83.5,
+    "S2c": 88.2,
+    "S2m": 87.2,
+    "S3": 82.8,
+    "R2": 63.5,
+    "R3": 78.3,
+    "R4": 84.8,
+    "R5": 86.5,
+    "q_only": 51.2,
+    "t_only": 62.1
+   },
+   "contrasts": {
+    "L1": {
+     "hit@4": {
+      "diff": -0.5,
+      "lo": -3.8,
+      "hi": 2.9
+     },
+     "s_src": {
+      "diff": -1.5,
+      "lo": -4.9,
+      "hi": 1.8
+     }
+    },
+    "L2": {
+     "hit@4": {
+      "diff": 5.3,
+      "lo": 2.7,
+      "hi": 7.8
+     },
+     "s_src": {
+      "diff": 5.0,
+      "lo": 2.4,
+      "hi": 7.6
+     }
+    }
+   },
+   "removed_questions": 0,
+   "removed_lectures": 0,
+   "dropped": [],
+   "per_lecture_attrition": {},
+   "note": "uncertain and unreviewed questions kept"
+  },
+  "conservative: without human-rejected or uncertain": {
+   "questions": 850,
+   "lectures": 112,
+   "hit@4": {
+    "S0": 67.4,
+    "S1": 74.0,
+    "S2c": 79.8,
+    "S2m": 79.4,
+    "S3": 73.5,
+    "R2": 22.8,
+    "R3": 64.0,
+    "R4": 76.8,
+    "R5": 79.8
+   },
+   "s_src_hit@4": {
+    "S0": 63.1,
+    "S1": 68.1,
+    "S2c": 73.4,
+    "S2m": 73.3,
+    "S3": 68.5,
+    "R2": 18.6,
+    "R3": 59.9,
+    "R4": 72.1,
+    "R5": 74.7
+   },
+   "qa_accuracy": {
+    "S0": 79.5,
+    "S1": 82.6,
+    "S1t": 83.5,
+    "S2c": 88.2,
+    "S2m": 87.3,
+    "S3": 82.7,
+    "R2": 63.6,
+    "R3": 78.2,
+    "R4": 84.7,
+    "R5": 86.5,
+    "q_only": 51.4,
+    "t_only": 62.4
+   },
+   "contrasts": {
+    "L1": {
+     "hit@4": {
+      "diff": -0.4,
+      "lo": -3.7,
+      "hi": 3.0
+     },
+     "s_src": {
+      "diff": -1.4,
+      "lo": -4.8,
+      "hi": 1.9
+     }
+    },
+    "L2": {
+     "hit@4": {
+      "diff": 5.4,
+      "lo": 2.8,
+      "hi": 8.0
+     },
+     "s_src": {
+      "diff": 5.2,
+      "lo": 2.5,
+      "hi": 7.8
+     }
+    }
+   },
+   "removed_questions": 3,
+   "removed_lectures": 0,
+   "dropped": [
+    {
+     "qa_id": "m3av:CHI-2944C:82",
+     "combined": "uncertain",
+     "votes": {
+      "H1": "accept",
+      "H2": "reject"
+     },
+     "reasons": [
+      "KEY",
+      "OK"
+     ]
+    },
+    {
+     "qa_id": "m3av:CHI-655DC:17",
+     "combined": "uncertain",
+     "votes": {
+      "H1": "accept",
+      "H2": "reject"
+     },
+     "reasons": [
+      "KEY",
+      "OK"
+     ]
+    },
+    {
+     "qa_id": "m3av:Ubi-968A7:135.45",
+     "combined": "uncertain",
+     "votes": {
+      "H1": "accept",
+      "H2": "reject"
+     },
+     "reasons": [
+      "KEY",
+      "OK"
+     ]
+    }
+   ],
+   "per_lecture_attrition": {
+    "CHI-2944C": 1,
+    "Ubi-968A7": 1,
+    "CHI-655DC": 1
+   },
+   "note": "unreviewed questions kept"
+  }
+ },
+ "accepted_sample_only": {
+  "label": "descriptive; the accepted sampled cases, not a cohort estimate",
+  "questions": 97,
+  "lectures": 97,
+  "hit@4": {
+   "S0": 70.1,
+   "S1": 77.3,
+   "S2c": 80.4,
+   "S2m": 80.4,
+   "S3": 77.3,
+   "R2": 24.7,
+   "R3": 71.1,
+   "R4": 78.4,
+   "R5": 78.4
+  }
+ },
+ "per_item": {
+  "m3av:CHI-225B4:31.45": {
+   "page_item": 99,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "uncertain",
+   "auditor": "uncertain"
+  },
+  "m3av:NIH-F1E8F:1745": {
+   "page_item": 55,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-D8BE0:2104": {
+   "page_item": 77,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-EA9B8:38.45": {
+   "page_item": 37,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-F48F2:214": {
+   "page_item": 49,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "reject",
+   "auditor": "reject"
+  },
+  "m3av:Ubi-7441D:52.5": {
+   "page_item": 63,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-711FD:225": {
+   "page_item": 22,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:Ubi-D1760:190.45": {
+   "page_item": 71,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-5A304:26": {
+   "page_item": 98,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-A6FF6:90.45": {
+   "page_item": 86,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-BABFD:129.45": {
+   "page_item": 51,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:Ubi-6192D:162.465": {
+   "page_item": 21,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-C7599:226": {
+   "page_item": 84,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-214E5:169.45": {
+   "page_item": 80,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "uncertain"
+  },
+  "m3av:CHI-BD98A:47": {
+   "page_item": 59,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-DDFA1:87.45": {
+   "page_item": 33,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:IPP-5239A:589": {
+   "page_item": 53,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "reject",
+   "auditor": "uncertain"
+  },
+  "m3av:NIH-00363:855": {
+   "page_item": 4,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-D38C1:104.45": {
+   "page_item": 56,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:Ubi-97A0E:240": {
+   "page_item": 36,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-2DF60:45": {
+   "page_item": 94,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-02250:3253.45": {
+   "page_item": 65,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-57F51:271.45": {
+   "page_item": 58,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:Ubi-968A7:135.45": {
+   "page_item": 16,
+   "combined": "uncertain",
+   "votes": {
+    "H1": "accept",
+    "H2": "reject"
+   },
+   "no_majority": true,
+   "builder": "reject",
+   "auditor": "reject"
+  },
+  "m3av:Ubi-027BA:72.45": {
+   "page_item": 54,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-ACBAC:207": {
+   "page_item": 40,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "uncertain"
+  },
+  "m3av:CHI-E0BD3:18.45": {
+   "page_item": 81,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-AC894:3177": {
+   "page_item": 87,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "uncertain",
+   "auditor": "uncertain"
+  },
+  "m3av:CHI-655DC:17": {
+   "page_item": 6,
+   "combined": "uncertain",
+   "votes": {
+    "H1": "accept",
+    "H2": "reject"
+   },
+   "no_majority": true,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-2B06D:3397": {
+   "page_item": 83,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "uncertain",
+   "auditor": "reject"
+  },
+  "m3av:NIH-B5E52:2467.5": {
+   "page_item": 35,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:Ubi-E4F06:285.5": {
+   "page_item": 88,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-5EB6F:76": {
+   "page_item": 24,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-D3473:226.45": {
+   "page_item": 64,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-DED34:241.45": {
+   "page_item": 52,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "reject",
+   "auditor": "reject"
+  },
+  "m3av:IPP-313F8:445.45": {
+   "page_item": 11,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:IPP-68329:368.45": {
+   "page_item": 27,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "uncertain"
+  },
+  "m3av:CHI-2231D:187": {
+   "page_item": 12,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "uncertain",
+   "auditor": "uncertain"
+  },
+  "m3av:CHI-93140:159.45": {
+   "page_item": 2,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "uncertain",
+   "auditor": "accept"
+  },
+  "m3av:NIH-F9FC6:1882": {
+   "page_item": 9,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-F7BF8:151": {
+   "page_item": 75,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "uncertain",
+   "auditor": "reject"
+  },
+  "m3av:CHI-A8B69:147.45": {
+   "page_item": 10,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-B0B09:196.45": {
+   "page_item": 45,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-BD73D:919.45": {
+   "page_item": 18,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:Ubi-D4407:18": {
+   "page_item": 93,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-A9824:1670.45": {
+   "page_item": 38,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:IPP-3F215:1016": {
+   "page_item": 85,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:Ubi-C360A:288.5": {
+   "page_item": 31,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-F1A31:1201.45": {
+   "page_item": 42,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "uncertain"
+  },
+  "m3av:Ubi-4C06A:77.45": {
+   "page_item": 41,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-46FDD:211.45": {
+   "page_item": 19,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:IPP-8359A:637": {
+   "page_item": 26,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-2F08D:81.45": {
+   "page_item": 29,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-8C86E:135": {
+   "page_item": 79,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-846E6:274": {
+   "page_item": 62,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-828B0:257.45": {
+   "page_item": 67,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:Ubi-8E1A5:267": {
+   "page_item": 13,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-5A3F2:3028": {
+   "page_item": 5,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:MLS-E9A6D:1090.45": {
+   "page_item": 68,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-2944C:82": {
+   "page_item": 3,
+   "combined": "uncertain",
+   "votes": {
+    "H1": "accept",
+    "H2": "reject"
+   },
+   "no_majority": true,
+   "builder": "accept",
+   "auditor": "uncertain"
+  },
+  "m3av:IPP-36B00:893": {
+   "page_item": 7,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-0E981:83": {
+   "page_item": 76,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-A5152:150.45": {
+   "page_item": 30,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "reject",
+   "auditor": "reject"
+  },
+  "m3av:Ubi-5BD39:269": {
+   "page_item": 17,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:Ubi-366E5:82.45": {
+   "page_item": 70,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:Ubi-97AFF:206.45": {
+   "page_item": 43,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:IPP-930E4:1278": {
+   "page_item": 47,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:IPP-84140:283": {
+   "page_item": 90,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-17856:45.45": {
+   "page_item": 34,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-23E4C:2231": {
+   "page_item": 73,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "reject",
+   "auditor": "uncertain"
+  },
+  "m3av:MLS-A74A9:391.45": {
+   "page_item": 48,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-E6183:18": {
+   "page_item": 57,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-CF7C8:235": {
+   "page_item": 72,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-61424:2359": {
+   "page_item": 74,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-FDB72:17": {
+   "page_item": 20,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-D369A:2697.5": {
+   "page_item": 32,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-4EB67:229.45": {
+   "page_item": 1,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:IPP-E3BD4:212": {
+   "page_item": 28,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:Ubi-D1320:15": {
+   "page_item": 100,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-29F22:322": {
+   "page_item": 61,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:MLS-ED58D:1261.45": {
+   "page_item": 50,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-27F3D:196.45": {
+   "page_item": 82,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-4B63D:184.45": {
+   "page_item": 95,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:MLS-E7B23:2364.47": {
+   "page_item": 8,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "reject",
+   "auditor": "uncertain"
+  },
+  "m3av:NIH-B49FB:638.45": {
+   "page_item": 91,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-218EE:189.46": {
+   "page_item": 60,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "uncertain"
+  },
+  "m3av:CHI-C1919:189": {
+   "page_item": 97,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-87A93:246": {
+   "page_item": 15,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-A1C41:176": {
+   "page_item": 46,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "uncertain"
+  },
+  "m3av:NIH-C6E40:2949.45": {
+   "page_item": 23,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:IPP-A9DCD:68": {
+   "page_item": 96,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "uncertain"
+  },
+  "m3av:CHI-79C06:98.47": {
+   "page_item": 44,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-D7330:72": {
+   "page_item": 39,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:IPP-B0FEA:1377.45": {
+   "page_item": 69,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-9D827:111.45": {
+   "page_item": 25,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:IPP-C7190:703": {
+   "page_item": 89,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:CHI-5A73B:166": {
+   "page_item": 66,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H3": "accept"
+   },
+   "no_majority": false,
+   "builder": "accept",
+   "auditor": "accept"
+  },
+  "m3av:NIH-46FCE:2022.5": {
+   "page_item": 78,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "reject",
+   "auditor": "uncertain"
+  },
+  "m3av:CHI-B9D1C:143.45": {
+   "page_item": 92,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept"
+   },
+   "no_majority": false,
+   "builder": "reject",
+   "auditor": "reject"
+  },
+  "m3av:CHI-CA6CD:128.45": {
+   "page_item": 14,
+   "combined": "accept",
+   "votes": {
+    "H1": "accept",
+    "H2": "accept"
+   },
+   "no_majority": false,
+   "builder": "reject",
+   "auditor": "uncertain"
+  }
+ }
+}

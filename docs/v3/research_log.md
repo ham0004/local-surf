@@ -2215,3 +2215,33 @@ Where the gain of the best framework with speech (S1t) over the starting design 
 - **Files.** `index.html` SHA-256 `7f3024ee058a4f2f8d44aa20c13142ce0d05d750d459489e132e856ff2f935cb`. Version 5 is kept in `collab/review_page/v5/`,
   and EXPECTED is updated.
 
+
+## Step 102 (2026-11-09): cutoff snapshot; reviewer answers arrived as copied text
+- **Store snapshot.** Read once, at 2026-11-08 18:33 UTC (00:33 Dhaka on 9 November, 34 minutes after the
+  cutoff), saved unedited outside git. It holds one document: the owner's own 12 answers (items 68-79), all saved
+  before the cutoff. The owner is not a reviewer, so these are reported separately and are not votes.
+- **Why the group's answers are not in the store.** The page's share settings offered the three group reviewers
+  view-only access, so the page could not save their answers (the read-only path of step 95). They used the page's
+  "Copy my answers" fallback and sent the texts to the owner, who passed them on.
+- **Received copies.** Three reviewers, saved unedited with SHA-256 in the private folder: H-a all 100 items, H-b
+  items 1-34, H-c items 35-67. Received by the builder at about 00:33 Dhaka on 9 November.
+- **Fixed analysis.** With that receipt time all three copies are late, and `scripts/m3av_human_review.py` stops as
+  designed: "No valid human vote for any sampled question". No result is reported from it.
+- **Open.** The time each copy reached the owner decides whether the copies are on time under the unchanged rule.
+  If they reached the owner after the cutoff, accepting them is a deviation decided after the answers were seen, and
+  would be reported as such.
+- **Update (same day): copies on time; fixed analysis run.** The owner reports that all three group reviewers sent
+  their copied texts in the thesis group chat before the cutoff; only the owner's own copy came later (not a
+  reviewer). The received time is recorded as 8 November 23:59 Dhaka, as reported by the owner; the chat messages are
+  kept as evidence. No rule was changed. Report: `reports/m3av/human_review_test.{json,md}` (pseudonyms only).
+  - All 100 sampled items reviewed (67 by two reviewers, 33 by one). Combined verdict: 97 accept, 0 reject, 3 no
+    strict majority (1 accept, 1 reject each; all three rejects give reason KEY). No contradictory answer, so no
+    clarification is needed.
+  - Rejected rate 0.0%; rejected-or-uncertain 3.0% lecture-balanced (0.0..7.0), 2.7% question-weighted (0.0..6.4).
+  - Agreement: human vs builder 82%, human vs auditor 77%, builder vs auditor 84%. Kappa is near zero for the human
+    pairs because almost every verdict is accept (one reviewer accepted all 100 with every check yes and no notes);
+    percent agreement is the more informative number here.
+  - Masks change nothing material: L2 +5.3 (+2.7..+7.8) on all 853; +5.4 (+2.8..+8.0) without the 3 split items. L1
+    −0.5 and −0.4, not significant either way.
+  - Reported as notes, not votes: one of the three split items was also rejected by both model reviews as ambiguous;
+    one reviewer accepted an item while noting that the slide appears later than the marked start.
