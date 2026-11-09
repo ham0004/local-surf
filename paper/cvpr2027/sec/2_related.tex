@@ -1,0 +1,24 @@
+\section{Related work}
+\label{sec:related}
+
+\paragraph{Frame selection for long-video QA.}
+Uniform sampling wastes a small budget on irrelevant moments, so many methods rank frames against the question.
+Training-free approaches include BOLT~\cite{liu2025bolt}, which samples frames according to query--frame similarity, and VSI~\cite{he2025vsi}, which combines a visual branch with a subtitle branch to retrieve keyframes.
+GCR~\cite{wei2026gcr} grounds candidates with timestamped text and visual anchors, covers them with a global MMR step and refines the set; it also renders text onto frames, so its input differs from unchanged images.
+Learned selectors include Frame-Voyager~\cite{yu2025framevoyager}, which learns to query frame combinations using supervision from a pretrained video model; M-LLM based selection~\cite{hu2025mllm} and flexible frame selection~\cite{buch2025flexible}, both CVPR 2025; reinforcement-learning samplers~\cite{qin2026efficient}; MSJoE~\cite{tan2026msjoe}, which trains the sampler together with the answer model; HORNet~\cite{bai2026hornet}; and ReQuest~\cite{kim2026request}, which re-selects frames for a second pass when the first answer is uncertain.
+Our two trained heads belong to this family and are not new as mechanisms: speech and visual dual-path retrieval, option-aware frame scoring and learned set selection all have precedents above.
+We keep the answer model frozen and call it once per question, and the answer model sees at most four frames, fewer than the budgets usually reported in this line of work (for example, 32 frames in GCR's main setting~\cite{wei2026gcr}).
+
+\paragraph{Evaluating evidence, not only answers.}
+Answer accuracy rewards correct guesses and language priors.
+KFS-Bench~\cite{li2025kfsbench} labels the scenes a question needs and scores frame samplers directly on coverage and balance.
+EG-VQA~\cite{huang2026egvqa} and Evidence-Backed VQA~\cite{wang2026evidence} pair answers with temporal or spatio-temporal evidence and show that correct answers are often not grounded.
+Our source-slide intervals are a weaker, automatic form of such labels, specific to lectures.
+Closest in spirit is VideoRouteAudit~\cite{lin2026videorouteaudit}, a recent controlled audit that varies frame selection, text injection and model routing one at a time and finds small selection-only effects on Video-MME.
+We share its view that gains should be attributed under controlled conditions; we differ in domain (lectures), in using speech as the main selection signal, in measuring whether a labelled slide is shown, and in freezing protocols before each test set is run.
+
+\paragraph{Lecture and educational video.}
+Video-MMMU~\cite{hu2025videommmu} and Video-MMLU~\cite{song2025videommlu} test knowledge acquisition and understanding from lecture videos, and LEMON~\cite{yu2026lemon} tests temporal multimodal understanding on instructional videos.
+M3AV~\cite{chen2024m3av} provides lectures with slides, OCR and timed transcripts; we build our lecture test on it.
+Aligning slides to lecture video from speech, OCR and visual features is studied by MaViLS~\cite{anderer2024mavils}, and timestamped retrieval for course chatbots by Cite or Decline~\cite{ahmed2026cite}.
+These works target alignment, retrieval or benchmark construction; we ask how well speech guides the choice of a few frames for a frozen small VLM, and how to measure that choice.

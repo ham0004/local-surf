@@ -1,0 +1,9 @@
+\begin{abstract}
+A vision-language model small enough to run on one consumer GPU can look at only a handful of frames from a long lecture.
+The timed transcript says a lot about what is on screen, which suggests letting the speech decide which frames the model sees.
+We test this idea under a fixed budget of four frames and a frozen answer model, with protocols frozen before each test set was run, held-out test sets and declared contrasts.
+On 894 held-out LongVideoBench questions, a transcript-guided pipeline with selected speech text beats a transcript-window starting design by 8.9 points with Qwen3-VL-4B and by 8.3 points with a 120B model, while two small trained selection heads add no confirmed accuracy.
+On a lecture test set we derive from M3AV (853 questions generated from slides, 112 lectures), a trained speech-to-moment locator places the source slide among the four frames more often than the rule-based pipeline (79.4\% \vs 74.1\%), but it does not beat a training-free rule that fuses subtitle and visual scores (79.8\%).
+Diagnostics show that the slide is lost about as often before the final choice as at it, that answers are right 93.9\% of the time when the slide is shown, and that a question-only control already reaches 51.2\%.
+We conclude that transcript guidance helps mainly as a package, that a strong training-free fusion rule is hard to beat in lectures, and that answer accuracy alone hides most of what matters in such comparisons.
+\end{abstract}

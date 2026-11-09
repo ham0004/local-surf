@@ -2292,3 +2292,26 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   and reveal point; the speech-text row refers to the fresh-set follow-ups; the ceiling row labels the with-text and
   without-text conditions.
 - **Next.** Supervisor material, then the CVPR paper draft, each sent to the auditor sentence by sentence.
+
+## Step 104 (2026-11-09): supervisor brief and first CVPR 2027 draft
+- **Supervisor brief.** `docs/supervisor/brief.md`: the problem, the systems in plain words, the frozen results on
+  fresh LongVideoBench and on the lecture test, the loss analysis, the human check with its limits, what can and
+  cannot be claimed, limitations and the publication plan. Every number maps to a ledger ID (source table at the
+  end). Sent to the auditor before it is shared.
+- **CVPR 2027 draft.** `paper/cvpr2027/` uses the official author kit (review mode, anonymous, eight-page limit). Style
+  taken from recent CVPR frame-selection papers and from the closest related audit (bold run-in paragraph labels,
+  findings and contributions listed in the introduction, null results stated as intervals). Framed as a controlled
+  empirical study, not a new method: title "Does the Speech Point to the Slide? A Controlled Study of
+  Transcript-Guided Frame Selection for Lecture Video QA".
+  - Sections: introduction, related work (every work in auditor note P172), study design (systems, data, protocol,
+    statistics), results (fresh LongVideoBench, lecture test, loss analysis, human check, cost), discussion and
+    limitations, conclusion, LLM Usage Statement.
+  - About 4,600 words of main text with four tables and one figure; the page count must be checked by compiling in
+    Overleaf (no LaTeX engine on this machine).
+  - References: titles and authors taken from arXiv and CVF Open Access, not from memory.
+  - `paper/cvpr2027/CLAIMS.md` maps every numerical or comparative sentence to a ledger ID or source file; numbers
+    not in the ledger are marked "new" for the auditor.
+  - Open items for the owner: the consent and oversight wording for the human check, and confirmation of the LLM
+    Usage Statement (the CVPR guidelines require it, and a paper without it may be desk-rejected).
+- **Not done yet.** Supplement (earlier locked test, Head A dev results, ceilings, deviations, per-system inputs),
+  due 23 November.

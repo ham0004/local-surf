@@ -1,0 +1,31 @@
+\section{Discussion and limitations}
+\label{sec:discussion}
+
+\paragraph{What the speech buys.}
+On general long videos, the transcript did not improve the frame choice beyond a dense visual index, and the confirmed gain over the starting design is a package effect that the post hoc decomposition attributes mostly to the frames.
+In lectures, speech does point to the slide: reading the whole transcript with Head A raises the share of questions whose source slide reaches the candidate set from 81.2\% to 89.0\%, and the confirmed hit@4 gain follows.
+But a training-free rule that spreads subtitle similarity over time and fuses it with option-aware visual similarity reaches the same level.
+The learned residual, the part that makes Head A a trained model, showed no measurable contribution on LongVideoBench, and lecture-specific training did not beat training on CG-Bench.
+A plausible reading, which our design does not isolate, is that at this budget the useful ingredient is searching the whole transcript and video with the answer options in the query, and that a small learned correction on top adds little that careful rules do not already capture.
+
+\paragraph{What answer accuracy hides.}
+S2m and S1 differ by 5.3 points in hit@4 and by 4.7 points in accuracy, while S2m and R5 show no confirmed difference on either measure, so accuracy did not reverse any conclusion here.
+It did, however, sit on a floor of 51.2\% from the question alone, and generated lecture questions can be partly answered from the transcript.
+Without the hit@4 proxy and the controls, the loss analysis in \cref{tab:loss} would not be possible: the slide is lost about equally at the candidate and selection stages, so for S2m a perfect candidate stage alone could recover at most 11.0 points of hit@4 and a perfect picker alone at most 9.6.
+We suggest that frame-selection studies report, next to accuracy, an evidence-placement measure, no-video controls, the realized frame and text budget of every system, and confidence intervals that resample whole videos.
+
+\paragraph{Limitations.}
+The lecture labels are automatic slide intervals with known false matches, and the questions are machine-generated from slides; hit@4 shows that a labelled slide is on screen, not that the needed fact is legible or sufficient.
+The human check covers 100 sampled questions with one all-accepting reviewer, 33 single-reviewed questions and unverified reviewer independence, and it does not cover the frames chosen.
+Several contrasts compare packages that change more than one component, and search work is not matched: R3--R5 rank 96 frames, while S1 and the heads decode about 54.
+R5 is our adaptation of VSI with its setting chosen among ten on development data, so stronger published methods remain untested under our conditions.
+The lecture study uses one 4B answer model and M3AV's shipped transcripts, not a local speech recognizer, so robustness to recognition errors is not shown.
+Analyses run after a test was revealed (the decomposition, the residual ablation and the loss analysis) are post hoc.
+We also record deviations: the call allowance declared for the LongVideoBench runs was exceeded (25,373 calls charged against 20,000), one crashed control answer in the lecture run was retried against our own rule (the affected subset analysis has 322 instead of 323 questions), and the frozen lecture answer run exceeded the card's memory once.
+None of these changes a declared result, and all are documented in the supplement.
+
+\section{Conclusion}
+\label{sec:conclusion}
+Under a four-frame budget with a frozen small answer model, transcript-guided selection helps as part of a package, and in lectures a speech-to-moment locator places the source slide in view more often than a tuned rule-based pipeline.
+It does not beat a training-free rule that fuses subtitle and visual scores, and two small trained heads add no confirmed accuracy on fresh long-video questions.
+The most useful outcome of the study may be methodological: once evidence placement, no-video controls and stage-wise losses are measured, it becomes clear which differences between selectors are real and which are not.
