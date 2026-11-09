@@ -3,7 +3,7 @@
 
 \paragraph{What the speech buys.}
 On the held-out LongVideoBench questions, the tuned pipeline showed no demonstrated advantage over R3, which ranks a dense visual index without any transcript.
-That comparison changes more than the transcript, so it does not isolate a transcript effect, but it gives no sign that the speech improved the frame choice there.
+That comparison changes more than the transcript, so it does not isolate a transcript effect in either direction.
 The confirmed gain over the starting design is a package effect, and the post hoc decomposition traces most of it to the change of frames.
 The lecture results look different, although we ran no formal test of the difference between the two datasets.
 The S2m package reads the whole transcript and raises the share of questions with a candidate inside the labelled source-slide interval from 81.2\% to 89.0\%, which is where most of its hit@4 difference from S1 arises.
@@ -18,7 +18,7 @@ Accuracy alone cannot show why a system fails.
 The answer model already gets 51.2\% of the lecture questions right with no video at all, and generated lecture questions can often be answered from the transcript.
 The slide intervals show where the labelled slide is missed, though they do not establish why either.
 With S2m's candidate pools held fixed, a perfect picker could raise hit@4 by at most 9.6 points.
-No comparable bound follows for a different candidate stage, which would change both the pool and what the picker does with it, and neither figure bounds accuracy.
+No comparable bound follows for a different candidate stage, which would change both the pool and what the picker does with it, and the 9.6-point figure does not bound accuracy.
 Building on earlier work that evaluates evidence and not only answers~\cite{li2025kfsbench,huang2026egvqa}, we suggest that frame-selection studies report, next to accuracy, an evidence-placement measure, no-video controls, the realized frame and text budget of every system, and confidence intervals that resample whole videos.
 
 \paragraph{Limitations.}
@@ -36,7 +36,7 @@ Finally, we record three deviations from our own plans.
 First, we declared a total of 20,000 answer calls for the LongVideoBench confirmation, but each answer model's ledger had its own 20,000 cap, so the total was not enforced.
 The ledgers charged 25,373 calls, a figure that also includes API follow-ups on the earlier locked test.
 Second, one crashed control answer in the lecture run was retried against our rule.
-Scoring it as failed, as the rule requires, removes that question from the transcript-only-wrong subset (322 rather than the as-run 323 questions) and leaves every full-cohort accuracy unchanged.
+Under the rule, a failed system answer counts as wrong, but a failed control answer is unknown; scored that way, the question leaves the transcript-only-wrong subset (322 rather than the as-run 323 questions), and every full-cohort accuracy is unchanged.
 Third, in the frozen lecture answer run the observed reserved memory exceeded the card's capacity, and one out-of-memory crash and restart is recorded.
 None of these changes a primary result, though each remains a deviation, and the supplement documents all three.
 

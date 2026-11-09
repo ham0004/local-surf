@@ -67,7 +67,7 @@ Recurring rules applied throughout (P186):
 | Model reviews exposed false repeats and motivated S-src; agreement statistics only in the human check | research log step 89; P188 |
 | Freeze timing: primary before each run; QA analysis after hits and before answers; human plan before verdicts | P188 |
 | H1-H4, L1-L2, Holm per family; L1 R3→R5 dev-only amendment | C10-C13, C27, C28, P171 |
-| Unadjusted paired percentile intervals; Holm on p-values; one-sample bootstrap for human rates; smallest p about 0.0002 | P164, P188 |
+| Question-weighted differences; whole videos/lectures resampled and their questions pooled; unadjusted paired percentile intervals; Holm on p-values; one-sample bootstrap for human rates; smallest p about 0.0002 | P164, P188 |
 | Failures count as wrong; one retried answer as exception | C37, P188 |
 
 ## Results (`4_results.tex`)
@@ -92,8 +92,8 @@ Recurring rules applied throughout (P186):
 | S2m − R3 +15.2; − R4 +2.5 (interval includes zero); − S2c −0.4 ("no confirmed change") | C29 |
 | R3, R4, R5 fewer than 4 frames for 52, 48, 27 questions (lecture 96-time rule) | C30, C67 |
 | Accuracy: S2m − S1 +4.7; − R5 +0.7; S3 − S1 +0.2; S1t − S1 +0.9 | C33, C34 |
-| Agreement of accuracy and hit@4 limited to declared comparisons; R5 and S2c counter-examples | C26, C32, P189 |
-| Transcript-only-wrong subset: 322 (crash scored failed) +5.9 (1.6, 10.3), +9.6 (5.4, 13.8); as-run 323 +5.9, +9.3 | C35, C36; `docs/v3/m3av_qa_test_deviation.md` |
+| Accuracy and hit@4 lead to the same inferential reading for the two declared comparisons; counter-examples: R5 above S2m on hit but below on accuracy; S2c − S2m paired +0.4 hit, +0.9 accuracy | C26, C32; `reports/m3av/hits_test.md`, `reports/m3av/qa_test.md` (−0.4, −0.9 as S2m − S2c); P201 |
+| Transcript-only-wrong subset: 322 (failed control is unknown and excluded from the control-defined subset; failed system answers count wrong) +5.9 (1.6, 10.3), +9.6 (5.4, 13.8); as-run 323 +5.9, +9.3 | C35, C36; `docs/v3/m3av_qa_test_deviation.md` |
 | Loss table for S1 and S2m, rows labelled as interval hits | C39 |
 | Loss table for S0 (75.3, 24.7, 7.9, 67.4) | C60 |
 | +7.8 candidate difference vs +5.3 final; bookkeeping, not causal | C39, P189 |

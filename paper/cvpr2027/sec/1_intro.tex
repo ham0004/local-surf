@@ -29,7 +29,7 @@ This gives a proxy for whether a system showed the right slide, in addition to w
 \item \textbf{The pipeline helps as a whole; the trained heads add no confirmed gain.}
 On fresh LongVideoBench questions, the tuned pipeline with selected speech text beats the starting design by 8.9 points with Qwen3-VL-4B and by 8.3 points with a 120B answer model.
 Adding the two trained heads gives no confirmed gain with either model, and the tuned pipeline shows no demonstrated advantage over taking the four frames most similar to the question in a dense index.
-\item \textbf{In lectures, the speech-guided locator places the slide more often than the rule-based pipeline, but not more often than a training-free fusion rule.}
+\item \textbf{In lectures, the locator-based pipeline hits the labelled slide interval more often than the rule-based pipeline, with no demonstrated advantage over a training-free fusion rule.}
 The pipeline built around the trained locator places a frame in the labelled source-slide interval for 79.4\% of test questions, 5.3 points more than the rule-based pipeline.
 The VSI-inspired rule reaches 79.8\%; the difference of $-0.5$ points has a 95\% interval of $-3.8$ to $+2.9$, so neither system is shown to be better, and the two are not shown to be equal.
 \item \textbf{Accuracy needs context.}

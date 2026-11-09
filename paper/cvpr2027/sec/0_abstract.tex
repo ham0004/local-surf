@@ -6,5 +6,5 @@ On 894 held-out LongVideoBench questions, a transcript-guided pipeline with sele
 On 853 questions that we generate from the slides of 112 M3AV lectures, a pipeline built around a trained speech-to-moment locator places a frame inside the automatically labelled source-slide interval more often than the rule-based pipeline (79.4\% \vs 74.1\%), with no demonstrated difference from a training-free rule that fuses subtitle and visual scores (79.8\%).
 A post hoc breakdown shows that the labelled slide is missed about as often while gathering candidates as when picking the final four.
 Answers are right 93.9\% of the time when a chosen frame falls in the interval, and the answer model already gets 51.2\% right from the question alone.
-In our setting, speech-guided search helps place lecture evidence, a small learned locator shows no advantage over a careful training-free rule, and accuracy is best reported next to evidence-placement measures and no-video controls.
+In our setting, the locator-based pipeline places lecture frames inside the labelled interval more often than the rule-based pipeline but shows no demonstrated advantage over a careful training-free rule, and accuracy is best reported next to evidence-placement measures and no-video controls.
 \end{abstract}

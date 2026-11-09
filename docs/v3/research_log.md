@@ -2392,3 +2392,28 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   4,870), so the eight-page limit must be checked on a compiled PDF; detail may move to the supplement.
 - **Open.** Consent and oversight (owner); the name of the auditing service, if it should be named (owner); the
   supplement; a compiled anonymous PDF; the auditor's check of this revision.
+
+## Step 106 (2026-11-10): brief cleared for the supervisor; last paper wording fixes (auditor P196-P206)
+- **Audit result.** The supervisor brief is cleared for sharing as a progress brief, with the pending human-study
+  facts shown (P197). The P183 fixes, the four mechanism confirmations and the removal of the candidate-stage ceiling
+  are resolved (P198-P199). Eight paper sentences remained (P201).
+- **Brief (P197).** S1t's whole-transcript text is found by BM25 fused with the MiniLM cross-encoder, not a
+  sentence-embedding search; the lecture R3-R5 stop at four perceptually distinct pictures, not "four distinct
+  slides".
+- **Paper (P201).**
+  - Abstract closing sentence and the second finding's heading now name the locator-based package, the labelled
+    interval and "no demonstrated advantage" over the fusion rule.
+  - Discussion: the clause inferring no speech effect from the S1/R3 comparison is removed; that comparison does not
+    isolate a transcript effect in either direction.
+  - Results: accuracy and hit@4 "lead to the same reading" for the two declared comparisons, stated as S2m above S1
+    with an interval above zero and no confirmed S2m/R5 difference. The S2c/S2m counter-example now uses the paired
+    differences, +0.4 on hit@4 and +0.9 on accuracy (3/853 and 8/853 questions), not differences of rounded
+    percentages (0.3 and 1.0).
+  - Study: system differences are question-weighted; each bootstrap resample draws whole videos or lectures and
+    averages over all their questions.
+  - Results and discussion: a failed system answer counts as wrong, a failed control answer is unknown and leaves the
+    control-defined subset, which is why that subset has 322 questions against 323 as run.
+  - Discussion: "neither figure bounds accuracy" is now "the 9.6-point figure does not bound accuracy".
+  - Claim map rows updated to match.
+- **Still open.** Consent and oversight, and the auditing tool's name and version (owner); the supplement; a compiled
+  anonymous PDF and its page count.

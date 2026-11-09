@@ -94,13 +94,13 @@ Among the dense baselines, S2m exceeds R3 by 15.2 points ($+11.3$ to $+19.1$); a
 Training Head A on lecture questions instead of CG-Bench gives no confirmed change (S2m $-$ S2c $-0.4$, $-2.1$ to $+1.5$).
 All systems may show at most four frames, but R3, R4 and R5 show fewer for 52, 48 and 27 questions respectively, when their 96 ranked times hold fewer than four distinct pictures.
 
-For the two declared comparisons, accuracy points the same way as hit@4.
+For the two declared comparisons, accuracy leads to the same reading as hit@4: S2m is above S1 with an interval above zero, and S2m and R5 show no confirmed difference.
 S2m answers 4.7 points more questions than S1 ($+2.5$ to $+6.9$) and 0.7 more than R5 ($-1.7$ to $+3.0$), both uncorrected.
-The agreement does not hold for every pair: R5 is above S2m on hit@4 but below it on accuracy, and S2c leads S2m by 0.3 points on hit@4 but by 1.0 on accuracy.
+The agreement does not hold for every pair: R5 is above S2m on hit@4 but below it on accuracy, and S2c leads S2m by 0.4 points on hit@4 but by 0.9 on accuracy (paired differences).
 Neither Head B ($+0.2$ over S1, $-1.9$ to $+2.4$) nor the speech text ($+0.9$, $-0.8$ to $+2.8$) adds confirmed accuracy.
 The controls give context: the answer model answers 51.2\% of the questions correctly from the question alone and 62.1\% from the transcript alone, which leaves less room for frames to matter; this does not tell us which questions logically need the slide.
 We also look at the questions that the transcript-only control answers wrong.
-As run, there are 323; scoring the one retried control answer as failed, as our rule requires, leaves 322 (\cref{sec:discussion}).
+As run, there are 323. Our rule treats a failed control answer as unknown and leaves it out of the control-defined subset, while a failed system answer counts as wrong; scoring the one retried control answer as failed therefore leaves 322 (\cref{sec:discussion}).
 On these 322, S2m exceeds R5 by 5.9 points ($+1.6$ to $+10.3$) and S1 by 9.6 ($+5.4$ to $+13.8$); on the as-run 323, the figures are $+5.9$ and $+9.3$.
 This subset is defined by the same answer model, so we treat it as a descriptive hint, not as a set of questions verified to need the slide.
 

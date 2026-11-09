@@ -152,7 +152,7 @@ On LongVideoBench we declared four contrasts: H1 and H2, both heads (S4) minus S
 On lectures we declared two contrasts on hit@4: L1, S2m minus R5, and L2, S2m minus S1.
 L1 originally named R3; a development-only amendment replaced it with the stronger R5 before the test questions were generated.
 Holm correction~\cite{holm1979} is applied within each family.
-Differences between systems are given with 95\% percentile intervals from a paired bootstrap~\cite{efron1993bootstrap} that resamples whole videos or lectures (10,000 resamples).
+Differences between systems are question-weighted and given with 95\% percentile intervals from a paired bootstrap~\cite{efron1993bootstrap}: each of 10,000 resamples draws whole videos or lectures with replacement and averages over all their questions.
 These intervals are not adjusted; Holm adjusts the family p-values, which are bootstrap-tail estimates whose smallest possible value is about 0.0002.
 Intervals for human error rates come from a one-sample bootstrap over lectures.
 Failed answers count as wrong; the one exception, a retried answer, is described in \cref{sec:discussion}.

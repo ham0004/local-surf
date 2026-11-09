@@ -24,7 +24,7 @@ lecture, what the speaker says often refers to what is on the slide at that mome
 - **S1, best rule-based framework.** The same transcript search, plus a picture index of the whole video (one
   MobileCLIP image fingerprint every 2 s). Candidates from both are merged, and a diversity-aware picker that scores
   frames against the question and the answer options chooses four. **S1t** adds up to 600 words of speech: lines near
-  the chosen frames plus lines retrieved from the whole transcript by keyword and sentence-embedding search.
+  the chosen frames plus lines retrieved from the whole transcript by keyword search (BM25) fused with a MiniLM cross-encoder.
 - **Head A.** A small trained locator that reads every transcript line and votes for the moments where the answer
   should be visible. Each of its three members is a small network with 1,889 trained parameters on top of frozen text
   rerankers (5,667 across the three). It replaces the speech part of S1. **S2c** is Head A trained on the CG-Bench
@@ -38,7 +38,7 @@ lecture, what the speaker says often refers to what is on the slide at that mome
   VSI method that combines picture and subtitle scores. R5 was the best of ten settings we tried on lecture dev
   questions. It is our adaptation, not a reproduction of VSI. The baselines differ between the two studies. On fresh
   LongVideoBench, R3 takes the four top-ranked times and merges repeated pictures, so it can show fewer than four. On
-  the lecture test, R3–R5 go down a ranked list of up to 96 times until they have four distinct slides.
+  the lecture test, R3–R5 go down a ranked list of up to 96 times until they have four perceptually distinct pictures.
 
 All systems show the answer model at most four frames. On the lecture test, some baselines show fewer on average
 (R3 3.87, R4 3.88, R5 3.94). The lecture baselines R3–R5 also decode more frames per question than our systems (up
