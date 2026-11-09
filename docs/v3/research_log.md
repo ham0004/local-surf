@@ -2322,3 +2322,8 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   rewritten in the owner's framing (the authors conceived the idea, designed the framework and the experiment plan,
   directed and checked everything; Claude implemented the code, ran experiments and drafted the text, which the
   authors reviewed and edited; GPT double-checked independently; Nemotron generated the questions).
+- **Update: authorship statement everywhere.** At the owner's request, the same statement (the authors conceived the
+  idea, designed the framework and experiment plan, directed and checked everything; Claude implemented the code, ran
+  the experiments and drafted the text; GPT double-checked independently; Nemotron generated the questions) now
+  appears word for word in the paper's LLM Usage Statement, the README ("Authorship and tool use") and the supervisor
+  brief.
