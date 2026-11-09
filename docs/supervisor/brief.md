@@ -132,8 +132,8 @@ rejected, 3 without a majority. Removing those 3 leaves L2 at +5.4 (+2.8..+8.0) 
 
 This check is weaker than it looks. One reviewer accepted all 100 and was the only reviewer for 33 questions, so a
 combined reject was not possible under the fixed rule. Agreement with the two model reviews was 82% and 77%, but kappa
-was near zero. Answers were shared in a group chat at different times, so independence between reviewers is not
-verified. The selected frames were not reviewed. The review supports the questions on a sample; it does not validate
+was near zero. The reviewers worked independently and did not see each other's answers, according to the owner; since
+answers were shared in a group chat at different times, this rests on that account rather than on a technical control. The selected frames were not reviewed. The review supports the questions on a sample; it does not validate
 all 853 labels.
 
 ## What the thesis can and cannot claim

@@ -40,7 +40,13 @@ The rejected rate is 0.0 with a 95% interval of 0.0..0.0. With zero rejects obse
 has zero rejects, so the interval collapses to a point. It is not an upper bound on the true error rate of the labels.
 The prespecified estimator is kept as reported.
 
-## Independence of reviewers: unverified
+## Independence of reviewers: owner's account, not technically controlled
+
+**Update (9 November 2026, owner):** the three reviewers are members of the owner's thesis group. The owner states
+that none of them saw another reviewer's answers and that each did the review independently. This is the owner's
+account; nothing in the collection method enforced it, and whether each used a separate browser profile or device is
+not recorded. The original points follow.
+
 
 - The review page hid all system results and both model reviews from the reviewers.
 - The three reviewers had view-only access to the page, so their answers could not be saved to the shared store.

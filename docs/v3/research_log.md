@@ -2315,3 +2315,10 @@ Where the gain of the best framework with speech (S1t) over the starting design 
     Usage Statement (the CVPR guidelines require it, and a paper without it may be desk-rejected).
 - **Not done yet.** Supplement (earlier locked test, Head A dev results, ceilings, deviations, per-system inputs),
   due 23 November.
+- **Update (same day): owner's answers.** Reviewer independence: the owner states that the three reviewers (thesis
+  group members) did not see each other's answers and worked independently. Recorded as the owner's account in
+  `reports/m3av/human_review_limits.md`, the brief and the draft; nothing in the collection method enforced it, and
+  separate browser profiles or devices are not recorded. Consent and oversight are still open. LLM Usage Statement
+  rewritten in the owner's framing (the authors conceived the idea, designed the framework and the experiment plan,
+  directed and checked everything; Claude implemented the code, ran experiments and drafted the text, which the
+  authors reviewed and edited; GPT double-checked independently; Nemotron generated the questions).
