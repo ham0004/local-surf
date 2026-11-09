@@ -2327,3 +2327,8 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   the experiments and drafted the text; GPT double-checked independently; Nemotron generated the questions) now
   appears word for word in the paper's LLM Usage Statement, the README ("Authorship and tool use") and the supervisor
   brief.
+- **Update: writing pass on the draft.** Abstract, introduction, discussion and conclusion rewritten for a natural
+  academic voice; no number changed and no new claim added. Fixed an internal contradiction: the introduction said
+  accuracy "hides most of the story" while the discussion said accuracy reversed no conclusion. Both now say
+  accuracy agrees with evidence placement here but cannot show where or why a system fails. Removed two overstatements
+  ("hard to beat"; "it becomes clear which differences are real") and an equal-performance phrasing for S2m vs R5.

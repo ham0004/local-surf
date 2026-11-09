@@ -5,7 +5,9 @@
 Uniform sampling wastes a small budget on irrelevant moments, so many methods rank frames against the question.
 Training-free approaches include BOLT~\cite{liu2025bolt}, which samples frames according to query--frame similarity, and VSI~\cite{he2025vsi}, which combines a visual branch with a subtitle branch to retrieve keyframes.
 GCR~\cite{wei2026gcr} grounds candidates with timestamped text and visual anchors, covers them with a global MMR step and refines the set; it also renders text onto frames, so its input differs from unchanged images.
-Learned selectors include Frame-Voyager~\cite{yu2025framevoyager}, which learns to query frame combinations using supervision from a pretrained video model; M-LLM based selection~\cite{hu2025mllm} and flexible frame selection~\cite{buch2025flexible}, both CVPR 2025; reinforcement-learning samplers~\cite{qin2026efficient}; MSJoE~\cite{tan2026msjoe}, which trains the sampler together with the answer model; HORNet~\cite{bai2026hornet}; and ReQuest~\cite{kim2026request}, which re-selects frames for a second pass when the first answer is uncertain.
+On the learned side, Frame-Voyager~\cite{yu2025framevoyager} learns to query frame combinations with supervision from a pretrained video model, and M-LLM based selection~\cite{hu2025mllm} and flexible frame selection~\cite{buch2025flexible} train selectors that serve a larger answer model.
+More recent work trains samplers with reinforcement learning~\cite{qin2026efficient}, evolves the sampler together with the answer model~\cite{tan2026msjoe}, or guides selection by the task~\cite{bai2026hornet}.
+ReQuest~\cite{kim2026request} answers once from uniform frames and, when the answer is uncertain, selects new frames for a second pass.
 Our two trained heads belong to this family and are not new as mechanisms: speech and visual dual-path retrieval, option-aware frame scoring and learned set selection all have precedents above.
 We keep the answer model frozen and call it once per question, and the answer model sees at most four frames, fewer than the budgets usually reported in this line of work (for example, 32 frames in GCR's main setting~\cite{wei2026gcr}).
 
