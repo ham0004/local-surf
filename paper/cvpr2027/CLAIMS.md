@@ -1,107 +1,144 @@
 # Claim map for the CVPR 2027 draft (for the auditor)
 
-Every sentence in the draft that states a number, a comparison or a contribution, with the ledger ID from auditor note
-P167 or, where no ledger row covers it, the source file. "new" marks numbers not in the ledger that need a fresh check.
-Draft files: `paper/cvpr2027/sec/*.tex`.
+Every sentence in the draft that states a number, a comparison, a mechanism or a contribution, with the ledger ID
+(auditor notes P167 and P184) or the source file. The "Wording used" column gives the bounded reading that the
+draft now uses. A ledger ID validates the quantity, not every paraphrase. Draft files: `paper/cvpr2027/sec/*.tex`.
+
+Recurring rules applied throughout (P186):
+1. An interval containing zero is "no confirmed" / "no demonstrated" difference, never equality or "nothing measurable".
+2. hit@4 and S-src are timestamp intersections with automatic intervals (known false matches), never verified
+   visibility of the slide or the fact.
+3. Package contrasts are not attributed to a single component or to speech as such.
+4. Mechanisms follow the code: Head B rewards option decisiveness; 1,889 parameters per Head A member; R2/R3 differ
+   between the two studies; the residual contrast is full minus residual-off; printed intervals are unadjusted and Holm
+   adjusts p-values.
 
 ## Abstract and introduction (`0_abstract.tex`, `1_intro.tex`)
 
-| Claim in the draft | Ledger ID or source |
-|---|---|
-| 894 held-out LongVideoBench questions | C09 |
-| S1t − S0: +8.9 (4B), +8.3 (120B) | C12, C13 |
-| Two trained heads add no confirmed accuracy | C10, C11 |
-| 853 questions generated from slides, 112 lectures; derived, not official | C25 |
-| S2m 79.4% vs S1 74.1%; +5.3 | C26, C28 |
-| R5 79.8%; L1 −0.5 (−3.8, +2.9) | C26, C27 |
-| Slide lost about as often before as at the final choice | C39 (11.0 vs 9.6) |
-| Answers right 93.9% when the slide is shown; 56.1% to 66.0% when not | C40 |
-| Question-only 51.2%, transcript-only 62.1% | C32 |
-| Tuned pipeline shows no advantage over dense top-4 | C14 |
-| Contributions: empirical only; no new state-of-the-art selector | P173; C56 avoided |
+| Claim | Wording used | Ledger ID or source |
+|---|---|---|
+| Four frames | A chosen budget, not a hardware limit | C64 |
+| Fixed before testing; declared comparisons | Methods fixed on dev; primary comparisons declared and Holm-corrected; others secondary or post hoc | C10-C13, C27-C28, P188 |
+| 894 held-out LongVideoBench questions | as stated | C09 |
+| S1t − S0: +8.9 (4B), +8.3 (120B) | package gain | C12, C13 |
+| Heads | "no confirmed gain" | C10, C11 |
+| S1 vs dense top-4 | "no demonstrated advantage" | C14 |
+| 853 generated questions, 112 lectures | as stated | C25, C65 |
+| S2m 79.4% vs S1 74.1% (+5.3) | "places a frame inside the automatically labelled source-slide interval" | C26, C28 |
+| R5 79.8%; L1 −0.5 (−3.8, +2.9) | "no demonstrated difference"; "not shown to be equal" | C26, C27 |
+| Missed about as often before as at the final choice | post hoc, proxy | C39 (11.0 vs 9.6) |
+| 93.9% when a chosen frame falls in the interval; 56.1% to 66.0% otherwise | association | C40 |
+| Question-only 51.2%, transcript-only 62.1% | observed control accuracies, not logical answerability | C32 |
+| Showing the moment "should make such a question easier", but models often answer without it | motivation, consistent with controls | P187 |
+| Contributions | empirical; "gains on fresh data are not confirmed"; post hoc breakdown, not causal attribution | P173, P187 |
 
 ## Related work (`2_related.tex`)
 
 | Claim | Source |
 |---|---|
-| Descriptions of VSI, GCR (32 frames, text rendered on frames), Frame-Voyager, BOLT, KFS-Bench, EG-VQA, Evidence-Backed VQA, VideoRouteAudit, LEMON, Video-MMLU, MaViLS, Cite or Decline, ReQuest, MSJoE, HORNet, RL sampler | P172 and the cited papers |
-| Our heads are not new as mechanisms | P172, P173, `docs/v3/heads_design.md` |
+| Descriptions of BOLT, VSI, GCR (32 frames, text rendered on frames), Frame-Voyager, M-LLM selection, flexible selection, RL sampler, MSJoE, HORNet (workshop), ReQuest, KFS-Bench, EG-VQA, Evidence-Backed VQA, VideoRouteAudit, Video-MMMU, Video-MMLU, LEMON, M3AV, MaViLS, Cite or Decline | P172, P187 and the cited papers |
+| Uniform sampling "can miss" moments under a small budget | reworded per P187 |
+| Our heads are not new as mechanisms; speech + visual retrieval has precedents in VSI and GCR | P172, P187 |
+| One answer stage per question; at most four frames vs 32 in GCR's main setting; not a matched comparison | P187 |
+| Difference from VideoRouteAudit: lecture test, speech as main signal, automatic slide labels (no claim about their freezing) | P187 |
 
 ## Study design (`3_study.tex`)
 
-| Claim | Source |
+| Claim | Ledger ID or source |
 |---|---|
-| K at most 4, same model, prompt; frames at most 640 px | C30; `docs/v3/m3av_systems.md` (640 px: new) |
-| System descriptions S0-S4, R2-R5; R5 adaptation and its differences from VSI; best of 10 dev settings | C55; `docs/v3/m3av_systems.md` |
-| R3-R5 rank 96 frames; S1-S3 decode about 54 | P170; `docs/v3/m3av_systems.md` notes |
-| Head A: residual MLP over 21 features + bge scores, zero-initialized, density voting, 6 moments, 10 s positive window, 3 seeds, 1,889 parameters | `docs/v3/research_log.md` step 39; README (new) |
-| S2m trained on 1,147 questions / 297 train lectures | C25 |
-| Head B: λ 2, μ 1, internal validation, CG-Bench train pools | `docs/v3/m3av_systems.md`; `docs/v3/heads_design.md` (new) |
-| Earlier locked test: 459 questions (55/6, 202 + 202 on 202 lectures); reused for labelled follow-ups | C01, C05 |
-| Fresh set: 894/500; 3 questions on 1 unavailable video excluded; not an official test-server result | C09, P174 |
-| Generation and filter rules (4 s, 8 words, title slides, 4 options, hash order, 80% OCR match, 2 s visibility, no answer-model filter) | `docs/v3/m3av_protocol.md` (new) |
-| Splits 1,147/297, 514/96, 853/112; official speaker-disjoint split | C25; `docs/v3/m3av_protocol.md` |
-| hit@4 with 1 s tolerance; S-src sealed before test | C26, C31 |
-| Controls: question only; transcript only with 600 BM25 words | C32; `docs/v3/m3av_protocol.md` |
-| Human check: 100 questions, one per lecture, drawn after freeze; packet; rule fixed before verdicts | C41; research log steps 98-99 |
-| Declared H1-H4, L1-L2, Holm; L1 changed from R3 to R5 by a dev-only amendment before test generation | C10-C13, C27, C28, P171 |
-| Bootstrap over videos or lectures, 10,000; smallest p about 0.0002; failures count as wrong | P164 |
+| At most 4 frames; same model, prompt and preprocessing within a comparison; 640 px decode cap before the processor | C30, C64 |
+| 120B answers only LongVideoBench in the two main studies and also generated the lecture questions | C25, P188 |
+| Figure: speech path = BM25 windows + MiniLM, or Head A on the full transcript; ~9 candidates on lectures; ≤4 frames | C61-C62, P188 |
+| Systems table and caption: S0 ≤120 words; R2/R3 per study; lecture R3-R5 up to 96 times; S1-S3 at most about 54 | C67, C30; `docs/v3/m3av_systems.md` |
+| S0 design | `docs/v3/m3av_systems.md`, P188 |
+| S1/S1t rules; ~9 candidates on the lecture test | P188; `docs/v3/m3av_systems.md` |
+| Head A: 21 + 3 bge-derived = 24 inputs; zero-init reproduces frozen line scores; top 64 lines, σ 4 s, 1 s grid, 8 s suppression, 6 moments; 1,889 per member, 5,667 for three; positive if line end − 0.3 s within 10 s | C61, C62 |
+| S2c, S2m training sources; S2m internal validation; no dev/test lecture | C25, C65, P188 |
+| Head B: 18 features; greedy gain = score + 2 × Δ decisiveness − 1 × max visual similarity | C63 |
+| Baselines: fresh R2/R3 four-time versions with merging; lecture R2 four times; lecture R3-R5 96-time distinct fill; R5 adaptation, best of 10 dev settings | C55, C67 |
+| Rules and families chosen on dev; head weights fitted on training data | P188 |
+| Earlier locked test: 459 (55/6, 202 + 202 on 202 lectures) | C01, C05 (supplement pending) |
+| Fresh set 894/500; 3 excluded; no method chosen on it before the run; not a test-server result | C09, P174 |
+| Generation and filter rules: ≥4 s annotated, ≥8 OCR words, first segment excluded, image + OCR only; 4 distinct options; 80% token match; repeats need answer-critical tokens; dev/test 1 Hz edge correlation, 0.55, neighbouring segments, ≥2 s; train not filtered by F4; hash order; no answer-model filter | C66 |
+| Official split built to keep speakers apart (dataset authors); lecture separation checked | C65 |
+| hit@4 definition with false-match caveat; S-src sealed before test | C26, C31, P188 |
+| Transcript control: at most 600 BM25-selected words | C32, P188 |
+| Human check sample, packet, rule fixed before verdicts | C41 |
+| Model reviews exposed false repeats and motivated S-src; agreement statistics only in the human check | research log step 89; P188 |
+| Freeze timing: primary before each run; QA analysis after hits and before answers; human plan before verdicts | P188 |
+| H1-H4, L1-L2, Holm per family; L1 R3→R5 dev-only amendment | C10-C13, C27, C28, P171 |
+| Unadjusted paired percentile intervals; Holm on p-values; one-sample bootstrap for human rates; smallest p about 0.0002 | P164, P188 |
+| Failures count as wrong; one retried answer as exception | C37, P188 |
 
 ## Results (`4_results.tex`)
 
 | Claim | Ledger ID or source |
 |---|---|
-| Table of fresh accuracies (27 values) | C15 |
-| H1-H4 with Holm p | C10-C13 |
-| One failed S1t answer with 4B counted wrong | C12 |
-| Post hoc: S1 frames at fixed S0 text +8.2; text change on S1 frames +0.8; S1t − S1 +1.3 | C21 |
-| Head A alone +1.8, +1.2, +2.8 (0.0, 5.6), p 0.052; Head B within one point | C16 |
-| Residual ablation on fresh set +0.3 (−2.1, +2.8); learned part shows no measurable contribution | C18 |
-| S1 − R2: +7.5, +8.6, +5.4; S1 − R3: −0.8, −0.1, −1.1 | C17, C14 |
-| Lecture table: hit@4 and frames for all systems | C26, C30 |
-| Lecture table: S-src for S1, S2m, R5 | C31 |
-| Lecture table: S-src for S0, S2c, S3, R2, R3, R4 | `reports/m3av/hits_test.md` (new) |
+| Fresh accuracies (27 values) | C15 |
+| H1-H4 with Holm p (0.92 and 0.34 are roundings of 0.9185 and 0.3424) | C10-C13 |
+| One failed answer each for S1t and S4t with 4B | C12, P189 |
+| H3/H4: Holm p 0.0008; unadjusted intervals above zero | C12, C13, P189 |
+| Post hoc decomposition +8.2 / +0.8 / +1.3; allowances, not exact lengths; specific to this swap | C21 |
+| Head A alone +1.8, +1.2, +2.8 (0.0, 5.6), p 0.052 uncorrected; Head B within one point | C16 |
+| Full minus residual-off +0.3 (−2.1, +2.8); "no confirmed contribution" | C18 |
+| S1 − R2 (secondary, uncorrected): +7.5, +8.6, +5.4; S1 − R3: −0.8, −0.1, −1.1, "no demonstrated advantage", not a transcript-only contrast | C17, C14 |
+| Lecture table: hit@4 and frames | C26, C30 |
+| Lecture table: S-src for all systems | C31, C59 |
 | Lecture table: accuracy for all systems and controls | C32 |
+| Table caption: hit@4 includes valid repeats; S-src source segment only; both proxies | C26, C59 |
 | L2 +5.3; L1 −0.5 with Holm p | C27, C28 |
 | S2m package changes transcript scope, rescoring, density voting and residual | P170 |
-| S-src L1 −1.5, L2 +5.0 | C31 |
-| S2m − R3 +15.2; − R4 +2.5; − S2c −0.4 | C29 |
-| R3, R4, R5 show fewer than 4 frames for 52, 48, 27 questions | C30 |
+| S-src L1 −1.5, L2 +5.0, descriptive, no Holm | C31 |
+| S2m − R3 +15.2; − R4 +2.5 (interval includes zero); − S2c −0.4 ("no confirmed change") | C29 |
+| R3, R4, R5 fewer than 4 frames for 52, 48, 27 questions (lecture 96-time rule) | C30, C67 |
 | Accuracy: S2m − S1 +4.7; − R5 +0.7; S3 − S1 +0.2; S1t − S1 +0.9 | C33, C34 |
-| Transcript-only-wrong subset, 322 questions: S2m − R5 +5.9 (1.6, 10.3); − S1 +9.6 (5.4, 13.8) | C35, C36 (deviation appendix) |
-| Loss table for S1 and S2m | C39 |
-| Loss table for S0 (75.3, 24.7, 7.9, 67.4) | `reports/m3av/evidence_loss_test.md` (new) |
-| S2m accuracy by outcome: 677/93.9, 82/56.1, 94/66.0; 41 wrong answers with slide shown, unadjudicated | C40, P170 |
-| Human check: 67 double, 33 single, 167 verdicts; 97/0/3; rejections were about the key | C41; `reports/m3av/human_review_test.md` |
+| Agreement of accuracy and hit@4 limited to declared comparisons; R5 and S2c counter-examples | C26, C32, P189 |
+| Transcript-only-wrong subset: 322 (crash scored failed) +5.9 (1.6, 10.3), +9.6 (5.4, 13.8); as-run 323 +5.9, +9.3 | C35, C36; `docs/v3/m3av_qa_test_deviation.md` |
+| Loss table for S1 and S2m, rows labelled as interval hits | C39 |
+| Loss table for S0 (75.3, 24.7, 7.9, 67.4) | C60 |
+| +7.8 candidate difference vs +5.3 final; bookkeeping, not causal | C39, P189 |
+| S2m accuracy by outcome 677/93.9, 82/56.1, 94/66.0; association; hit may be false; 41 wrong unadjudicated | C40 |
+| Human check: 67 double, 33 single, 167 verdicts; 97/0/3; rejections about the key | C41 |
 | Rejected-or-uncertain 3.0 (0, 7.0) and 2.7 (0, 6.4) | C42 |
-| Masks: L1 −0.4 (−3.7, +3.0), L2 +5.4 (+2.8, +8.0) | C45 |
-| All-accept reviewer, structural impossibility of a reject, degenerate interval, kappa values, independence unverified, frames not reviewed | C43 (avoided), C44, P168; `reports/m3av/human_review_limits.md` |
-| Pool time S1 0.67 s, S2m 0.97 s, R5 1.42 s, exclusions | C50 |
-| Answer call about 2.4-2.5 s; 4.55 s with text | C51 (no comparative claim made) |
+| Masks: L1 −0.4 (−3.7, +3.0), L2 +5.4 (+2.8, +8.0); estimates move, interpretation unchanged | C45, P189 |
+| All-accept reviewer, impossible combined reject, degenerate interval, kappa, owner's account of independence, device use unrecorded, frames not reviewed | C44, P168, P180; `reports/m3av/human_review_limits.md` |
+| Pool time S1 0.67 s, S2m 0.97 s, R5 1.42 s; exclusions listed | C50; `reports/m3av/profile_saved.md` |
+| New answer calls S1 2.47, S2m 2.41, R5 2.44, S0 3.09, S1t 4.55 s; cache reuse excluded; not matched | C51; `reports/m3av/profile_saved.md` |
 | Dense index 955 s for 112 lectures, mean 19.3 min | C52 |
-| Frozen run reserved 16.8 of 15.93 GiB; one OOM and restart | C38 (stated as a deviation, not a blanket claim) |
+| Observed reserved peak 16.8 GiB on 15.93 GiB; one recorded OOM and restart; first-session peak not captured | C38 (qualified), C37 |
 | Capped dev replay: 600 identical replies, 14.19 GiB reserved, cap 14.28 GiB | C48 |
 
 ## Discussion and limitations (`5_discussion.tex`)
 
 | Claim | Source |
 |---|---|
-| Candidate share 81.2 to 89.0 | C39 |
-| Learned residual no measurable contribution; lecture training no gain over CG-Bench training | C18, C29, C33 |
-| "A plausible reading ... does not isolate" (hypothesis, labelled as such) | interpretation; P170 |
-| S2m − S1: 5.3 hit, 4.7 accuracy; S2m vs R5 no confirmed difference on either | C28, C33, C27 |
-| At most 11.0 and 9.6 points recoverable per stage for S2m | C39 (arithmetic) |
-| Limitations: proxy labels, generated questions, human-check limits, packages, unmatched search, R5 adaptation, one 4B model, shipped transcripts, post hoc analyses | P170, P171, P174, P178 |
-| Deviations: 25,373 vs 20,000 calls; retried control (322 vs 323); memory | C53, C37, C38 |
+| S1 vs R3 on fresh LongVideoBench: no demonstrated advantage; not a transcript-only contrast | C14, P190 |
+| Lecture results look different; no formal cross-dataset test | P190 |
+| Candidate share 81.2 to 89.0 (interval hits) | C39 |
+| R5 vs S2m: 79.8 vs 79.4; neither shown to differ nor to be equal | C26, C27 |
+| Residual: no confirmed change; lecture training: no confirmed change vs CG-Bench training | C18, C29 |
+| "A plausible reading ... does not isolate" (hypothesis, scoped to tested rules and models) | P190 |
+| Accuracy and proxy agree for the two declared lecture comparisons | C28, C33, C27, C34 |
+| Same frozen pools: perfect picker at most 9.6 points of hit@4; no bound for a new candidate stage; no accuracy bound | C39, P190 |
+| Reporting suggestion builds on earlier evidence-evaluation work (no first claim) | P190 |
+| Limitations: proxy labels, generated train/dev/test questions, human-check limits incl. device use, packages, lecture search work (up to 96 vs at most about 54), R5 adaptation, one 4B lecture model, shipped transcripts, post hoc analyses | P170, P171, P174, P178, P190 |
+| Deviations: per-ledger caps, 25,373 charged incl. earlier-test API follow-ups; retry, 322 vs as-run 323, full-cohort accuracies unchanged; observed reserved memory over capacity, one recorded OOM | C53, C37, C38 (qualified) |
+| Conclusion: package gain; labelled-interval placement; no demonstrated advantage over R5; heads no confirmed accuracy; measurement lesson as opinion | C12-C13, C27-C28, C10-C11, P190 |
 
 ## Statements (`6_statements.tex`)
 
 | Item | Status |
 |---|---|
-| LLM Usage Statement | names Nemotron (question generation, answer model), Claude via Claude Code (code, experiments, reports, drafting), an OpenAI GPT model (audit, related-work search, model review); owner to confirm and add versions |
-| Human-study consent and oversight | TODO: owner to supply (P180) |
+| Authors' roles (idea, framework, experiment plan, direction, checking, review and editing) | owner-attested; not certifiable by the audit (P191, P195) |
+| Claude via Claude Code: code, experiments, drafting | disclosed |
+| OpenAI GPT as a separate AI auditor (numbers, statistics, wording, related-work search); not human validation | disclosed; owner to confirm the service name (e.g. Codex) if it should be named |
+| Nemotron generated train, dev and test questions; also an answer model | disclosed (P191) |
+| Model reviews by Claude and GPT | disclosed |
+| Human-study consent and oversight | TODO in `3_study.tex`: owner to supply (P180, P195) |
 
 ## Not used anywhere in the draft
 
-C38 as a blanket claim, C43, C54, C56; "first", "state of the art", "equivalent", "fully local", "97% of labels
-verified", "<0.0001".
+C38 as a blanket claim, C43, C54, C56; "first", "state of the art", "equivalent", "matches", "nothing measurable",
+"fully local", "97% of labels verified", "<0.0001"; any hardware ceiling on frames; "the VLM can answer only if the
+moment is shown"; "high floor"; "covering evidence for different options" for Head B; a universal "R3 decodes 96";
+an 11.0-point ceiling for a perfect candidate stage; any claim that VideoRouteAudit lacks freezes.

@@ -2288,7 +2288,9 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   contrasts.
 - **README and index.** Human review complete, with its limits; Head A's CG-Bench result called a dev gain, not a
   confirmation; video length stated per benchmark; budget ledgers described as records that did not stop runs
-  (25,373 calls charged against 20,000 declared). Experiments index: the meaning of "test" now names each set's freeze
+  (25,373 calls charged against 20,000 declared). *[Corrected in step 105: each ledger did enforce its own cap; the
+  confirmation used one 20,000-call ledger per answer model, so the declared 20,000 total across ledgers was not
+  enforced.]* Experiments index: the meaning of "test" now names each set's freeze
   and reveal point; the speech-text row refers to the fresh-set follow-ups; the ceiling row labels the with-text and
   without-text conditions.
 - **Next.** Supervisor material, then the CVPR paper draft, each sent to the auditor sentence by sentence.
@@ -2332,3 +2334,61 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   accuracy "hides most of the story" while the discussion said accuracy reversed no conclusion. Both now say
   accuracy agrees with evidence placement here but cannot show where or why a system fails. Removed two overstatements
   ("hard to beat"; "it becomes clear which differences are real") and an equal-performance phrasing for S2m vs R5.
+
+## Step 105 (2026-11-09): brief, paper and claim map corrected after the sentence-level audit (auditor P181-P195)
+- **What the audit found.** All numbers in the brief and the draft check out against the source files, including the
+  new ones (ledger rows C59-C67). The wording did not: several sentences read a non-significant difference as no
+  effect, called an automatic interval hit "the slide was shown", described Head B's set term as option coverage,
+  gave Head A's 1,889 parameters without saying it is per member, used one R3 definition for both studies, gave the
+  residual contrast without its direction, and derived an 11-point ceiling for a perfect candidate stage that the
+  stage counts cannot support. No experiment is rerun and no saved output is changed.
+- **Checked in the code before rewriting.**
+  - Head B (`scripts/v3_head_b.py`, `greedy`): each step adds the frame with the highest learned score + 2 × the
+    increase in option decisiveness (top minus second entry of the selected frames' mean option profile) − 1 × the
+    highest visual similarity to a frame already chosen.
+  - Head A (`src/videoqa/v3/head_a.py`): 21 + 3 bge-derived inputs; 24→32→32→1 is 1,889 parameters per member,
+    5,667 for the three-member ensemble.
+  - Baselines (`scripts/v3_baseline_cycle.py`): the fresh LongVideoBench R2/R3 are `uniform4`/`dense4` (four times,
+    repeated pictures merged); the lecture R3-R5 are `dense4x`/`dense4ox`/`vsi4x` (up to 96 ranked times, four
+    distinct pictures); lecture R2 is `uniform4d` (always four).
+  - Residual ablation: full Head A minus the residual-off version, +0.3 (−2.1..+2.8).
+- **Supervisor brief** (`docs/supervisor/brief.md`), every P185 row: four frames described as a chosen budget; S0's
+  excerpt "up to 120 words"; S1t's text sources; Head A per member and ensemble; Head B's actual rule; baselines per
+  study; search work limited to the lecture R3-R5; "not used for any decision" replaced by "no method chosen or tuned
+  on them before the run"; hit@4 as an inferred interval with false matches; intervals unadjusted, p-values
+  Holm-adjusted; S1-R2 and S1-R3 marked secondary; "only matches R5" removed; loss rows labelled as interval hits;
+  budget deviation per ledger; fallback venue left open until dates are checked; source table extended with
+  C59-C67.
+- **Paper.**
+  - Abstract and introduction: no hardware ceiling on frames, no "only if the moment is shown", no "high floor";
+    findings state "no confirmed gain", "no demonstrated difference" and "not shown to be equal"; hit@4 described as
+    placing a frame inside the labelled interval.
+  - Related work: "uniform sampling can miss"; the closest precedents for speech + visual retrieval named (VSI,
+    GCR); the four-frame budget called a difference of setting; the unsupported contrast with VideoRouteAudit's
+    freezing removed.
+  - Study design: comparisons matched within each comparison; 640 px as a decode cap; the 120B model's two roles;
+    figure redrawn (Head A reads the full transcript, about nine candidates on lectures, ≤4 frames); systems table
+    and caption per study; Head A voting and training details; Head B's rule; generation and filter thresholds;
+    official split attributed to the dataset authors; hit@4 with false matches; freeze timing per analysis; printed
+    intervals unadjusted, Holm on p-values, one-sample bootstrap for human rates.
+  - Results: H3/H4 sentence on adjusted p-values; decomposition limited to this swap; residual contrast as full
+    minus residual-off; R2 contrasts secondary; S-src descriptive; R4 estimate with its interval; accuracy agreement
+    limited to the declared comparisons, with the R5 and S2c counter-examples; 322 and as-run 323 both given; loss
+    table rows labelled as interval hits and the breakdown called bookkeeping; human masks "estimates move,
+    interpretation unchanged"; cost exclusions listed; per-system answer-call times; memory as an observed peak.
+  - Discussion: S1 vs R3 not a transcript-only contrast; no formal cross-dataset test; the 11.0-point candidate
+    ceiling removed (only the 9.6-point picker bound with the same frozen pools remains, and no accuracy bound);
+    reporting suggestion builds on earlier evidence-evaluation work; limitations add train/dev/test generation and
+    unrecorded device use; deviations restated per P190.
+- **Tool-use statement** (paper, README, brief, identical): GPT described as a separate AI auditor; question
+  generation disclosed for training, development and test questions.
+- **README, experiments index, human-review companion** (P183): "unchanged after removing the 3" now separates the
+  unchanged interpretation from the slightly moved estimates (L1 −0.4, −3.7..+3.0; L2 +5.4, +2.8..+8.0); the budget
+  sentence names the per-ledger caps; row 8 says "no confirmed gain from the heads"; the two pre-account bullets in
+  the companion are marked as superseded, with device use still unrecorded.
+- **Claim map** (`paper/cvpr2027/CLAIMS.md`): rewritten with the wording used for each claim, C59-C67, the authorship
+  items marked as owner-attested, and the list of readings not used.
+- **Checks.** No missing citations or references; 5,917 words of running text outside tables and figures (up from
+  4,870), so the eight-page limit must be checked on a compiled PDF; detail may move to the supplement.
+- **Open.** Consent and oversight (owner); the name of the auditing service, if it should be named (owner); the
+  supplement; a compiled anonymous PDF; the auditor's check of this revision.

@@ -23,7 +23,7 @@ the result can and cannot show (auditor note P168, research log step 103). Pseud
 - Items 1-67 have two votes (H1 plus H2 or H3). Items 68-100 have one vote, from H1 alone.
 - Under the fixed strict-majority rule, an item with H1's accept can only end as accept (one vote, or two accepts) or
   as no majority (one accept, one reject). A combined reject was therefore impossible for every item. The
-  0 combined rejects and the unchanged result after removing rejected items follow from this vote pattern. They are
+  0 combined rejects, and the fact that removing rejected items changes nothing, follow from this vote pattern. They are
   not independent evidence that every label is correct.
 - The 3 rejects all come from H2 and all give reason KEY (answer key wrong). They are the 3 no-majority items.
 
@@ -45,18 +45,19 @@ The prespecified estimator is kept as reported.
 **Update (9 November 2026, owner):** the three reviewers are members of the owner's thesis group. The owner states
 that none of them saw another reviewer's answers and that each did the review independently. This is the owner's
 account; nothing in the collection method enforced it, and whether each used a separate browser profile or device is
-not recorded. The original points follow.
+not recorded. The points below were written before this account; the two marked bullets are superseded by it,
+except that separate browser or device use remains unrecorded.
 
 
 - The review page hid all system results and both model reviews from the reviewers.
 - The three reviewers had view-only access to the page, so their answers could not be saved to the shared store.
   They used the page's "Copy my answers" fallback and posted the texts in the owner's thesis group chat, at different
   times on 8 November 2026 (Dhaka): H3 at 00:59, H1 at 21:42, H2 at 23:59.
-- It is not known whether a later reviewer could read an earlier reviewer's posted answers before finishing their
+- *(Superseded by the owner's account above, 9 November 2026.)* It was not known whether a later reviewer could read an earlier reviewer's posted answers before finishing their
   own. In view-only mode, unsent answers are kept in the browser, so reviewers sharing one browser profile could see
   each other's drafts; whether each used a separate profile or device is not known. The owner has been asked both
   questions (auditor note P180).
-- Until those facts are established, the review is described as blind to system results, with independence between
+- *(Superseded by the owner's account above.)* Until those facts were established, the review was described as blind to system results, with independence between
   reviewers unverified. No contamination is claimed either.
 
 ## Timing and provenance
@@ -80,6 +81,8 @@ review or approval applied. Nothing is assumed here.
 ## How the paper may use this result
 
 - Allowed: 100 sampled questions were reviewed under a fixed rule; 97 accepted, 0 rejected, 3 without a majority;
-  results after removing the uncertain items are unchanged (L2 +5.4, +2.8..+8.0); the limits above.
+  removing the 3 uncertain items leaves the interpretation unchanged, while the estimates move slightly (L2 +5.4,
+  +2.8..+8.0; L1 −0.4, −3.7..+3.0); removing rejected items alone changes nothing, because there are none; the
+  limits above.
 - Not allowed: "97% of labels verified", "0% label error", "independent human validation of the benchmark", or any
   claim that the human review checked the selected frames.

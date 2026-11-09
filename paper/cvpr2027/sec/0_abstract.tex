@@ -1,10 +1,10 @@
 \begin{abstract}
-A vision-language model small enough to run on a single consumer GPU can afford to look at only a few frames of a long lecture.
-Lecturers, however, talk about what they show, so the timed transcript should help decide which frames those are.
-We put this intuition to a controlled test.
-A frozen answer model sees at most four frames, every method is fixed on development data before its test set is run, and the comparisons that matter are declared in advance.
-On 894 held-out LongVideoBench questions, a transcript-guided pipeline with selected speech text improves on a transcript-window baseline by 8.9 points with Qwen3-VL-4B and by 8.3 points with a 120B model, yet two small trained selection heads add no confirmed accuracy on top of it.
-On 853 questions that we generate from the slides of 112 M3AV lectures, a trained speech-to-moment locator shows the source slide more often than the rule-based pipeline (79.4\% \vs 74.1\%), but not more often than a training-free rule that fuses subtitle and visual scores (79.8\%).
-The slide is lost about as often while gathering candidates as when picking the final four; answers are right 93.9\% of the time when it is shown; and the question alone already gets 51.2\% right.
-Speech does point to the slide, but in our setting a small learned locator does not outperform a careful training-free rule, and accuracy is best read next to measures of whether the evidence was shown at all.
+When a vision-language model runs on a single consumer GPU, the number of frames it is shown becomes a design budget.
+We fix that budget at four and ask whether the timed transcript of a lecture helps decide which four frames to show.
+In our tests a frozen answer model sees at most four frames, every method is fixed on development data before its test set is run, and the primary comparisons are declared in advance and corrected for multiplicity.
+On 894 held-out LongVideoBench questions, a transcript-guided pipeline with selected speech text improves on a transcript-window baseline by 8.9 points with Qwen3-VL-4B and by 8.3 points with a 120B model, while two small trained selection heads add no confirmed accuracy on top of it.
+On 853 questions that we generate from the slides of 112 M3AV lectures, a pipeline built around a trained speech-to-moment locator places a frame inside the automatically labelled source-slide interval more often than the rule-based pipeline (79.4\% \vs 74.1\%), with no demonstrated difference from a training-free rule that fuses subtitle and visual scores (79.8\%).
+A post hoc breakdown shows that the labelled slide is missed about as often while gathering candidates as when picking the final four.
+Answers are right 93.9\% of the time when a chosen frame falls in the interval, and the answer model already gets 51.2\% right from the question alone.
+In our setting, speech-guided search helps place lecture evidence, a small learned locator shows no advantage over a careful training-free rule, and accuracy is best reported next to evidence-placement measures and no-video controls.
 \end{abstract}

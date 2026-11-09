@@ -4,8 +4,9 @@
 \subsection{Task and fixed conditions}
 Each item is a video with a timed transcript and a multiple-choice question.
 A system chooses at most $K{=}4$ frames, and optionally some transcript text, and passes them with the question and options to a frozen answer model, which replies with an option letter.
-Every system uses the same answer model, prompt and image resolution (frames are kept at most 640 pixels on the long side).
-We use Qwen3-VL-2B and Qwen3-VL-4B~\cite{bai2025qwen3vl} on one 16\,GB consumer GPU, and, on LongVideoBench only, the 120B Nemotron-3.5-Super-VL model~\cite{nvidia2026nemotron} through a hosted API.
+Within each comparison, the systems use the same answer model, prompt and preprocessing (decoded frames are capped at 640 pixels on the long side before the answer model's own processor); the controls leave out inputs by design.
+We run Qwen3-VL-2B and Qwen3-VL-4B~\cite{bai2025qwen3vl} on one 16\,GB consumer GPU.
+In the two main studies, the 120B Nemotron-3.5-Super-VL model~\cite{nvidia2026nemotron}, used through a hosted API, answers only the LongVideoBench questions; the same model also generated the lecture questions (\cref{sec:data}).
 No answer model is trained or adapted.
 
 \begin{figure}[t]
@@ -17,17 +18,17 @@ No answer model is trained or adapted.
   >={Stealth[length=1.6mm]}
 ]
 \node[box] (in) {question + options\\video, timed transcript};
-\node[box, below left=4mm and -6mm of in] (sp) {speech path\\MiniLM rule \textbf{or} Head A};
+\node[box, below left=4mm and -6mm of in] (sp) {speech path\\BM25 windows + MiniLM\\\textbf{or} Head A (full transcript)};
 \node[box, below right=4mm and -6mm of in] (pp) {picture path\\window frames + dense index};
-\node[box, below=13mm of in] (mg) {merge: $\sim$9 candidates};
+\node[box, below=15mm of in] (mg) {merge: candidates ($\sim$9 on lectures)};
 \node[box, below=3.5mm of mg] (pk) {picker: MMR rule \textbf{or} Head B};
 \node[box, below=3.5mm of pk] (am) {frozen answer model\\$\le$4 frames (+ optional speech text)};
-\draw[->] (in) -- node[lab, left, pos=0.45] {BM25 windows} (sp);
+\draw[->] (in) -- (sp);
 \draw[->] (in) -- (pp);
 \draw[->] (sp) -- (mg);
 \draw[->] (pp) -- (mg);
 \draw[->] (mg) -- (pk);
-\draw[->] (pk) -- node[lab, right] {4 frames} (am);
+\draw[->] (pk) -- node[lab, right] {$\le$4 frames} (am);
 \end{tikzpicture}
 \caption{The tuned pipeline (S1). Head A replaces the speech path (S2c, S2m); Head B replaces the picker (S3). Baselines R2--R5 skip the two paths and choose frames directly.}
 \label{fig:pipeline}
@@ -41,7 +42,7 @@ No answer model is trained or adapted.
 \toprule
 System & Candidate frames & Final choice of $\le$4 frames & Text shown & Trained part & Trained on \\
 \midrule
-S0 starting design & transcript windows only & top-4 by question similarity & 120-word excerpt & -- & -- \\
+S0 starting design & transcript windows only & top-4 by question similarity & $\le$120-word excerpt & -- & -- \\
 S1 tuned pipeline & windows + dense index & MMR on question + options & -- & -- & -- \\
 S1t & as S1 & as S1 & $\le$600 words of speech & -- & -- \\
 S2c Head A & Head A moments + S1 picture path & as S1 & -- & locator & CG-Bench train \\
@@ -49,13 +50,13 @@ S2m Head A & as S2c & as S1 & -- & locator & M3AV train (generated) \\
 S3 Head B & as S1 & Head B & -- & set selector & CG-Bench train \\
 S4 (S4t) both heads & as S2c & Head B & -- ($\le$600 words) & both & CG-Bench train \\
 \midrule
-R2 & -- & 4 evenly spaced frames & -- & -- & -- \\
-R3 & dense index, top 96 & first 4 distinct by question similarity & -- & -- & -- \\
-R4 & dense index, top 96 & as R3, best option-wise match & -- & -- & -- \\
-R5 VSI-inspired & dense index, top 96 & as R3, fused subtitle + visual score & -- & -- & -- \\
+R2 & -- & 4 evenly spaced times & -- & -- & -- \\
+R3 & dense index (LVB 4, lectures $\le$96) & top 4 by question similarity & -- & -- & -- \\
+R4 & dense index, $\le$96 & as R3, best option-wise match & -- & -- & -- \\
+R5 VSI-inspired & dense index, $\le$96 & as R3, fused subtitle + visual score & -- & -- & -- \\
 \bottomrule
 \end{tabular}
-\caption{Systems. All give the same frozen answer model at most four frames. S4 and S4t are evaluated on LongVideoBench only; R4, R5 and S2m on lectures only. R3--R5 rank 96 frames and S1--S3 decode about 54 per question, so search work is not matched.}
+\caption{Systems. All give the frozen answer model at most four frames. S4 and S4t are evaluated on LongVideoBench (LVB) only; R4, R5 and S2m on lectures only. On LVB, R2 and R3 merge repeated pictures and can show fewer than four. On lectures, R3--R5 decode up to 96 ranked times to find four distinct pictures, while S1--S3 decode at most about 54 per question, so search work is not matched.}
 \label{tab:systems}
 \end{table*}
 
@@ -66,33 +67,39 @@ R5 VSI-inspired & dense index, top 96 & as R3, fused subtitle + visual score & -
 \paragraph{Starting design (S0).}
 BM25~\cite{robertson2009bm25} over 20\,s transcript units, queried with the question and options, returns four windows.
 A MiniLM~\cite{wang2020minilm} cross-encoder scores the transcript lines inside the windows to propose six speech-anchored frames, and six more come from frames sampled every 5\,s inside the windows.
-The four candidates most similar to the question under MobileCLIP-S2~\cite{vasu2024mobileclip} are shown with a 120-word BM25 excerpt.
+Up to four candidates most similar to the question under MobileCLIP-S2~\cite{vasu2024mobileclip} are shown with a BM25 excerpt of up to 120 words.
 
 \paragraph{Tuned pipeline (S1, S1t).}
 S1 keeps the speech path and replaces half of the window frames with frames from a dense index of the whole video (one MobileCLIP embedding every 2\,s).
-After near-duplicates are merged, about nine candidates remain, and maximal marginal relevance (MMR)~\cite{carbonell1998mmr} on MobileCLIP similarity to the question and options picks four.
+After near-duplicates are merged, about nine candidates remain on the lecture test, and maximal marginal relevance (MMR)~\cite{carbonell1998mmr} on MobileCLIP similarity to the question and options picks four.
 S1t adds up to 600 words of transcript: the lines around the chosen frames plus the best lines found by fusing BM25 and MiniLM scores.
 These rules were tuned on CG-Bench~\cite{chen2024cgbench} and Video-MMMU~\cite{hu2025videommmu} development questions.
 
 \paragraph{Head A: speech-to-moment locator (S2c, S2m).}
 Head A reads every transcript line, not only the BM25 windows.
-Each line's score is a frozen MiniLM relevance score plus a learned residual from a small MLP over 21 label-free line features (context relevance, BM25, option overlap, position and others) and frozen bge-reranker~\cite{xiao2023cpack} scores; the last layer starts at zero, so the untrained head equals the zero-shot rule.
-Lines then vote for moments through a Gaussian density, and the six strongest moments replace the speech path's proposals.
-The head has 1,889 trained parameters and is trained with a listwise multiple-instance loss in which a line is positive if it lies within 10\,s of the evidence; three seeds are averaged.
+Each line's score is a frozen MiniLM relevance score plus a learned residual from a small MLP over 24 inputs: 21 label-free line features (context relevance, BM25, option overlap, position and others) and three features derived from a frozen bge-reranker~\cite{xiao2023cpack}.
+The last layer starts at zero, so the untrained head reproduces the frozen line scores.
+The 64 highest-scoring lines then vote on a 1\,s grid through a Gaussian density ($\sigma{=}4$\,s); after suppressing peaks closer than 8\,s, the six strongest moments replace the speech path's proposals.
+Each member network ($24{\to}32{\to}32{\to}1$) has 1,889 trained parameters, and three members trained with different seeds are averaged (5,667 parameters in total).
+Training uses a listwise multiple-instance loss in which a line counts as positive if its frame time, 0.3\,s before the line ends, lies within 10\,s of the evidence.
 S2c is trained on CG-Bench training questions with human clue intervals.
-S2m uses the same recipe on 1,147 generated questions from 297 M3AV training lectures, with the question's valid slide segments as evidence; it sees no development or test lecture.
+S2m uses the same recipe, including its internal validation split, on 1,147 generated questions from 297 M3AV training lectures, with the question's valid slide segments as evidence; it sees no development or test lecture.
 
 \paragraph{Head B: frame-set selector (S3, S4).}
 Head B replaces the MMR picker.
-It scores each candidate from its MobileCLIP similarity to the question and to each option and from the MiniLM relevance of nearby transcript lines, and adds a set term that rewards covering evidence for different options (weights $\lambda{=}2$, $\mu{=}1$, chosen on internal validation).
+A small learned model scores each candidate from 18 features: its MobileCLIP similarity to the question and to each option, which path proposed it, the speech score it carries, the similarity of nearby transcript text to the question, its position in time and its redundancy with other candidates.
+Frames are then added greedily.
+Each step's gain is the learned score, plus $\lambda$ times the increase in option decisiveness (the margin between the two highest entries of the selected frames' mean option profile), minus $\mu$ times the highest visual similarity to a frame already chosen ($\lambda{=}2$, $\mu{=}1$, chosen on internal validation).
 It is trained on candidate pools from CG-Bench training videos.
 
 \paragraph{Baselines (R2--R5).}
-R2 shows four evenly spaced frames.
-R3 ranks the dense index by MobileCLIP similarity to the question, decodes the top 96 times (at least 4\,s apart) and keeps the first four perceptually distinct frames.
+R2 shows frames at four evenly spaced times.
+R3 ranks the dense index by MobileCLIP similarity to the question.
+On LongVideoBench it decodes the top four times and merges repeated pictures, as R2 does there, so either can show fewer than four frames.
+On lectures, where a slide often stays on screen for minutes, R3 instead goes down a ranked list of up to 96 times (at least 4\,s apart) and keeps the first four perceptually distinct frames, and R2 always shows four.
 R4 scores each frame by its best match over ``question + option $k$''.
 R5 is our adaptation of VSI~\cite{he2025vsi}: an MPNet~\cite{song2020mpnet} similarity between each transcript line and the question and options is boosted, spread over time with a Gaussian ($W{=}2$\,s) and fused with R4's visual score ($0.5$ each, after z-normalization).
-It differs from the published method: MobileCLIP replaces VSI's detector-based visual branch, and the boost, spread and text processing differ.
+It differs from the published method: MobileCLIP replaces VSI's detector-based visual branch, and the boost, spread and text processing differ; R4 and R5 use the same 96-time distinct fill as the lecture R3.
 Its setting is the best of ten tried on lecture development data, and it was the strongest training-free rule we found there.
 We therefore treat R5 as a strong tested baseline, not as a reproduction of VSI.
 
@@ -100,47 +107,54 @@ We therefore treat R5 as a strong tested baseline, not as a reproduction of VSI.
 \label{sec:data}
 
 \paragraph{Development and an earlier locked test.}
-Rules and heads were developed on CG-Bench~\cite{chen2024cgbench} and Video-MMMU~\cite{hu2025videommmu} development questions.
+Rules and model families were chosen on CG-Bench~\cite{chen2024cgbench} and Video-MMMU~\cite{hu2025videommmu} development questions; the heads' weights were fitted on training data with internal validation.
 An earlier locked test of 459 questions (55 CG-Bench questions on 6 videos; 202 Video-MMMU perception and 202 comprehension questions on the same 202 lectures) was used for one declared comparison with the 2B model and later reused for follow-ups that we label as such; we report it in the supplement.
 
 \paragraph{Fresh LongVideoBench set.}
 For confirmation we held out 894 questions on 500 videos from the official LongVideoBench validation set~\cite{wu2024longvideobench}; 3 planned questions on one unavailable video were excluded.
-No decision was made on these questions before the run.
+No method was chosen or tuned on these questions before the run; later analyses on them are labelled post hoc.
 This is our own held-out subset, not an official test-server result.
 
 \paragraph{Lecture test derived from M3AV.}
 M3AV~\cite{chen2024m3av} provides recorded talks with slide segments, slide OCR and timed transcripts, but no multiple-choice questions, so we generate them.
-For each eligible slide (at least 4\,s on screen and 8 distinct OCR words; title slides excluded), the 120B model sees the slide image and its OCR, never the speech or the times, and writes one question with four options and the exact slide words that support the answer.
+For each eligible slide segment (annotated as lasting at least 4\,s, with at least 8 distinct OCR words, and not the talk's first segment), the 120B model sees the slide image and its OCR, never the speech or the times, and writes one question with four options and the exact slide words that support the answer.
 It is told to avoid titles, authors and slide numbers and questions answerable from general knowledge.
-Option order is fixed by a hash, so the key's position does not follow the generator's habits.
-Automatic filters then check format, require the support words to match the slide OCR, mark every segment showing the same content as valid evidence (so a repeated slide is not scored as a miss), and keep only questions whose slide is visibly on screen for at least 2\,s, found by comparing frames at one per second with the saved slide image.
+Option order is then set by a hash, which removes the generator's own ordering of the options.
+Automatic filters then check the format and that the four options are distinct, and require at least 80\% of the support words' tokens to appear in the slide OCR.
+Other segments that pass the same token test, and also contain the answer-critical tokens, are marked as valid repeats of the slide, so a repeated slide is not scored as a miss.
+For development and test questions, a last filter keeps only questions whose slide is inferred to be on screen for at least 2\,s, by correlating edge maps of frames sampled at 1\,Hz with the saved slide image (threshold 0.55, compared with neighbouring segments).
+These rules are imperfect, and the training cohort does not pass through the last filter.
 We apply no answer-model filter.
-The derived cohorts use M3AV's official speaker-disjoint split: 1,147 training questions on 297 lectures, 514 development questions on 96 lectures and 853 test questions on 112 lectures.
+The derived cohorts follow M3AV's official split, which its authors built to keep speakers apart~\cite{chen2024m3av}, and we checked that no lecture appears in two cohorts: 1,147 training questions on 297 lectures, 514 development questions on 96 lectures and 853 test questions on 112 lectures.
 They are our evaluation, not an official M3AV benchmark.
 
 \paragraph{Measures and controls.}
-The primary lecture measure is \textbf{source-slide hit@4}: 1 if at least one of the four frames shown falls inside an interval where a valid evidence slide is visible (1\,s tolerance).
-It is an automatic proxy for ``the right slide was shown'' and does not show that the needed fact was legible.
+The primary lecture measure is \textbf{source-slide hit@4}: 1 if the timestamp of at least one shown frame falls inside an automatically labelled interval in which the source slide or a valid repeat of it is inferred to be on screen (1\,s tolerance).
+The labels contain known false matches, so hit@4 is a proxy for ``the right slide was shown'', not proof of it, and it does not show that the needed fact was legible.
 A stricter variant, S-src hit@4, keeps only the interval of the question's own source segment; it was sealed before the test run.
 Answer accuracy with Qwen3-VL-4B is secondary.
-Two controls are run on every lecture question: \emph{question only} (no frames, no transcript) and \emph{transcript only} (no frames, 600 BM25-selected transcript words).
+Two controls are run on every lecture question: \emph{question only} (no frames, no transcript) and \emph{transcript only} (no frames, at most 600 BM25-selected transcript words).
 
 \paragraph{Human check.}
 After the freeze, 100 test questions, one from each of 100 lectures, were drawn by hash for review.
 Each review packet showed the question, options, key, support words, the slide image, frames from the labelled interval and the transcript inside it, but no system output.
 Reviewers judged whether the key is right, exactly one option is right, the slide supports the question and the content is legible.
 The analysis, including a strict-majority rule and a cutoff, was fixed before any human verdict was seen.
-Three human reviewers took part; two model reviews of the same packets are used only for agreement statistics.
+Three human reviewers took part.
+Two model reviews of the same packets, made earlier, had exposed false matches among repeated slides and motivated the S-src variant; in the human check they enter only the agreement statistics.
 \TODO{Consent and oversight: state how reviewers agreed to take part and whether institutional review applied (owner to supply; anonymous wording).}
 
 \subsection{Protocol and statistics}
 \label{sec:protocol}
-For each test set, methods, settings, checkpoints and the analysis were frozen and recorded (with file hashes) before the run.
+For each test set, methods, settings, checkpoints and the primary analysis were frozen and recorded (with file hashes) before the run.
+The lecture accuracy analysis was added after the hit results and before any test answer was produced, and the human-review analysis was fixed before any human verdict was seen.
 On LongVideoBench we declared four contrasts: H1 and H2, both heads (S4) minus S1 with the 4B and 120B models; H3 and H4, S1t minus S0 with the same two models.
 On lectures we declared two contrasts on hit@4: L1, S2m minus R5, and L2, S2m minus S1.
 L1 originally named R3; a development-only amendment replaced it with the stronger R5 before the test questions were generated.
 Holm correction~\cite{holm1979} is applied within each family.
-All intervals are 95\% percentile intervals from a paired bootstrap~\cite{efron1993bootstrap} that resamples whole videos or lectures (10,000 resamples), and p-values are bootstrap-tail estimates whose smallest possible value is about 0.0002.
-Failed answers count as wrong.
+Differences between systems are given with 95\% percentile intervals from a paired bootstrap~\cite{efron1993bootstrap} that resamples whole videos or lectures (10,000 resamples).
+These intervals are not adjusted; Holm adjusts the family p-values, which are bootstrap-tail estimates whose smallest possible value is about 0.0002.
+Intervals for human error rates come from a one-sample bootstrap over lectures.
+Failed answers count as wrong; the one exception, a retried answer, is described in \cref{sec:discussion}.
 All other comparisons are secondary, uncorrected and descriptive, and analyses run after a test set was revealed are labelled post hoc.
 A difference whose interval contains zero is reported as no confirmed difference; we declared no equivalence margin, so it is never read as equality.

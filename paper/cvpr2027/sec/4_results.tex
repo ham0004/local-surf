@@ -29,25 +29,27 @@ H3: S1t $-$ S0, 4B & \multicolumn{3}{l}{$+8.9$ ($+5.7$, $+12.2$), $p{=}0.0008$} 
 H4: S1t $-$ S0, 120B & \multicolumn{3}{l}{$+8.3$ ($+4.8$, $+11.8$), $p{=}0.0008$} \\
 \bottomrule
 \end{tabular}
-\caption{Accuracy (\%) on 894 held-out LongVideoBench questions (500 videos), four frames at most. S2 is Head A trained on CG-Bench (S2c in \cref{tab:systems}). One failed S1t answer with the 4B model is counted as wrong.}
+\caption{Accuracy (\%) on 894 held-out LongVideoBench questions (500 videos), four frames at most. S2 is Head A trained on CG-Bench (S2c in \cref{tab:systems}). One failed answer each for S1t and S4t with the 4B model is counted as wrong. R2 and R3 are the four-time versions described in \cref{sec:systems}.}
 \label{tab:lvb}
 \end{table}
 
 \Cref{tab:lvb} gives accuracy for every system and the four declared contrasts.
-The tuned pipeline with speech text beats the starting design with both answer models (H3, H4), and both intervals exclude zero after Holm correction.
+The tuned pipeline with speech text beats the starting design with both answer models (H3, H4): both Holm-adjusted p-values are 0.0008, and both unadjusted intervals lie above zero.
 This compares two packages: the candidate frames, the picker and the text all change.
 A post hoc decomposition with the 4B model points mostly to the frames.
-With S0's 120-word excerpt held fixed, swapping in S1's frames adds 8.2 points ($+4.9$ to $+11.5$).
-On S1's frames, replacing the excerpt with the 600-word speech text adds 0.8 points ($-1.0$ to $+2.6$), and adding the speech text to text-free S1 adds 1.3 points ($-0.6$ to $+3.3$).
+With S0's excerpt held fixed, swapping in S1's frames adds 8.2 points ($+4.9$ to $+11.5$).
+On S1's frames, replacing the excerpt with S1t's speech text adds 0.8 points ($-1.0$ to $+2.6$), and adding that text to text-free S1 adds 1.3 points ($-0.6$ to $+3.3$).
+The text lengths here are allowances (up to 120 and up to 600 words), and the decomposition describes this particular swap, not the separate contribution of each component inside the pipeline.
 
 Neither declared head contrast is confirmed (H1, H2).
 The secondary head comparisons point the same way: Head A alone minus S1 is $+1.8$, $+1.2$ and $+2.8$ points for the 2B, 4B and 120B models, the last with an interval of $0.0$ to $+5.6$ ($p{=}0.052$, uncorrected); Head B alone is within one point of S1 with every model.
-Ablating Head A's learned residual, after this set was revealed, changes accuracy by $+0.3$ points ($-2.1$ to $+2.8$), so the learned part itself shows no measurable contribution on this set.
+In an ablation run after this set was revealed, the full Head A minus a version without its learned residual is $+0.3$ points ($-2.1$ to $+2.8$), so we find no confirmed contribution from the learned part on this set.
 
 Two training-free references bracket the tuned pipeline.
-S1 is clearly better than four evenly spaced frames ($+7.5$, $+8.6$ and $+5.4$ points for the three models, all intervals above zero).
+In secondary, uncorrected comparisons, S1 is above four evenly spaced frames ($+7.5$, $+8.6$ and $+5.4$ points for the three models, all intervals above zero).
 Against R3, which takes the four frames most similar to the question in the dense index, S1 differs by $-0.8$, $-0.1$ and $-1.1$ points, with every interval containing zero.
-On this benchmark, then, we find no evidence that the transcript improves the frame choice once a dense visual index is available, and the post hoc decomposition attributes most of the S1t--S0 difference to the change of frames.
+On this benchmark, then, S1 shows no demonstrated advantage over R3, which uses no transcript at all.
+This comparison changes more than the transcript, so it does not isolate a transcript effect, and the post hoc decomposition attributes most of the S1t--S0 difference to the change of frames.
 
 \subsection{Lecture test}
 \label{sec:lectures}
@@ -79,27 +81,30 @@ L1: S2m $-$ R5 & \multicolumn{4}{l}{$-0.5$ ($-3.8$, $+2.9$), $p{=}0.83$} \\
 L2: S2m $-$ S1 & \multicolumn{4}{l}{$+5.3$ ($+2.7$, $+7.8$), $p{=}0.0004$} \\
 \bottomrule
 \end{tabular}
-\caption{Lecture test derived from M3AV: 853 questions, 112 lectures. hit@4 and S-src are the percentage of questions where a shown frame falls in the source-slide interval (automatic labels); ``frames'' is the mean number shown; accuracy is secondary. S1t shows S1's frames.}
+\caption{Lecture test derived from M3AV: 853 questions, 112 lectures. hit@4 is the percentage of questions where a shown frame's timestamp falls in an automatically labelled interval of the source slide or a valid repeat of it; S-src counts only the source segment's own interval. Both are proxies with known false matches. ``Frames'' is the mean number shown (4.00 is rounded); accuracy is secondary. S1t shows S1's frames.}
 \label{tab:lectures}
 \end{table}
 
 \Cref{tab:lectures} gives the lecture results.
-The trained locator S2m raises source-slide hit@4 over the tuned pipeline by 5.3 points (L2, confirmed).
+The pipeline with the lecture-trained locator, S2m, raises hit@4 over the tuned pipeline by 5.3 points (L2, confirmed).
 This contrast compares the whole Head A package with S1: it searches the full transcript instead of four windows, rescoring lines with frozen rerankers, voting by density and adding the learned residual, so it does not isolate the learned part.
 Against R5 the difference is $-0.5$ points (L1), with an interval of $-3.8$ to $+2.9$; neither system is shown to be better, and we do not claim they are equal.
-The S-src variant gives the same picture (L1 $-1.5$, $-4.9$ to $+1.8$; L2 $+5.0$, $+2.4$ to $+7.6$).
-Among the dense baselines, S2m exceeds R3 by 15.2 points ($+11.3$ to $+19.1$), but R4, which scores frames option by option, by only 2.5 ($-1.1$ to $+6.0$).
-Training Head A on lecture questions instead of CG-Bench changes nothing measurable (S2m $-$ S2c $-0.4$, $-2.1$ to $+1.5$).
-All systems may show at most four frames, but R3, R4 and R5 show fewer for 52, 48 and 27 questions respectively, when their 96 ranked frames hold fewer than four distinct pictures.
+The S-src variant, a descriptive sensitivity analysis without Holm correction, shows the same pattern (L1 $-1.5$, $-4.9$ to $+1.8$; L2 $+5.0$, $+2.4$ to $+7.6$).
+Among the dense baselines, S2m exceeds R3 by 15.2 points ($+11.3$ to $+19.1$); against R4, which scores frames option by option, the estimate is $+2.5$ with an interval that includes zero ($-1.1$ to $+6.0$).
+Training Head A on lecture questions instead of CG-Bench gives no confirmed change (S2m $-$ S2c $-0.4$, $-2.1$ to $+1.5$).
+All systems may show at most four frames, but R3, R4 and R5 show fewer for 52, 48 and 27 questions respectively, when their 96 ranked times hold fewer than four distinct pictures.
 
-Answer accuracy follows hit@4 but compresses the gaps.
+For the two declared comparisons, accuracy points the same way as hit@4.
 S2m answers 4.7 points more questions than S1 ($+2.5$ to $+6.9$) and 0.7 more than R5 ($-1.7$ to $+3.0$), both uncorrected.
+The agreement does not hold for every pair: R5 is above S2m on hit@4 but below it on accuracy, and S2c leads S2m by 0.3 points on hit@4 but by 1.0 on accuracy.
 Neither Head B ($+0.2$ over S1, $-1.9$ to $+2.4$) nor the speech text ($+0.9$, $-0.8$ to $+2.8$) adds confirmed accuracy.
-The controls explain part of the compression: the question alone is enough for 51.2\% of the questions and the transcript alone for 62.1\%.
-On the 322 questions that the transcript-only control gets wrong, S2m exceeds R5 by 5.9 points ($+1.6$ to $+10.3$) and S1 by 9.6 ($+5.4$ to $+13.8$).
+The controls give context: the answer model answers 51.2\% of the questions correctly from the question alone and 62.1\% from the transcript alone, which leaves less room for frames to matter; this does not tell us which questions logically need the slide.
+We also look at the questions that the transcript-only control answers wrong.
+As run, there are 323; scoring the one retried control answer as failed, as our rule requires, leaves 322 (\cref{sec:discussion}).
+On these 322, S2m exceeds R5 by 5.9 points ($+1.6$ to $+10.3$) and S1 by 9.6 ($+5.4$ to $+13.8$); on the as-run 323, the figures are $+5.9$ and $+9.3$.
 This subset is defined by the same answer model, so we treat it as a descriptive hint, not as a set of questions verified to need the slide.
 
-\subsection{Where the slide is lost}
+\subsection{Where the labelled slide is missed}
 \label{sec:loss}
 
 \begin{table}[t]
@@ -110,46 +115,49 @@ This subset is defined by the same answer model, so we treat it as a descriptive
 \toprule
  & S0 & S1 & S2m \\
 \midrule
-Slide among candidates & 75.3 & 81.2 & 89.0 \\
-Lost before the final choice & 24.7 & 18.8 & 11.0 \\
-Lost at the final choice & 7.9 & 7.2 & 9.6 \\
-Slide shown (hit@4) & 67.4 & 74.1 & 79.4 \\
+A candidate hits the interval & 75.3 & 81.2 & 89.0 \\
+Missed before the final choice & 24.7 & 18.8 & 11.0 \\
+Missed at the final choice & 7.9 & 7.2 & 9.6 \\
+A chosen frame hits (hit@4) & 67.4 & 74.1 & 79.4 \\
 \midrule
 \multicolumn{4}{@{}l}{\emph{Accuracy (4B) by outcome, S2m: questions, \% correct}} \\
-Slide shown & \multicolumn{3}{l}{677, 93.9} \\
-Among candidates, not shown & \multicolumn{3}{l}{82, 56.1} \\
-Not among candidates & \multicolumn{3}{l}{94, 66.0} \\
+A chosen frame hits & \multicolumn{3}{l}{677, 93.9} \\
+Only a candidate hits & \multicolumn{3}{l}{82, 56.1} \\
+No candidate hits & \multicolumn{3}{l}{94, 66.0} \\
 \bottomrule
 \end{tabular}
-\caption{Post hoc loss analysis on the lecture test (percent of 853 questions). Candidates are the $\sim$9 frames passed to the final picker.}
+\caption{Post hoc breakdown on the lecture test (percent of 853 questions), using the automatic source-slide intervals of hit@4. Candidates are the frames passed to the final picker, about nine per question in the lecture pools.}
 \label{tab:loss}
 \end{table}
 
-\Cref{tab:loss} splits each miss by stage.
-Most of the difference between S2m and S1 arises at the candidate stage: the source slide reaches S2m's candidate set for 89.0\% of questions, against 81.2\% for S1.
-The final picker then loses it for 9.6\% of questions, about as often as the candidate stage does (11.0\%), so neither stage is clearly the bottleneck.
-When the slide is shown, the 4B model answers correctly 93.9\% of the time; when it is not, accuracy is 56.1\% (slide among the candidates but not chosen) or 66.0\% (slide never among the candidates).
-This is an association: the same questions may also be easier in other ways.
-Even with the slide shown, 41 answers are wrong; we have not adjudicated whether these are answer-model errors, label errors or frames in which the needed fact is not legible.
+\Cref{tab:loss} records, for each question, the stage at which no frame hits the labelled interval any more.
+Most of the hit@4 difference between S2m and S1 corresponds to the candidate stage: a candidate hits the interval for 89.0\% of questions with S2m against 81.2\% with S1 ($+7.8$ points), while the final difference is $+5.3$.
+For S2m, the shares missed at the two stages are similar (11.0\% and 9.6\%).
+This is bookkeeping on the saved candidate pools; it shows where proxy misses occur, not what changing a stage would do.
+When a chosen frame hits the interval, the 4B model answers 93.9\% correctly; otherwise, accuracy is 56.1\% (a candidate hit but was not chosen) or 66.0\% (no candidate hit).
+This is an association: these groups of questions may differ in other ways, and an automatic hit can itself be a false match.
+Of the questions with a hit, 41 are answered wrong; we have not adjudicated whether these are answer-model errors, label errors or frames in which the needed fact is not legible.
 
 \subsection{Human check of the lecture questions}
 \label{sec:human}
 Of the 100 sampled questions, 67 received two human verdicts and 33 received one (167 verdicts in total).
 Under the fixed strict-majority rule, 97 were accepted, none rejected and 3 had no majority; all three rejections that caused the splits concerned the answer key.
 The rejected-or-uncertain rate is 3.0\% (0 to 7.0\%) weighting lectures equally and 2.7\% (0 to 6.4\%) weighting by questions.
-Removing the three split questions leaves the declared results essentially unchanged (L1 $-0.4$, $-3.7$ to $+3.0$; L2 $+5.4$, $+2.8$ to $+8.0$).
+Removing the three split questions moves the declared estimates slightly but leaves their interpretation unchanged (L1 $-0.4$, $-3.7$ to $+3.0$; L2 $+5.4$, $+2.8$ to $+8.0$).
 
 This check is weaker than its headline suggests, and we report why.
 One reviewer accepted all 100 questions with every check marked yes, and was the only reviewer for the 33 singly reviewed questions; under the fixed rule, a combined rejection was therefore impossible for any question, so zero rejections is not independent evidence that every label is right.
 The percentile interval for the rejected rate collapses to zero because no resample contains a rejection; it is not an upper bound on the label error rate.
 Agreement with the two model reviews was 82\% and 77\%, but Cohen's kappa was 0.019 and 0.074, and between human reviewers it was 0 or undefined, because nearly every verdict was ``accept''.
-Reviewers saw no system output and, by the organizer's account, completed their reviews without seeing each other's answers; because the answers were collected at different times through a shared channel, this independence rests on that account rather than on a technical control.
+Reviewers saw no system output and, by the organizer's account, completed their reviews without seeing each other's answers; because the answers were collected at different times through a shared channel, this independence rests on that account rather than on a technical control, and whether each reviewer used a separate browser or device was not recorded.
 The review covers questions and their labels on a sample; it does not check the frames any system chose.
 
 \subsection{Cost}
 \label{sec:cost}
-Building the candidate set took on average 0.67\,s per question for S1, 0.97\,s for S2m and 1.42\,s for R5 on the test lectures, summing the measured retrieval, scoring, decoding and MobileCLIP steps; this excludes indexing, R5's separate scoring pass and other listed overheads, so it is not an end-to-end latency.
-A 4B answer call took about 2.4--2.5\,s with four frames and 4.55\,s with 600 words of speech text (S1t).
+Building the candidate set took on average 0.67\,s per question for S1, 0.97\,s for S2m and 1.42\,s for R5 on the test lectures, summing the measured retrieval, scoring, decoding and MobileCLIP steps.
+This leaves out OCR and text embeddings, the per-lecture feature index, R5's separate scoring pass, model loading, selection, transcript building and serialization, so it is not an end-to-end latency.
+A new 4B answer call took on average 2.47\,s for S1, 2.41\,s for S2m and 2.44\,s for R5, 3.09\,s for S0, whose prompt carries a transcript excerpt, and 4.55\,s for S1t with up to 600 words of speech text.
+Replies reused from the cache are excluded, so these are not matched latency comparisons.
 The dense index for the 112 test lectures (mean length 19.3 minutes) took 955\,s in total.
-In the frozen lecture answer run, PyTorch reserved more memory than the 16\,GB card provides (16.8 of 15.93\,GiB) and one out-of-memory crash required a restart.
+In the frozen lecture answer run, the observed peak of PyTorch's reserved memory was 16.8\,GiB on a card with 15.93\,GiB, and one recorded out-of-memory crash required a restart; the first session's peak was not captured.
 In a later 100-question replay of six conditions on development data, capping the allocator at 14.28\,GiB gave identical replies for all 600 calls with 14.19\,GiB peak reserved memory; this is a bounded observation, not proof that every configuration fits.
