@@ -1043,7 +1043,8 @@ memory) counts as wrong; one question failed in each 4B speech-text system.
 
 - Reading: the improved pipeline (whole-video visual search matched to question and options, plus selected
   speech text) beats the starting design on unseen questions with both a 4B and a 120B answer model. The learned
-  heads do not add accuracy over the best framework with either model.
+  heads do not add accuracy over the best framework with either model. *(Later reading, step 103: the heads show no
+  confirmed increment within the tested contrasts; this does not show they have no effect.)*
 - Secondary (no correction): the best framework is no better than dense MobileCLIP top-4 (2B −0.8, 4B −0.1;
   Nemotron pending, −0.7 on 436 questions) and clearly better than 4 evenly spaced frames (2B +7.5, 4B +8.6).
   Head A alone with Nemotron: +2.8 (+0.0..+5.6), p 0.052, not significant.
@@ -1312,7 +1313,9 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   uses fewer words (214), so it is not a matched budget.
 - The gain over the starting design comes mostly from the pictures (+6.2 to +8.2 points, depending on the order of
   the two changes). The richer speech text helps S0's weaker pictures (+2.8) but adds little on top of S1's pictures
-  (+0.8, not significant). Pictures and text are not additive.
+  (+0.8, not significant). Pictures and text are not additive. *(Corrected in step 85: the +6.2 row also changes
+  the speech that goes with the frames, so it is not a pure picture effect; the non-additivity sentence is withdrawn,
+  since no interaction test was run.)*
 - Answer health: 1 failed answer in each of the S1t, `hybrid` and S0-pictures + S1t-text arms. Abstentions are
   counted only for the new arms, which store the option (1-3 per arm).
 - Phase 1's runs are all done. The remaining Phase 1 work is the lecture study (M3AV): retrain Head A on the
@@ -1345,6 +1348,8 @@ Where the gain of the best framework with speech (S1t) over the starting design 
 - **Design document (P60).** `docs/v3/heads_design.md` now opens with an adopted/rejected table. Rejected: the
   fine-tuned cross-encoder and the learned offsets (the proposed new part of Head A). Adopted: the light residual
   Head A and the `ev_set` Head B, neither confirmed on the fresh set. No measurable effect: the option term.
+  *(Later reading, step 103: no confirmed effect of the option term; λ 0 − 2 was 0.0 (−0.9..+0.9) and +0.6
+  (−0.2..+1.4), which is not proof of zero effect.)*
 
 ## Step 86 (2026-11-01): lecture study on dev: S2m trained, R4 and R5 built, settings chosen (protocol amendment 4)
 - **S2m.** Head A retrained on M3AV train questions with the deployed recipe unchanged (`scripts/run_s2m.sh`:
@@ -2219,7 +2224,9 @@ Where the gain of the best framework with speech (S1t) over the starting design 
 ## Step 102 (2026-11-09): cutoff snapshot; reviewer answers arrived as copied text
 - **Store snapshot.** Read once, at 2026-11-08 18:33 UTC (00:33 Dhaka on 9 November, 34 minutes after the
   cutoff), saved unedited outside git. It holds one document: the owner's own 12 answers (items 68-79), all saved
-  before the cutoff. The owner is not a reviewer, so these are reported separately and are not votes.
+  before the cutoff. The owner is not a reviewer, so these are reported separately and are not votes. *(Corrected in
+  step 103: by their saved times, 4 of the 12 were saved before the cutoff and 8 after. All 12 are excluded either
+  way.)*
 - **Why the group's answers are not in the store.** The page's share settings offered the three group reviewers
   view-only access, so the page could not save their answers (the read-only path of step 95). They used the page's
   "Copy my answers" fallback and sent the texts to the owner, who passed them on.
@@ -2240,7 +2247,8 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   - Rejected rate 0.0%; rejected-or-uncertain 3.0% lecture-balanced (0.0..7.0), 2.7% question-weighted (0.0..6.4).
   - Agreement: human vs builder 82%, human vs auditor 77%, builder vs auditor 84%. Kappa is near zero for the human
     pairs because almost every verdict is accept (one reviewer accepted all 100 with every check yes and no notes);
-    percent agreement is the more informative number here.
+    percent agreement is the more informative number here. *(Corrected in step 103: both numbers are reported;
+    neither shows reviewer care, and the high percent agreement mostly reflects the all-accept pattern.)*
   - Masks change nothing material: L2 +5.3 (+2.7..+7.8) on all 853; +5.4 (+2.8..+8.0) without the 3 split items. L1
     −0.5 and −0.4, not significant either way.
   - Reported as notes, not votes: one of the three split items was also rejected by both model reviews as ambiguous;
@@ -2252,3 +2260,35 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   asked to confirm these are the same people (nickname and formal name).
 - **Update: identities confirmed.** The owner confirms that the two posters are the reviewers named in the texts
   (thesis group members; chat name and nickname differ). The human review is closed with no open item.
+  *(Corrected in step 103: collection and the fixed analysis are complete, but reviewer independence is unverified
+  and the result has the limits listed in `reports/m3av/human_review_limits.md`.)*
+
+## Step 103 (2026-11-09): final audit answered (auditor P163-P180); limits of the human review stated
+- **Final audit.** The auditor reproduced H1-H4, the 15 fresh secondary contrasts, the human-review report and all
+  583 count-bearing rows of the results table, and wrote a claim ledger of 58 claims (C01-C58), each marked
+  validated, needs rewording or not supported. From now on the paper and the supervisor material use only
+  validated claims, or the reworded form where rewording is required. Not to be used: blanket "no failure, no
+  retry, strictly resident" claims for the frozen QA run; "0% label error" or "97% of labels verified"; "every run
+  stayed within budget" or "fully local"; "first", "state of the art" or a new generic selector.
+- **Human review limits.** New file `reports/m3av/human_review_limits.md`; the generated report is unchanged.
+  - One reviewer (H1) accepted all 100 items with every check yes and no notes, and was the only reviewer for items
+    68-100. Under the fixed strict-majority rule a combined reject was therefore impossible for every item, so the
+    0 rejects and the unchanged result after removing rejected items follow from the vote pattern; they are not
+    independent evidence that every label is right.
+  - Percent agreement and kappa are both reported; kappa is near zero or undefined because almost every verdict is
+    accept. Neither shows reviewer care. The 0..0 interval for the rejected rate is degenerate (no rejects in any
+    resample), not an upper bound on label error.
+  - Independence between reviewers is unverified: the copied answers were posted in a group chat at different
+    times, and view-only drafts live in the browser. The owner is asked whether later reviewers could see earlier
+    answers and whether each used a separate browser profile or device, and how consent was given.
+- **Corrections.** Step 102: the owner's 12 store answers were 4 before and 8 after the cutoff, not all before (all
+  excluded either way); "closed with no open item" and "percent agreement is the more informative number" corrected
+  with marked notes. Steps 72, 84 and 85: marked notes beside "heads do not add accuracy", "picture change only",
+  non-additivity and "no measurable effect": the correct reading is no confirmed increment within the tested
+  contrasts.
+- **README and index.** Human review complete, with its limits; Head A's CG-Bench result called a dev gain, not a
+  confirmation; video length stated per benchmark; budget ledgers described as records that did not stop runs
+  (25,373 calls charged against 20,000 declared). Experiments index: the meaning of "test" now names each set's freeze
+  and reveal point; the speech-text row refers to the fresh-set follow-ups; the ceiling row labels the with-text and
+  without-text conditions.
+- **Next.** Supervisor material, then the CVPR paper draft, each sent to the auditor sentence by sentence.
