@@ -2445,3 +2445,50 @@ Where the gain of the best framework with speech (S1t) over the starting design 
 - **Not changed.** No result, mask, method or saved output. The main paper is unchanged in this step.
 - **Open.** Consent and oversight, and the auditing tool's name and version (owner); compiled PDFs of the paper and
   the supplement (owner, Overleaf), then the auditor's check of the supplement and the rendered files.
+
+## Step 108 (2026-11-10): final reporting revision of paper and supplement (auditor P212-P226)
+- **Audit result before this step.** The supplement's numbers passed (P213, ledger C68-C76). Corrections were needed
+  in its statistical labels (P214), S5's description (P215), the R5 and Head B rules (P216), the human-rate estimator
+  (P217) and source pointers (P218). The auditor's Tectonic build used Latin Modern instead of Times (P225), ran onto
+  page 9 and had overwide tables and a diagram (P223).
+- **Supplement.**
+  - Labels: "declared" now means fixed before the test, nothing more; Holm only within H1-H4 and L1-L2; the earlier
+    test is described as run (unadjusted paired intervals, no correction added). "Descriptive" is defined.
+  - "Neither trained head improves" became "no confirmed gain"; the six-video CG estimates are labelled secondary.
+  - S5: its four sets are named (S1, S2, and both pools with the training-free option-evidence picker). The
+    confidence rule is untrained, but two sets use Head A, so S5 is not training-free. It makes up to four answer
+    requests per question, with at most four frames each and identical requests reused. The learned Head B is only
+    in the unreported six-set extension. The table caption says this.
+  - R5: only boosted scores above 0.2 count; each Gaussian is centred on the line midpoint with standard deviation
+    (end - start + 2W)/4, W = 2 s; ranked times are at least 4 s apart, up to 96, before the distinct fill.
+  - Head B: option statistics use "question + option i" texts; the option profile is softmax(50 x cosines),
+    averaged over chosen frames; decisiveness is the top minus the second entry.
+  - Human check: the estimator is written out (sum n_l r_l / sum n_l). 2.7% is the cohort-question-weighted
+    sample estimate, not a full-cohort rate. The cutoff, receipt evidence, no clarification and pseudonyms are
+    stated from `reports/m3av/human_review_limits.md`. The agreement caption limits near-zero kappa to rows with
+    human verdicts.
+  - F4: each valid segment is checked against its own saved image, so a false repeat can pass; F4 and hit scoring
+    (1 s tolerance) are separate steps.
+  - The overview is unnumbered, so sections render A-G as in the claim map.
+- **Main paper.**
+  - Layout: the systems table uses `tabularx` at text width ("Trained on" merged into "Trained part (data)"). The
+    LongVideoBench table uses short model headers, with full names in the caption. Lecture-table names are
+    shortened. The pipeline figure's two side boxes have fixed text widths inside the column. Font size, margins
+    and the template are unchanged.
+  - Wording: Head B's "question + option" texts and softmax profile; R5 "Gaussian around each line" with the exact
+    rule in the supplement; F4 against each valid segment's saved image; the human rate's weighting stated.
+  - Shortening, repetition only: the intro roadmap sentence; discussion sentences that restated Sec. 4 numbers; the
+    limitations' human-check sentence, now referring to Sec. 4.4; the deviation paragraph. Every qualification
+    listed by the auditor is kept.
+  - LLM statement: Claude through Claude Code (code, experiments, related-work search, drafting); GPT through the
+    Codex app as auditor; model versions not recorded for every stage, so none are guessed; the question generator;
+    model reviews as AI reviews; answer models as objects of study. README matches. The supervisor brief, already
+    sent, is unchanged.
+- **Claim map.** Every changed sentence has its source; `profile_gpu.md` added for the capped replay; C43's
+  prohibited bound reading separated from its allowed disclosure.
+- **Build.** No TeX here, and installing TinyTeX was not permitted in this session, so the PDFs must be compiled with
+  pdfLaTeX (Overleaf's default) by the owner, or locally once TinyTeX is allowed. Page count and fonts are unverified
+  until then.
+- **Not changed.** No result, mask, setting, number or saved output.
+- **Open.** Consent and oversight (owner, after the supervisor's answer; both TODOs remain visible); compiled PDFs,
+  logs and page count; submission ID; enrollment and OpenReview profiles (owner).

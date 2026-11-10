@@ -48,18 +48,18 @@ Recurring rules applied throughout (P186):
 |---|---|
 | At most 4 frames; same model, prompt and preprocessing within a comparison; 640 px decode cap before the processor | C30, C64 |
 | 120B answers only LongVideoBench in the two main studies and also generated the lecture questions | C25, P188 |
-| Figure: speech path = BM25 windows + MiniLM, or Head A on the full transcript; ~9 candidates on lectures; ≤4 frames | C61-C62, P188 |
-| Systems table and caption: S0 ≤120 words; R2/R3 per study; lecture R3-R5 up to 96 times; S1-S3 at most about 54 | C67, C30; `docs/v3/m3av_systems.md` |
+| Figure: speech path = BM25 windows + MiniLM, or Head A on the full transcript; ~9 candidates on lectures; ≤4 frames (boxes given fixed text widths so the figure fits the column, P223) | C61-C62, P188 |
+| Systems table and caption: S0 ≤120 words; R2/R3 per study; lecture R3-R5 up to 96 times; S1-S3 at most about 54 (table reflowed to the text width with `tabularx`; "Trained on" merged into "Trained part (data)", P223) | C67, C30; `docs/v3/m3av_systems.md` |
 | S0 design | `docs/v3/m3av_systems.md`, P188 |
 | S1/S1t rules; ~9 candidates on the lecture test | P188; `docs/v3/m3av_systems.md` |
 | Head A: 21 + 3 bge-derived = 24 inputs; zero-init reproduces frozen line scores; top 64 lines, σ 4 s, 1 s grid, 8 s suppression, 6 moments; 1,889 per member, 5,667 for three; positive if line end − 0.3 s within 10 s | C61, C62 |
 | S2c, S2m training sources; S2m internal validation; no dev/test lecture | C25, C65, P188 |
-| Head B: 18 features; greedy gain = score + 2 × Δ decisiveness − 1 × max visual similarity | C63 |
-| Baselines: fresh R2/R3 four-time versions with merging; lecture R2 four times; lecture R3-R5 96-time distinct fill; R5 adaptation, best of 10 dev settings | C55, C67 |
+| Head B: 18 features incl. similarity to each "question + option" text; greedy gain = score + 2 × Δ decisiveness − 1 × max visual similarity; decisiveness on the mean softmax option profile | C63; `scripts/v3_head_b.py` (P216) |
+| Baselines: fresh R2/R3 four-time versions with merging; lecture R2 four times; lecture R3-R5 96-time distinct fill (times at least 4 s apart); R5 adaptation (Gaussian around each line; exact rule in supplement D), best of 10 dev settings | C55, C67; `scripts/m3av_vsi.py` (P216) |
 | Rules and families chosen on dev; head weights fitted on training data | P188 |
 | Earlier locked test: 459 (55/6, 202 + 202 on 202 lectures) | C01, C05 (supplement pending) |
 | Fresh set 894/500; 3 excluded; no method chosen on it before the run; not a test-server result | C09, P174 |
-| Generation and filter rules: ≥4 s annotated, ≥8 OCR words, first segment excluded, image + OCR only; 4 distinct options; 80% token match; repeats need answer-critical tokens; dev/test 1 Hz edge correlation, 0.55, neighbouring segments, ≥2 s; train not filtered by F4; hash order; no answer-model filter | C66 |
+| Generation and filter rules: ≥4 s annotated, ≥8 OCR words, first segment excluded, image + OCR only; 4 distinct options; 80% token match; repeats need answer-critical tokens; dev/test 1 Hz edge correlation with the saved image of each valid segment (source or repeat), 0.55, neighbouring segments, ≥2 s; train not filtered by F4; hash order; no answer-model filter | C66; `scripts/m3av_visibility.py:segment_curve` (P218) |
 | Official split built to keep speakers apart (dataset authors); lecture separation checked | C65 |
 | hit@4 definition with false-match caveat; S-src sealed before test | C26, C31, P188 |
 | Transcript control: at most 600 BM25-selected words | C32, P188 |
@@ -99,14 +99,14 @@ Recurring rules applied throughout (P186):
 | +7.8 candidate difference vs +5.3 final; bookkeeping, not causal | C39, P189 |
 | S2m accuracy by outcome 677/93.9, 82/56.1, 94/66.0; association; hit may be false; 41 wrong unadjudicated | C40 |
 | Human check: 67 double, 33 single, 167 verdicts; 97/0/3; rejections about the key | C41 |
-| Rejected-or-uncertain 3.0 (0, 7.0) and 2.7 (0, 6.4) | C42 |
+| Rejected-or-uncertain 3.0 (0, 7.0) lecture-weighted and 2.7 (0, 6.4) with each sampled lecture weighted by its number of test questions; sample estimates, not full-cohort observed rates | C42; `scripts/m3av_human_review.py:rates` (P217) |
 | Masks: L1 −0.4 (−3.7, +3.0), L2 +5.4 (+2.8, +8.0); estimates move, interpretation unchanged | C45, P189 |
 | All-accept reviewer, impossible combined reject, degenerate interval, kappa, owner's account of independence, device use unrecorded, frames not reviewed | C44, P168, P180; `reports/m3av/human_review_limits.md` |
 | Pool time S1 0.67 s, S2m 0.97 s, R5 1.42 s; exclusions listed | C50; `reports/m3av/profile_saved.md` |
 | New answer calls S1 2.47, S2m 2.41, R5 2.44, S0 3.09, S1t 4.55 s; cache reuse excluded; not matched | C51; `reports/m3av/profile_saved.md` |
 | Dense index 955 s for 112 lectures, mean 19.3 min | C52 |
 | Observed reserved peak 16.8 GiB on 15.93 GiB; one recorded OOM and restart; first-session peak not captured | C38 (qualified), C37 |
-| Capped dev replay: 600 identical replies, 14.19 GiB reserved, cap 14.28 GiB | C48 |
+| Capped dev replay: 600 identical replies, 14.19 GiB reserved, cap 14.28 GiB | C48; `reports/m3av/profile_gpu.md` |
 
 ## Discussion and limitations (`5_discussion.tex`)
 
@@ -118,11 +118,11 @@ Recurring rules applied throughout (P186):
 | R5 vs S2m: 79.8 vs 79.4; neither shown to differ nor to be equal | C26, C27 |
 | Residual: no confirmed change; lecture training: no confirmed change vs CG-Bench training | C18, C29 |
 | "A plausible reading ... does not isolate" (hypothesis, scoped to tested rules and models) | P190 |
-| Accuracy and proxy agree for the two declared lecture comparisons | C28, C33, C27, C34 |
+| Accuracy and proxy agree for the two declared lecture comparisons (numbers now only in Sec. 4.2, referenced) | C28, C33, C27, C34 |
 | Same frozen pools: perfect picker at most 9.6 points of hit@4; no bound for a new candidate stage; no accuracy bound | C39, P190 |
 | Reporting suggestion builds on earlier evidence-evaluation work (no first claim) | P190 |
-| Limitations: proxy labels, generated train/dev/test questions, human-check limits incl. device use, packages, lecture search work (up to 96 vs at most about 54), R5 adaptation, one 4B lecture model, shipped transcripts, post hoc analyses | P170, P171, P174, P178, P190 |
-| Deviations: per-ledger caps, 25,373 charged incl. earlier-test API follow-ups; retry, 322 vs as-run 323, full-cohort accuracies unchanged; observed reserved memory over capacity, one recorded OOM | C53, C37, C38 (qualified) |
+| Limitations: proxy labels, generated train/dev/test questions, human-check limits (all-accept reviewer, 33 single votes, owner's account of independence, frames not reviewed; device use stated in Sec. 4.4), packages, lecture search work (up to 96 vs at most about 54), R5 adaptation, one 4B lecture model, shipped transcripts, post hoc analyses | P170, P171, P174, P178, P190 |
+| Deviations: per-ledger caps, 25,373 charged incl. earlier-test API follow-ups; retry, 322 vs as-run 323, full-cohort accuracies unchanged (rule explained in Sec. 4.2); observed reserved memory over capacity, one recorded OOM | C53, C37, C38 (qualified) |
 | Conclusion: package gain; labelled-interval placement; no demonstrated advantage over R5; heads no confirmed accuracy; measurement lesson as opinion | C12-C13, C27-C28, C10-C11, P190 |
 
 ## Statements (`6_statements.tex`)
@@ -130,28 +130,33 @@ Recurring rules applied throughout (P186):
 | Item | Status |
 |---|---|
 | Authors' roles (idea, framework, experiment plan, direction, checking, review and editing) | owner-attested; not certifiable by the audit (P191, P195) |
-| Claude via Claude Code: code, experiments, drafting | disclosed |
-| OpenAI GPT as a separate AI auditor (numbers, statistics, wording, related-work search); not human validation | disclosed; owner to confirm the service name (e.g. Codex) if it should be named |
+| Claude via Claude Code: code, experiments, related-work search, drafting | disclosed (literature reading for the plan: research log, start) |
+| OpenAI GPT through the Codex app as a separate AI auditor (numbers, statistics, wording, related-work search); not human validation | disclosed; Codex named from the auditor's own workspace (its delivery folder sits under the Codex app's documents folder); owner may still veto naming |
+| Model versions not recorded for every stage; tools and families named only | disclosed (P226: no guessed historical versions) |
 | Nemotron generated train, dev and test questions; also an answer model | disclosed (P191) |
-| Model reviews by Claude and GPT | disclosed |
-| Human-study consent and oversight | TODO in `3_study.tex`: owner to supply (P180, P195) |
+| Model reviews by Claude and GPT; AI reviews, not human judgments | disclosed (P217) |
+| Qwen3-VL and 120B answer models are objects of study | disclosed |
+| Human-study consent and oversight | TODO in `3_study.tex` and `7_supp.tex`: owner to supply (P180, P195); not invented |
 
 ## Not used anywhere in the draft
 
-C38 as a blanket claim, C43, C54, C56; "first", "state of the art", "equivalent", "matches", "nothing measurable",
+C38 as a blanket claim, C43 as an upper bound or error bound on the labels (its degenerate 0% interval is disclosed in Sec. 4.4 and supplement E with that qualification, which is allowed), C54, C56; "first", "state of the art", "equivalent", "matches", "nothing measurable",
 "fully local", "97% of labels verified", "<0.0001"; any hardware ceiling on frames; "the VLM can answer only if the
 moment is shown"; "high floor"; "covering evidence for different options" for Head B; a universal "R3 decodes 96";
 an 11.0-point ceiling for a perfect candidate stage; any claim that VideoRouteAudit lacks freezes.
 
 ## Supplement (`supp.tex`, `sec/7_supp.tex`)
 
+The overview is unnumbered (`\section*`), so the substantive sections render as A-G, matching this map (P218).
+
 | Section / claim | Ledger ID or source |
 |---|---|
-| Labels: declared / secondary / post hoc; unadjusted intervals | P186, P188 |
-| A. Earlier test setup: 459 = 55/6 CG-Bench + 202 + 202 Video-MMMU on 202 lectures; CG subtitles; Video-MMMU Whisper large-v3-turbo; 2B, K ≤ 4; primary S1 − S0 per set and pooled; secondaries uncorrected; S5 confidence choice; 208 clusters | C01; `docs/v3/final_test_protocol.md` |
+| Labels: declared = fixed in a protocol before the test (timing only); Holm only within H1-H4 and L1-L2; earlier test analysed with unadjusted paired intervals, no correction added; secondary, descriptive, post hoc kept distinct; unadjusted intervals | P186, P188, P214; `docs/v3/final_test_protocol.md`, `scripts/build_results_table.py` |
+| A. Earlier test setup: 459 = 55/6 CG-Bench + 202 + 202 Video-MMMU on 202 lectures; CG subtitles; Video-MMMU Whisper large-v3-turbo; 2B, K ≤ 4; primary S1 − S0 per set and pooled with unadjusted intervals; secondaries uncorrected; 208 clusters | C01; `docs/v3/final_test_protocol.md` |
+| A. S5: four sets hybrid/mmropt (S1), hybrid_ahead/mmropt (S2), hybrid/optset, hybrid_ahead/optset; optset = Head B's greedy gain with z-scored MobileCLIP question+options similarity as relevance, weights chosen on CG-Bench train inner validation; untrained confidence rule but trained Head A in two sets, so not training-free; no learned Head B (only in the unreported six-set extension); up to four answer requests per question, ≤4 frames each, identical requests reused; not a matched single-request budget; table caption says so | C68 (S5 accuracy validated); `scripts/v3_baseline_cycle.py:VERIFY_SETS`, `scripts/v3_head_b.py:choose` (P215) |
 | A. Table of 36 accuracies (R1-S5 × CG/P/C/pooled) | `docs/report/all_results.csv` rows 284-324, 533-555 (new; canonical seed 20261019) |
 | A. S1 − S0 per set +16.4 (7.0, 26.0), +1.0 (−5.0, 6.9), +2.0 (−3.5, 6.9); pooled +3.3 (−0.5, 6.9) | C02, C03; `all_results.csv` rows 289, 307, 317, 538 |
-| A. Pooled secondaries S2 −1.7, S3 0.0, S4 0.0, S5 +0.9, S1 − R3 +4.6, S1 − R2 +5.0 with intervals; CG heads −9.1, −16.4 | `all_results.csv` rows 547, 534, 543, 554, 533, 551, 294, 296 (new) |
+| A. Pooled secondaries S2 −1.7, S3 0.0, S4 0.0, S5 +0.9, S1 − R3 +4.6, S1 − R2 +5.0 with intervals; "no confirmed gain" (not "no improvement"); CG heads −9.1, −16.4 as secondary point estimates on six videos | C69; `all_results.csv` rows 547, 534, 543, 554, 533, 551, 294, 296 (P214) |
 | A. 4B follow-ups 50.3/52.7/55.6; +5.2 (1.1, 9.4); S1t − S1 +2.8 (0.0, 5.5), p ≈ 0.050; policy chosen after test seen | C05, C06 |
 | A. Head A dev 36.6 vs 28.0 on 164/17; family chosen there | C08 (reworded as dev observation) |
 | B. Failed answers TMe7oXMJoSM_0 in S1t and S4t (4B); skip rule replaced | C12; `docs/v3/confirmation_deviations.md` |
@@ -161,7 +166,7 @@ an 11.0-point ceiling for a perfect candidate stage; any claim that VideoRouteAu
 | B. Text-policy table 57.3/57.0/56.7/57.7; words 425/425/425/214; differences | C20 |
 | B. Decomposition table +8.9, +8.2, +0.8, +1.3, +2.8, +6.2; no interaction claim | C12, C21, C22 (reworded) |
 | C. Eligibility ≥4 s annotated, ≥8 OCR words, not first segment; prompt verbatim; OCR cut to 3,000 characters; image + OCR only; hash order | C66; `scripts/m3av_questions.py` (prompt, 3,000-character cut: new) |
-| C. Filters: parse, 4 distinct options, valid index, 80% evidence words in OCR; repeats need 80% + answer-critical tokens (key words on source slide, digit tokens); F4 1 Hz edge correlation ≥ 0.55 and not below either non-repeat neighbour, ≥ 2 s, threshold chosen on dev; train not F4-filtered; no answer-model filter | C66; `scripts/m3av_questions.py`, `scripts/m3av_visibility.py` |
+| C. Filters: parse, 4 distinct options, valid index, 80% evidence words in OCR; repeats need 80% + answer-critical tokens (key words on source slide, digit tokens); F4 per valid segment against that segment's own saved image (so a false repeat can pass), 1 Hz edge correlation ≥ 0.55 and not below either non-valid neighbour, accepted frames of all valid segments ≥ 2 s, threshold chosen on dev; scoring separate: hit@4 with 1 s tolerance; train not F4-filtered; no answer-model filter | C66; `scripts/m3av_questions.py`, `scripts/m3av_visibility.py:segment_curve`, `stage_apply` (P218) |
 | C. 158/853 (18.5%) test questions with a repeat; 14 sampled, one model reviewer judged 7 false, the other more | research log step 89 (new) |
 | C. S-src sealed before test; 3 source-empty test questions | C31 |
 | C. Cohorts and lecture separation | C25, C65 |
@@ -169,15 +174,15 @@ an 11.0-point ceiling for a perfect candidate stage; any claim that VideoRouteAu
 | D. Realized inputs table: frame means; median words, prompt-text tokens, visual tokens | C30; `reports/m3av/qa_test.md` (medians per `scripts/m3av_qa.py`; new) |
 | D. R3/R4/R5 underfill 52/48/27 | C30 |
 | D. Head A features, MLP 24→32→32→1 with GELU, zero-init last layer, top 64, σ 4 s, 1 s grid, 8 s suppression, 6 moments, line end − 0.3 s within 10 s, 3 members × 1,889; S2m 15% inner validation picks epoch | C61, C62; `src/videoqa/v3/head_a.py`; research log step 86 area (15%: new) |
-| D. Head B 18 features and greedy gain, λ 2, μ 1 | C63; `scripts/v3_head_b.py` |
-| D. R5 text/visual branch, boost min(1, 2M) above 0.5, W = 2 s whole-video Gaussian, max over lines, 0.5/0.5 z fusion, 96-time fill; VSI differences; best of 10 dev settings, 74.7% at four raw times | C55; `docs/v3/m3av_systems.md`; research log (74.7: new) |
+| D. Head B 18 features (option statistics over "question + option i" texts) and greedy gain, λ 2, μ 1; option profile softmax(50 × cosines), averaged over selected frames, decisiveness = top minus second | C63; `scripts/v3_head_b.py:stage_features`, `decisiveness`, TAU = 50 (P216) |
+| D. R5 text/visual branch, boost B = min(1, 2M) above 0.5; only B > 0.2 contributes; Gaussian centred on the line midpoint, sd = (end − start + 2W)/4, W = 2 s, scaled by B; max over lines; 0.5/0.5 z fusion; ranked times ≥ 4 s apart, up to 96, then perceptually distinct fill; VSI differences; VSI-inspired, no claim about VSI; best of 10 dev settings, 74.7% at four raw times | C55, C73; `scripts/m3av_vsi.py:text_score`, `ranked` (P216) |
 | D. Four-time R3/R5 on lecture dev showed 1.4 and 2.0 frames; hash threshold 0 vs 3 chosen on dev; LVB versions unchanged | research log (new) |
-| E. Human procedure, votes H1 100 accepts / H2 items 1-34, 31 accept 3 reject (KEY) / H3 items 35-67, 33 accept 1 note; 68-100 single; impossible combined reject; 97/0/3 | C41, C44; `reports/m3av/human_review_limits.md` |
-| E. Agreement table 82/0.019, 77/0.074, 84/0.525, 31/34 κ 0, 33/33 undefined | C44 |
-| E. Rates 3.0 (0, 7.0), 2.7 (0, 6.4), one-sample bootstrap; 0% degenerate | C42, C43 (stated as not an upper bound) |
+| E. Human procedure; cutoff 8 Nov 2026 23:59:59 Asia/Dhaka; receipt times from retained, privately kept group-chat evidence; no self-contradiction, no clarification, 3 no-majority items not adjudicated; organizer's answers excluded; pseudonyms H1-H3. Votes H1 100 accepts / H2 items 1-34, 31 accept 3 reject (KEY) / H3 items 35-67, 33 accept 1 note; 68-100 single; impossible combined reject; 97/0/3 | C41, C44; `reports/m3av/human_review_limits.md` ("Timing and provenance"); `scripts/m3av_human_review.py:CUTOFF` (P218) |
+| E. Agreement table 82/0.019, 77/0.074, 84/0.525, 31/34 κ 0, 33/33 undefined; caption: model reviews are AI reviews; near-zero/undefined κ only in rows with human verdicts; AI-AI κ 0.525 | C44 (P217) |
+| E. Rates: estimator Σ n_l r_l / Σ n_l over the 100 sampled lectures (n_l = lecture's questions in the 853 cohort, r_l = reviewed verdict rejected or no majority); 2.7 (0, 6.4) cohort-question-weighted, 3.0 (0, 7.0) lecture-weighted; one-sample lecture bootstrap; sample estimates, not full-cohort observed rates; 0% degenerate | C42, C43 (disclosed, stated as not an upper bound); `scripts/m3av_human_review.py:rates`, `boot_rate` (P217) |
 | E. 850-question mask L1 −0.4, L2 +5.4; S-src −1.4, +5.2; QA 82.6/87.3/86.5 | C45, C46 |
 | E. Independence: organizer's account; not enforced; device use not recorded; consent TODO | P180, P205 |
 | F1. Ledgers 7,587 / 7,587 / 10,199 = 25,373; per-ledger caps; API includes old-test follow-ups; 8,046 fresh API answers; cache, re-ask and retries | C53; `docs/v3/confirmation_deviations.md` |
 | F2. Sealed rule; what happened; full-cohort unchanged; 322 vs 323 on 104 lectures; sensitivity table; 10,236 rows = 9,893 + 343 | C35, C36, C37; `docs/v3/m3av_qa_test_deviation.md` |
-| F3. Session-2 reserved 16.8 GiB, allocated 11.49 GiB, card 15.93 GiB, session-1 peak missing; uncapped 17.26/15.23/1.56; capped 14.28 cap, 600 identical, 14.19/14.13/0.08; 1,517.6 vs 1,619.5 s, no causal claim | C38 (qualified), C48, C49; `reports/m3av/profile_saved.md` |
+| F3. Session-2 reserved 16.8 GiB, allocated 11.49 GiB, card 15.93 GiB, session-1 peak missing; uncapped 17.26/15.23/1.56; capped 14.28 cap, 600 identical, 14.19/14.13/0.08; 1,517.6 vs 1,619.5 s, no causal claim | C38 (qualified), C48, C49; `reports/m3av/profile_saved.md` (frozen session 2), `reports/m3av/profile_gpu.md` (capped and uncapped dev replay) (P218) |
 | G. Timing table: pool means, new calls, answer means; exclusions; index 955 s, 579 frames, 19.3 min, 8.4 s per lecture; model load 8.5 s | C50, C51, C52; `reports/m3av/profile_saved.md` (per-condition rows beyond S1/S2m/R5/S0/S1t: new) |

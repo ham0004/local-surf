@@ -1,9 +1,11 @@
-\section{What this supplement contains}
-\label{sec:s-overview}
+\section*{What this supplement contains}
 This supplement gives the material that the main paper refers to but has no room for: the earlier locked test (\cref{sec:s-earlier}), further analyses on the fresh LongVideoBench set (\cref{sec:s-lvb}), how the lecture questions were built (\cref{sec:s-data}), what each lecture system receives (\cref{sec:s-systems}), the human check (\cref{sec:s-human}), the three deviations from our plans (\cref{sec:s-deviations}) and the resource measurements (\cref{sec:s-cost}).
 We keep the labels of the main paper.
-\emph{Declared} means a comparison fixed before the test set was run and corrected with Holm within its family.
-\emph{Secondary} means reported without correction.
+\emph{Declared} means that a comparison was fixed in a written protocol before the relevant test set was run; this says when it was fixed, not how multiplicity is treated.
+Holm correction is applied only within the main paper's two declared families, H1--H4 on LongVideoBench and L1--L2 on lectures.
+The earlier locked test (\cref{sec:s-earlier}) declared one primary contrast and was analysed with unadjusted paired intervals, as its protocol specified; we do not add a correction to it here.
+\emph{Secondary} means reported without correction for multiplicity.
+\emph{Descriptive} means a summary or sensitivity analysis fixed in advance but not tested, such as S-src and the human-review masks.
 \emph{Post hoc} means run after the relevant test set had been seen.
 Unless stated otherwise, intervals are 95\% percentile intervals from a paired bootstrap that resamples whole videos or lectures (10,000 resamples); they are not adjusted for multiplicity.
 A difference whose interval contains zero is reported as no confirmed difference, never as equality.
@@ -16,8 +18,11 @@ Before the fresh LongVideoBench set existed, the systems were compared once on a
 It combines 55 CG-Bench~\cite{chen2024cgbench} questions on 6 videos (our own hash-based split of the CG-Bench videos) with 202 Video-MMMU~\cite{hu2025videommmu} perception questions and 202 comprehension questions on the same 202 lectures.
 CG-Bench questions came with English subtitles; for Video-MMMU we transcribed the audio locally with Whisper large-v3-turbo~\cite{radford2023whisper}.
 The answer model was the frozen Qwen3-VL-2B with at most four frames.
-The protocol was written before the first test answer: S1 $-$ S0 was the primary contrast, reported per test set and pooled; S2 to S5 against S1, and S1 against R2 and R3, were secondary and uncorrected.
-S5 is a training-free variant that answers with four different frame sets and keeps the most confident answer.
+The protocol was written before the first test answer: S1 $-$ S0 was the primary contrast, reported per test set and pooled with unadjusted paired intervals and no multiplicity correction; S2 to S5 against S1, and S1 against R2 and R3, were secondary and uncorrected.
+S5 answers each question with four candidate frame sets and keeps the answer that the answer model is most confident in.
+The sets are S1's pools with S1's MMR picker (that is, S1 itself), Head A's pools with the same picker (S2), and each of these two pools with an option-evidence picker that uses the greedy gain of Head B (\cref{sec:s-systems}) with the z-scored MobileCLIP similarity to the question and options in place of the learned score, its two weights chosen on the internal validation part of the CG-Bench training questions.
+The confidence rule itself is untrained, but two of the four sets come from the trained Head A, so S5 as a whole is not training-free; the learned Head B appears only in a six-set extension that is not reported here.
+S5 also has a different budget: it makes up to four answer requests per question, each with at most four frames, and reuses a reply when two sets coincide, so it is not a matched single-request, four-frame comparison.
 Pooled intervals resample 208 source videos, with the two Video-MMMU tracks of a lecture counted as one cluster.
 R2 and R3 are the four-time versions used on LongVideoBench in the main paper; R1 shows no frames.
 
@@ -41,7 +46,7 @@ S4 both heads & 34.5 & 52.0 & 32.7 & 41.4 \\
 S5 confidence choice & 47.3 & 50.0 & 33.2 & 42.3 \\
 \bottomrule
 \end{tabular}
-\caption{Accuracy (\%) on the earlier locked test with Qwen3-VL-2B and at most four frames. Question counts in parentheses. CG-Bench has only 6 test videos.}
+\caption{Accuracy (\%) on the earlier locked test with Qwen3-VL-2B and at most four frames per answer request. Question counts in parentheses. CG-Bench has only 6 test videos. S5 makes up to four requests per question and uses Head A in two of its four sets (see text).}
 \label{tab:s-earlier}
 \end{table}
 
@@ -66,14 +71,14 @@ S1 $-$ R3 & Pooled & $+4.6$ ($+1.4$, $+7.7$) \\
 S1 $-$ R2 & Pooled & $+5.0$ ($+1.1$, $+8.9$) \\
 \bottomrule
 \end{tabular}
-\caption{Contrasts on the earlier locked test (Qwen3-VL-2B). Only S1 $-$ S0 was the declared primary; the rest are secondary and uncorrected.}
+\caption{Contrasts on the earlier locked test (Qwen3-VL-2B), with unadjusted paired 95\% intervals. Only S1 $-$ S0 was the declared primary, and no multiplicity correction was applied to it; the rest are secondary and uncorrected.}
 \label{tab:s-earlier-contrasts}
 \end{table}
 
 \paragraph{Results.}
 \Cref{tab:s-earlier,tab:s-earlier-contrasts} give the results.
 The primary contrast has an interval above zero on CG-Bench ($+16.4$ points), where it rests on only 6 videos, and an interval that includes zero when pooled over all 459 questions ($+3.3$).
-Neither trained head improves on S1 pooled, and on the six CG-Bench videos Head A and the joint heads are below S1 ($-9.1$ and $-16.4$ points).
+Neither trained head shows a confirmed gain over S1 pooled, since every head interval includes zero; on the six CG-Bench videos, the point estimates for Head A and the joint heads are below S1 ($-9.1$ and $-16.4$ points), a secondary result on very few videos.
 Against R3, S1 is ahead on this set ($+4.6$), but this did not carry over to the fresh LongVideoBench questions, where S1 shows no demonstrated advantage over R3 (main paper, Sec.~4.1); we therefore make no claim from the earlier result.
 
 \paragraph{Follow-ups on the revealed set.}
@@ -215,10 +220,12 @@ Reply with only a JSON object:
 \paragraph{Filters.}
 A generated question is kept only if it parses, has four distinct options and a valid answer index, and at least 80\% of the words of its evidence span occur in the slide's OCR text.
 Another segment of the same talk counts as a valid repeat of the slide if its OCR passes the same 80\% test and also contains the answer-critical tokens: the key's words that appear on the source slide and every token with a digit in the evidence span.
-For development and test questions, a last filter estimates when the slide is actually on screen.
-It correlates edge maps of frames sampled at 1\,Hz with the saved slide image and accepts a frame when this correlation is at least 0.55 and not below its correlation with either neighbouring segment's slide (neighbours that are valid repeats are not compared); a question is kept only if at least 2\,s are accepted.
-The threshold was chosen on development data.
-The accepted spans are the intervals used by hit@4.
+For development and test questions, a last filter (F4) estimates when each of the question's valid segments, the source and any valid repeat, is actually on screen.
+Inside each such segment, it correlates edge maps of frames sampled at 1\,Hz with that segment's own saved slide image and accepts a frame when this correlation is at least 0.55 and not below its correlation with the saved image of either neighbouring segment (neighbours that are themselves valid segments are not compared).
+A repeat is therefore checked against its own saved image, not against the source slide's image, so a false repeat can pass this filter.
+A question is kept only if the accepted frames of its valid segments cover at least 2\,s; the threshold was chosen on development data.
+The accepted spans are the labelled intervals.
+Scoring is a separate step: hit@4 counts a question as hit if a shown frame's timestamp lies within 1\,s of one of these intervals (main paper, Sec.~3.3), and both steps are automatic.
 The training cohort does not pass through this last filter.
 No answer model is used to filter questions.
 
@@ -280,14 +287,18 @@ Three members trained with different seeds are averaged (1,889 parameters each).
 For S2m, an internal validation split of 15\% of the training lectures picks the epoch.
 
 \paragraph{Head B.}
-Each candidate frame has 18 features: its MobileCLIP similarity to the question and to the question with all options (raw and z-scored within the pool, plus its rank by the second); the maximum, mean, max-minus-mean and max-minus-second of its similarities to the individual options; which path proposed it (speech, picture or both); the z-scored speech score it carries; the similarity of nearby transcript text to the question; its relative position in the video; its highest similarity to another candidate; the number of candidates within 10\,s; and the log pool size.
+Each candidate frame has 18 features: its MobileCLIP similarity to the question and to the question with all options (raw and z-scored within the pool, plus its rank by the second); the maximum, mean, max-minus-mean and max-minus-second of its similarities to the texts ``question + option $i$'' for the options $i$; which path proposed it (speech, picture or both); the z-scored speech score it carries; the similarity of nearby transcript text to the question; its relative position in the video; its highest similarity to another candidate; the number of candidates within 10\,s; and the log pool size.
 A small learned model turns these into a score.
-Frames are then added greedily: each step adds the frame with the largest score $+\,\lambda\,\Delta d - \mu\,r$, where $d$ is the margin between the two highest entries of the selected frames' mean option profile and $r$ is the highest MobileCLIP similarity to an already chosen frame ($\lambda{=}2$, $\mu{=}1$).
+Frames are then added greedily: each step adds the frame with the largest score $+\,\lambda\,\Delta d - \mu\,r$, where $r$ is the highest MobileCLIP similarity to an already chosen frame ($\lambda{=}2$, $\mu{=}1$) and $\Delta d$ is the change in the decisiveness $d$ of the selected set.
+A frame's option profile is $\mathrm{softmax}(50\,c)$, where $c$ holds its MobileCLIP cosine similarities to the texts ``question + option $i$''; the profiles of the selected frames are averaged, and $d$ is the highest minus the second-highest entry of this mean profile.
 
 \paragraph{R5 and how it differs from VSI.}
-R5's text branch scores every transcript line against the question and options with all-mpnet-base-v2~\cite{song2020mpnet} on the raw strings, boosts similarities $M$ above 0.5 to $\min(1, 2M)$, spreads each line's score over the whole video with a Gaussian ($W{=}2$\,s) and takes the maximum over lines.
+R5's text branch scores every transcript line against the question and options with all-mpnet-base-v2~\cite{song2020mpnet} on the raw strings.
+A similarity $M$ above 0.5 is boosted to $B{=}\min(1, 2M)$, and otherwise $B{=}M$; only lines with $B > 0.2$ contribute.
+Each contributing line adds a Gaussian scaled by $B$, centred on the line's midpoint, with standard deviation $(\text{end} - \text{start} + 2W)/4$ and $W{=}2$\,s, and the text score of a time is the maximum over lines.
 Its visual branch is R4's option-aware MobileCLIP score.
-The two are fused as $0.5\,z(\text{text}) + 0.5\,z(\text{visual})$, and the top 96 times are filled as for R3.
+The two are fused over the dense-index times as $0.5\,z(\text{text}) + 0.5\,z(\text{visual})$.
+The times are then ranked by the fused score, keeping a time only if it is at least 4\,s from every time already kept, up to 96 times, and the first four perceptually distinct pictures among them are shown, as for R3.
 VSI~\cite{he2025vsi} differs in its visual branch (objects proposed by a VLM and detected with YOLO-World), its boost function, its support window around each line and its text preprocessing (lowercasing and stopword removal).
 The fusion weight and the visual query were chosen as the best of ten settings on development data (74.7\% hit@4 with four raw times before the distinct fill).
 R5 is therefore a VSI-inspired baseline, and we claim nothing about the published system.
@@ -305,8 +316,11 @@ After the methods were frozen, 100 test questions, one from each of 100 lectures
 Each packet showed the question, options, key, evidence words, the slide image, frames from the labelled interval and the transcript inside it, but no system output and no model review.
 Reviewers answered four checks: the key is right; exactly one option is right; the slide supports the question; the content is legible.
 The analysis plan, including a strict-majority rule (a question is accepted or rejected only by a majority of its votes) and a cutoff time, was fixed before any human verdict was seen.
-The reviewers had view-only access to the review page and returned their answers as copied text; eligibility uses the time each text reached the organizer.
+The reviewers had view-only access to the review page and returned their answers as copied text.
+An answer counted if it reached the organizer by the fixed cutoff, 8 November 2026, 23:59:59 Asia/Dhaka time (UTC+6); receipt times come from retained, timestamped evidence of the group chat in which the texts were posted, which is kept privately and not released.
+No answer contradicted itself, so no clarification was requested, and the three questions without a majority were not adjudicated after the cutoff.
 The organizer's own answers are not votes and are excluded.
+Reviewers are identified only by the pseudonyms H1--H3.
 
 \paragraph{Votes.}
 Reviewer H1 judged all 100 questions and accepted every one, with every check marked yes and no notes.
@@ -330,13 +344,16 @@ H1 vs H2 (34 shared) & 31/34 & 0 \\
 H1 vs H3 (33 shared) & 33/33 & undefined \\
 \bottomrule
 \end{tabular}
-\caption{Agreement on the 100 reviewed questions. Kappa is near zero or undefined because nearly every human verdict is ``accept''.}
+\caption{Agreement on the 100 reviewed questions. Model reviews 1 and 2 are AI reviews of the same packets, not human judgments. In the rows that involve human verdicts, kappa is near zero or undefined because nearly every human verdict is ``accept''; the two AI reviews agree with $\kappa{=}0.525$.}
 \label{tab:s-agreement}
 \end{table}
 
 \paragraph{Agreement and rates.}
 \Cref{tab:s-agreement} gives agreement and kappa.
-The rejected-or-uncertain rate is 3.0\% (0 to 7.0\%) with lectures weighted equally and 2.7\% (0 to 6.4\%) with questions weighted equally, from a one-sample bootstrap over lectures.
+Each sampled lecture $l$ contributes one reviewed question, with verdict indicator $r_l$ (1 if rejected or without a majority), and $n_l$ questions to the 853-question test cohort.
+The cohort-question-weighted rate is $\sum_l n_l r_l / \sum_l n_l$ over the 100 sampled lectures, and the lecture-weighted rate gives every sampled lecture weight one.
+The rejected-or-uncertain rate is 2.7\% (0 to 6.4\%) cohort-question-weighted and 3.0\% (0 to 7.0\%) lecture-weighted, with intervals from a one-sample bootstrap over the sampled lectures.
+Both are estimates from the sample, not observed error rates of the full cohort.
 The rejected rate is 0\%; its interval is degenerate because no resample contains a rejection, and it is not an upper bound on the label error rate.
 
 \paragraph{Effect on the declared results.}

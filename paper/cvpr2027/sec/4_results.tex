@@ -10,7 +10,7 @@
 \setlength{\tabcolsep}{5pt}
 \begin{tabular}{@{}lccc@{}}
 \toprule
-System & Qwen3-VL-2B & Qwen3-VL-4B & 120B (API) \\
+System & 2B & 4B & 120B \\
 \midrule
 S0 starting design & 44.4 & 48.3 & 49.3 \\
 S1 tuned pipeline & 50.8 & 55.9 & 56.5 \\
@@ -29,7 +29,7 @@ H3: S1t $-$ S0, 4B & \multicolumn{3}{l}{$+8.9$ ($+5.7$, $+12.2$), $p{=}0.0008$} 
 H4: S1t $-$ S0, 120B & \multicolumn{3}{l}{$+8.3$ ($+4.8$, $+11.8$), $p{=}0.0008$} \\
 \bottomrule
 \end{tabular}
-\caption{Accuracy (\%) on 894 held-out LongVideoBench questions (500 videos), four frames at most. S2 is Head A trained on CG-Bench (S2c in \cref{tab:systems}). One failed answer each for S1t and S4t with the 4B model is counted as wrong. R2 and R3 are the four-time versions described in \cref{sec:systems}.}
+\caption{Accuracy (\%) on 894 held-out LongVideoBench questions (500 videos), four frames at most, with Qwen3-VL-2B, Qwen3-VL-4B and the 120B model (API). S2 is Head A trained on CG-Bench (S2c in \cref{tab:systems}). One failed answer each for S1t and S4t with the 4B model is counted as wrong. R2 and R3 are the four-time versions described in \cref{sec:systems}.}
 \label{tab:lvb}
 \end{table}
 
@@ -60,28 +60,28 @@ This comparison changes more than the transcript, so it does not isolate a trans
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
-System & hit@4 & S-src & frames & Acc.\ (4B) \\
+System & hit@4 & S-src & frames & Acc. \\
 \midrule
 S0 starting design & 67.4 & 63.1 & 3.95 & 79.5 \\
 S1 tuned pipeline & 74.1 & 68.2 & 4.00 & 82.5 \\
 S1t + speech text & 74.1 & 68.2 & 4.00 & 83.5 \\
-S2c Head A (CG-Bench) & 79.7 & 73.4 & 4.00 & 88.2 \\
-S2m Head A (lectures) & 79.4 & 73.3 & 4.00 & 87.2 \\
+S2c Head A (CG) & 79.7 & 73.4 & 4.00 & 88.2 \\
+S2m Head A (M3AV) & 79.4 & 73.3 & 4.00 & 87.2 \\
 S3 Head B & 73.6 & 68.6 & 4.00 & 82.8 \\
 R2 evenly spaced & 22.9 & 18.6 & 4.00 & 63.5 \\
 R3 dense top-4 & 64.1 & 60.0 & 3.87 & 78.3 \\
-R4 option-aware dense & 76.9 & 72.2 & 3.88 & 84.8 \\
+R4 option-aware & 76.9 & 72.2 & 3.88 & 84.8 \\
 R5 VSI-inspired & 79.8 & 74.8 & 3.94 & 86.5 \\
 \midrule
 Question only & -- & -- & 0 & 51.2 \\
 Transcript only & -- & -- & 0 & 62.1 \\
 \midrule
-\multicolumn{5}{@{}l}{\emph{Declared contrasts on hit@4, points (95\% interval), Holm p}} \\
+\multicolumn{5}{@{}l}{\emph{Declared, hit@4: points (95\% interval), Holm p}} \\
 L1: S2m $-$ R5 & \multicolumn{4}{l}{$-0.5$ ($-3.8$, $+2.9$), $p{=}0.83$} \\
 L2: S2m $-$ S1 & \multicolumn{4}{l}{$+5.3$ ($+2.7$, $+7.8$), $p{=}0.0004$} \\
 \bottomrule
 \end{tabular}
-\caption{Lecture test derived from M3AV: 853 questions, 112 lectures. hit@4 is the percentage of questions where a shown frame's timestamp falls in an automatically labelled interval of the source slide or a valid repeat of it; S-src counts only the source segment's own interval. Both are proxies with known false matches. ``Frames'' is the mean number shown (4.00 is rounded); accuracy is secondary. S1t shows S1's frames.}
+\caption{Lecture test derived from M3AV: 853 questions, 112 lectures. hit@4 is the percentage of questions where a shown frame's timestamp falls in an automatically labelled interval of the source slide or a valid repeat of it; S-src counts only the source segment's own interval. Both are proxies with known false matches. ``Frames'' is the mean number shown (4.00 is rounded); accuracy (Acc.) with the 4B model is secondary. S2c and S2m are Head A trained on CG-Bench and on M3AV lectures. S1t shows S1's frames.}
 \label{tab:lectures}
 \end{table}
 
@@ -142,7 +142,7 @@ Of the questions with a hit, 41 are answered wrong; we have not adjudicated whet
 \label{sec:human}
 Of the 100 sampled questions, 67 received two human verdicts and 33 received one (167 verdicts in total).
 Under the fixed strict-majority rule, 97 were accepted, none rejected and 3 had no majority; all three rejections that caused the splits concerned the answer key.
-The rejected-or-uncertain rate is 3.0\% (0 to 7.0\%) weighting lectures equally and 2.7\% (0 to 6.4\%) weighting by questions.
+The rejected-or-uncertain rate is 3.0\% (0 to 7.0\%) weighting each sampled lecture equally and 2.7\% (0 to 6.4\%) weighting it by its number of test questions; both are estimates from the sample, not observed rates for all 853 questions.
 Removing the three split questions moves the declared estimates slightly but leaves their interpretation unchanged (L1 $-0.4$, $-3.7$ to $+3.0$; L2 $+5.4$, $+2.8$ to $+8.0$).
 
 This check is weaker than its headline suggests, and we report why.

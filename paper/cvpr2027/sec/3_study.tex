@@ -18,8 +18,8 @@ No answer model is trained or adapted.
   >={Stealth[length=1.6mm]}
 ]
 \node[box] (in) {question + options\\video, timed transcript};
-\node[box, below left=4mm and -6mm of in] (sp) {speech path\\BM25 windows + MiniLM\\\textbf{or} Head A (full transcript)};
-\node[box, below right=4mm and -6mm of in] (pp) {picture path\\window frames + dense index};
+\node[box, text width=31mm] (sp) at (-19mm,-12.5mm) {speech path\\BM25 windows + MiniLM\\\textbf{or} Head A (full transcript)};
+\node[box, text width=31mm] (pp) at (19mm,-12.5mm) {picture path\\window frames\\+ dense index};
 \node[box, below=15mm of in] (mg) {merge: candidates ($\sim$9 on lectures)};
 \node[box, below=3.5mm of mg] (pk) {picker: MMR rule \textbf{or} Head B};
 \node[box, below=3.5mm of pk] (am) {frozen answer model\\$\le$4 frames (+ optional speech text)};
@@ -38,24 +38,24 @@ No answer model is trained or adapted.
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}llllll@{}}
+\begin{tabularx}{\textwidth}{@{}lXXll@{}}
 \toprule
-System & Candidate frames & Final choice of $\le$4 frames & Text shown & Trained part & Trained on \\
+System & Candidate frames & Final choice of $\le$4 frames & Text shown & Trained part (data) \\
 \midrule
-S0 starting design & transcript windows only & top-4 by question similarity & $\le$120-word excerpt & -- & -- \\
-S1 tuned pipeline & windows + dense index & MMR on question + options & -- & -- & -- \\
-S1t & as S1 & as S1 & $\le$600 words of speech & -- & -- \\
-S2c Head A & Head A moments + S1 picture path & as S1 & -- & locator & CG-Bench train \\
-S2m Head A & as S2c & as S1 & -- & locator & M3AV train (generated) \\
-S3 Head B & as S1 & Head B & -- & set selector & CG-Bench train \\
-S4 (S4t) both heads & as S2c & Head B & -- ($\le$600 words) & both & CG-Bench train \\
+S0 starting design & transcript windows only & top 4 by question similarity & $\le$120-word excerpt & -- \\
+S1 tuned pipeline & windows + dense index & MMR on question + options & -- & -- \\
+S1t & as S1 & as S1 & $\le$600 words of speech & -- \\
+S2c Head A & Head A moments + S1 picture path & as S1 & -- & locator (CG-Bench train) \\
+S2m Head A & as S2c & as S1 & -- & locator (M3AV train) \\
+S3 Head B & as S1 & Head B & -- & set selector (CG-Bench train) \\
+S4 (S4t) both heads & as S2c & Head B & -- ($\le$600 words) & both (CG-Bench train) \\
 \midrule
-R2 & -- & 4 evenly spaced times & -- & -- & -- \\
-R3 & dense index (LVB 4, lectures $\le$96) & top 4 by question similarity & -- & -- & -- \\
-R4 & dense index, $\le$96 & as R3, best option-wise match & -- & -- & -- \\
-R5 VSI-inspired & dense index, $\le$96 & as R3, fused subtitle + visual score & -- & -- & -- \\
+R2 & -- & 4 evenly spaced times & -- & -- \\
+R3 & dense index (LVB 4, lectures $\le$96) & top 4 by question similarity & -- & -- \\
+R4 & dense index, $\le$96 & as R3, best option-wise match & -- & -- \\
+R5 VSI-inspired & dense index, $\le$96 & as R3, fused subtitle + visual score & -- & -- \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \caption{Systems. All give the frozen answer model at most four frames. S4 and S4t are evaluated on LongVideoBench (LVB) only; R4, R5 and S2m on lectures only. On LVB, R2 and R3 merge repeated pictures and can show fewer than four. On lectures, R3--R5 decode up to 96 ranked times to find four distinct pictures, while S1--S3 decode at most about 54 per question, so search work is not matched.}
 \label{tab:systems}
 \end{table*}
@@ -87,9 +87,9 @@ S2m uses the same recipe, including its internal validation split, on 1,147 gene
 
 \paragraph{Head B: frame-set selector (S3, S4).}
 Head B replaces the MMR picker.
-A small learned model scores each candidate from 18 features: its MobileCLIP similarity to the question and to each option, which path proposed it, the speech score it carries, the similarity of nearby transcript text to the question, its position in time and its redundancy with other candidates.
+A small learned model scores each candidate from 18 features: its MobileCLIP similarity to the question and to each ``question + option'' text, which path proposed it, the speech score it carries, the similarity of nearby transcript text to the question, its position in time and its redundancy with other candidates.
 Frames are then added greedily.
-Each step's gain is the learned score, plus $\lambda$ times the increase in option decisiveness (the margin between the two highest entries of the selected frames' mean option profile), minus $\mu$ times the highest visual similarity to a frame already chosen ($\lambda{=}2$, $\mu{=}1$, chosen on internal validation).
+Each step's gain is the learned score, plus $\lambda$ times the increase in option decisiveness (the margin between the two highest entries of the selected frames' mean softmax option profile), minus $\mu$ times the highest visual similarity to a frame already chosen ($\lambda{=}2$, $\mu{=}1$, chosen on internal validation).
 It is trained on candidate pools from CG-Bench training videos.
 
 \paragraph{Baselines (R2--R5).}
@@ -98,7 +98,7 @@ R3 ranks the dense index by MobileCLIP similarity to the question.
 On LongVideoBench it decodes the top four times and merges repeated pictures, as R2 does there, so either can show fewer than four frames.
 On lectures, where a slide often stays on screen for minutes, R3 instead goes down a ranked list of up to 96 times (at least 4\,s apart) and keeps the first four perceptually distinct frames, and R2 always shows four.
 R4 scores each frame by its best match over ``question + option $k$''.
-R5 is our adaptation of VSI~\cite{he2025vsi}: an MPNet~\cite{song2020mpnet} similarity between each transcript line and the question and options is boosted, spread over time with a Gaussian ($W{=}2$\,s) and fused with R4's visual score ($0.5$ each, after z-normalization).
+R5 is our adaptation of VSI~\cite{he2025vsi}: an MPNet~\cite{song2020mpnet} similarity between each transcript line and the question and options is boosted, spread over time with a Gaussian around each line and fused with R4's visual score ($0.5$ each, after z-normalization); the supplement gives the exact rule.
 It differs from the published method: MobileCLIP replaces VSI's detector-based visual branch, and the boost, spread and text processing differ; R4 and R5 use the same 96-time distinct fill as the lecture R3.
 Its setting is the best of ten tried on lecture development data, and it was the strongest training-free rule we found there.
 We therefore treat R5 as a strong tested baseline, not as a reproduction of VSI.
@@ -122,7 +122,7 @@ It is told to avoid titles, authors and slide numbers and questions answerable f
 Option order is then set by a hash, which removes the generator's own ordering of the options.
 Automatic filters then check the format and that the four options are distinct, and require at least 80\% of the support words' tokens to appear in the slide OCR.
 Other segments that pass the same token test, and also contain the answer-critical tokens, are marked as valid repeats of the slide, so a repeated slide is not scored as a miss.
-For development and test questions, a last filter keeps only questions whose slide is inferred to be on screen for at least 2\,s, by correlating edge maps of frames sampled at 1\,Hz with the saved slide image (threshold 0.55, compared with neighbouring segments).
+For development and test questions, a last filter keeps only questions whose slide is inferred to be on screen for at least 2\,s, by correlating edge maps of frames sampled at 1\,Hz with the saved image of each such segment, the source or a valid repeat (threshold 0.55, compared with neighbouring segments).
 These rules are imperfect, and the training cohort does not pass through the last filter.
 We apply no answer-model filter.
 The derived cohorts follow M3AV's official split, which its authors built to keep speakers apart~\cite{chen2024m3av}, and we checked that no lecture appears in two cohorts: 1,147 training questions on 297 lectures, 514 development questions on 96 lectures and 853 test questions on 112 lectures.
