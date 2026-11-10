@@ -1,0 +1,437 @@
+\section{What this supplement contains}
+\label{sec:s-overview}
+This supplement gives the material that the main paper refers to but has no room for: the earlier locked test (\cref{sec:s-earlier}), further analyses on the fresh LongVideoBench set (\cref{sec:s-lvb}), how the lecture questions were built (\cref{sec:s-data}), what each lecture system receives (\cref{sec:s-systems}), the human check (\cref{sec:s-human}), the three deviations from our plans (\cref{sec:s-deviations}) and the resource measurements (\cref{sec:s-cost}).
+We keep the labels of the main paper.
+\emph{Declared} means a comparison fixed before the test set was run and corrected with Holm within its family.
+\emph{Secondary} means reported without correction.
+\emph{Post hoc} means run after the relevant test set had been seen.
+Unless stated otherwise, intervals are 95\% percentile intervals from a paired bootstrap that resamples whole videos or lectures (10,000 resamples); they are not adjusted for multiplicity.
+A difference whose interval contains zero is reported as no confirmed difference, never as equality.
+
+\section{The earlier locked test}
+\label{sec:s-earlier}
+
+\paragraph{Setup.}
+Before the fresh LongVideoBench set existed, the systems were compared once on a locked test of 459 questions.
+It combines 55 CG-Bench~\cite{chen2024cgbench} questions on 6 videos (our own hash-based split of the CG-Bench videos) with 202 Video-MMMU~\cite{hu2025videommmu} perception questions and 202 comprehension questions on the same 202 lectures.
+CG-Bench questions came with English subtitles; for Video-MMMU we transcribed the audio locally with Whisper large-v3-turbo~\cite{radford2023whisper}.
+The answer model was the frozen Qwen3-VL-2B with at most four frames.
+The protocol was written before the first test answer: S1 $-$ S0 was the primary contrast, reported per test set and pooled; S2 to S5 against S1, and S1 against R2 and R3, were secondary and uncorrected.
+S5 is a training-free variant that answers with four different frame sets and keeps the most confident answer.
+Pooled intervals resample 208 source videos, with the two Video-MMMU tracks of a lecture counted as one cluster.
+R2 and R3 are the four-time versions used on LongVideoBench in the main paper; R1 shows no frames.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+System & CG-Bench & VMMMU-P & VMMMU-C & Pooled \\
+ & (55) & (202) & (202) & (459) \\
+\midrule
+R1 question only & 20.0 & 25.2 & 19.8 & 22.2 \\
+R2 evenly spaced & 32.7 & 40.6 & 33.2 & 36.4 \\
+R3 dense top-4 & 41.8 & 40.6 & 31.7 & 36.8 \\
+S0 starting design & 34.5 & 47.0 & 30.2 & 38.1 \\
+S1 tuned pipeline & 50.9 & 48.0 & 32.2 & 41.4 \\
+S2 Head A & 41.8 & 45.0 & 33.7 & 39.7 \\
+S3 Head B & 47.3 & 48.0 & 33.2 & 41.4 \\
+S4 both heads & 34.5 & 52.0 & 32.7 & 41.4 \\
+S5 confidence choice & 47.3 & 50.0 & 33.2 & 42.3 \\
+\bottomrule
+\end{tabular}
+\caption{Accuracy (\%) on the earlier locked test with Qwen3-VL-2B and at most four frames. Question counts in parentheses. CG-Bench has only 6 test videos.}
+\label{tab:s-earlier}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llc@{}}
+\toprule
+Contrast & Set & Points (95\% interval) \\
+\midrule
+S1 $-$ S0 (primary) & CG-Bench & $+16.4$ ($+7.0$, $+26.0$) \\
+ & VMMMU-P & $+1.0$ ($-5.0$, $+6.9$) \\
+ & VMMMU-C & $+2.0$ ($-3.5$, $+6.9$) \\
+ & Pooled & $+3.3$ ($-0.5$, $+6.9$) \\
+\midrule
+S2 $-$ S1 & Pooled & $-1.7$ ($-4.4$, $+0.9$) \\
+S3 $-$ S1 & Pooled & $0.0$ ($-2.8$, $+2.9$) \\
+S4 $-$ S1 & Pooled & $0.0$ ($-3.0$, $+3.2$) \\
+S5 $-$ S1 & Pooled & $+0.9$ ($-1.5$, $+3.5$) \\
+S1 $-$ R3 & Pooled & $+4.6$ ($+1.4$, $+7.7$) \\
+S1 $-$ R2 & Pooled & $+5.0$ ($+1.1$, $+8.9$) \\
+\bottomrule
+\end{tabular}
+\caption{Contrasts on the earlier locked test (Qwen3-VL-2B). Only S1 $-$ S0 was the declared primary; the rest are secondary and uncorrected.}
+\label{tab:s-earlier-contrasts}
+\end{table}
+
+\paragraph{Results.}
+\Cref{tab:s-earlier,tab:s-earlier-contrasts} give the results.
+The primary contrast has an interval above zero on CG-Bench ($+16.4$ points), where it rests on only 6 videos, and an interval that includes zero when pooled over all 459 questions ($+3.3$).
+Neither trained head improves on S1 pooled, and on the six CG-Bench videos Head A and the joint heads are below S1 ($-9.1$ and $-16.4$ points).
+Against R3, S1 is ahead on this set ($+4.6$), but this did not carry over to the fresh LongVideoBench questions, where S1 shows no demonstrated advantage over R3 (main paper, Sec.~4.1); we therefore make no claim from the earlier result.
+
+\paragraph{Follow-ups on the revealed set.}
+After this test had been seen, we ran two follow-ups on the same 459 questions and label them as such.
+With Qwen3-VL-4B, pooled accuracy is 50.3\% for S0, 52.7\% for S1 and 55.6\% for S1t.
+S1t $-$ S0 is $+5.2$ points ($+1.1$ to $+9.4$) and S1t $-$ S1 is $+2.8$ ($0.0$ to $+5.5$, raw $p \approx 0.050$, not confirmed).
+The speech-text policy of S1t was chosen on CG-Bench development questions after this test had been seen, so these numbers are not a fresh confirmation; the fresh confirmation is the LongVideoBench study of the main paper.
+The 120B model was also run on this set as a follow-up; those calls are part of the call count in \cref{sec:s-deviations}, and no result from them is used in the paper.
+
+\paragraph{Head A on development data.}
+On 164 CG-Bench development questions on 17 videos, one of Head A's six proposed moments falls in the human-marked evidence for 36.6\% of questions, against 28.0\% for the zero-shot rule.
+The Head A family was chosen on these questions, so this is a development observation, not a confirmation.
+
+\section{Further analyses on fresh LongVideoBench}
+\label{sec:s-lvb}
+All rows here use the 894 held-out questions on 500 videos.
+
+\paragraph{Failed answers.}
+One question failed with a GPU out-of-memory error in each of the two 4B speech-text systems, S1t and S4t.
+Both count as wrong.
+An earlier rule skipped such questions; it was replaced before the final analysis, and the skipped list is kept.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Contrast & 2B & 4B & 120B \\
+\midrule
+S2 $-$ S1 & $+1.8$ & $+1.2$ & $+2.8$ \\
+ & ($-0.6$, $+4.1$) & ($-1.5$, $+3.9$) & ($0.0$, $+5.6$) \\
+S3 $-$ S1 & $+0.1$ & $-0.3$ & $+0.8$ \\
+S4t $-$ S1t & $-0.6$ & $-1.6$ & $+2.5$ \\
+S1 $-$ R3 & $-0.8$ & $-0.1$ & $-1.1$ \\
+ & ($-3.3$, $+1.8$) & ($-2.9$, $+2.6$) & ($-4.1$, $+1.8$) \\
+S1 $-$ R2 & $+7.5$ & $+8.6$ & $+5.4$ \\
+ & ($+4.3$, $+10.8$) & ($+5.1$, $+12.2$) & ($+2.0$, $+8.8$) \\
+\bottomrule
+\end{tabular}
+\caption{Secondary, uncorrected contrasts on fresh LongVideoBench (points, 95\% interval where shown). S2 $-$ S1 with the 120B model has raw $p{=}0.052$.}
+\label{tab:s-lvb-secondary}
+\end{table}
+
+\paragraph{Secondary contrasts.}
+\Cref{tab:s-lvb-secondary} lists the secondary contrasts that the main paper summarizes.
+None of the head contrasts is confirmed.
+
+\paragraph{Post hoc ablations with the 4B model.}
+These were run after the fresh set had been seen; no setting was chosen from them.
+The full Head A minus a version with its learned residual set to zero is $+0.3$ points ($-2.1$ to $+2.8$) on the fresh set and $+3.7$ ($-3.7$ to $+10.8$) on CG-Bench development data.
+For Head B, setting the decisiveness weight to $\lambda{=}0$ instead of 2 changes accuracy by $0.0$ points ($-0.9$ to $+0.9$) on S1's candidate pools and by $+0.6$ ($-0.2$ to $+1.4$) on Head A's pools.
+The two settings select identical frame sets for 785 and 792 of the 894 questions, so the comparison has little room to differ; it does not show that the term has no effect.
+With $\lambda{=}2$, Head B shows fewer than four frames for 81 (S1's pools) and 82 (Head A's pools) questions, because those pools are small.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Text policy (S1's frames) & Words & Acc. & $-$ frames+hybrid \\
+\midrule
+frames+hybrid (S1t) & 425 & 57.3 & -- \\
+BM25 over whole transcript & 425 & 57.0 & $-0.2$ ($-1.4$, $+0.9$) \\
+moment-search lines only & 425 & 56.7 & $-0.6$ ($-1.7$, $+0.5$) \\
+lines near chosen frames & 214 & 57.7 & $+0.4$ ($-0.9$, $+1.8$) \\
+\bottomrule
+\end{tabular}
+\caption{Post hoc speech-text policies on fresh LongVideoBench (4B, 600-word allowance, mean words used). The last policy finds fewer lines, so its budget is not matched.}
+\label{tab:s-text}
+\end{table}
+
+\paragraph{Speech-text policies.}
+\Cref{tab:s-text} compares ways of choosing the up to 600 words of speech text on S1's frames.
+None of the three alternatives shows a confirmed difference from the policy used in S1t; this does not show that they are equivalent.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lc@{}}
+\toprule
+Contrast (4B) & Points (95\% interval) \\
+\midrule
+S1t $-$ S0, all changes (H3) & $+8.9$ ($+5.7$, $+12.2$) \\
+S1's frames + S0's text $-$ S0 & $+8.2$ ($+4.9$, $+11.5$) \\
+S1t $-$ (S1's frames + S0's text) & $+0.8$ ($-1.0$, $+2.6$) \\
+S1t $-$ S1 & $+1.3$ ($-0.6$, $+3.3$) \\
+(S0's frames + S1t's text policy) $-$ S0 & $+2.8$ ($+1.1$, $+4.4$) \\
+S1t $-$ (S0's frames + S1t's text policy) & $+6.2$ ($+3.1$, $+9.3$) \\
+\bottomrule
+\end{tabular}
+\caption{Post hoc decomposition of H3. ``S0's text'' is the BM25 excerpt of up to 120 words, which does not depend on the frames. S1t's text policy takes speech around the chosen frames, so the last row changes the frames and the speech that goes with them.}
+\label{tab:s-decomp}
+\end{table}
+
+\paragraph{Decomposition of H3.}
+\Cref{tab:s-decomp} lists the full post hoc decomposition.
+The cleanest frame contrast is the second row, where both arms carry the same excerpt; it is the one quoted in the main paper.
+The last row is not a pure frame effect, because S1t's text follows the chosen frames.
+The two orders of change give different splits, but we ran no interaction test and do not claim that frames and text are non-additive.
+
+\section{Building the lecture questions}
+\label{sec:s-data}
+
+\paragraph{Eligible slides and generation.}
+A slide segment of an M3AV~\cite{chen2024m3av} talk is eligible if it is annotated as lasting at least 4\,s, its OCR text has at least 8 distinct words and it is not the talk's first segment.
+The 120B model receives the slide image and the prompt in \cref{fig:s-prompt}, with the slide's OCR text cut to 3,000 characters.
+It never sees the transcript or any time stamp.
+The option order is then set by a hash of the lecture and segment, which removes the generator's own ordering.
+
+\begin{figure*}[t]
+\centering
+\begin{minipage}{0.94\textwidth}
+\footnotesize
+\begin{verbatim}
+You write one multiple-choice question for a lecture-video benchmark from the lecture slide shown.
+
+Rules:
+- The question must be answerable from what is visibly written or drawn on THIS slide.
+- Do not ask about the talk title, authors, affiliations, logos, dates or slide numbers.
+- It must not be answerable from general knowledge alone; ask about a specific fact, number, label, item or
+  relation shown on the slide.
+- Write exactly 4 options; exactly one is correct; the wrong options must be plausible and of the same kind.
+- evidence_text: copy the exact words from the slide that support the correct answer (a short span, 3-25 words).
+
+OCR text of the slide (may contain recognition errors):
+[slide OCR text, at most 3,000 characters]
+
+Reply with only a JSON object:
+{"question": "...", "options": ["...", "...", "...", "..."], "answer_index": 0, "evidence_text": "..."}
+\end{verbatim}
+\end{minipage}
+\caption{The prompt given to the question generator together with the slide image. These are instructions; they do not guarantee that a question cannot be answered from general knowledge, as the question-only control shows.}
+\label{fig:s-prompt}
+\end{figure*}
+
+\paragraph{Filters.}
+A generated question is kept only if it parses, has four distinct options and a valid answer index, and at least 80\% of the words of its evidence span occur in the slide's OCR text.
+Another segment of the same talk counts as a valid repeat of the slide if its OCR passes the same 80\% test and also contains the answer-critical tokens: the key's words that appear on the source slide and every token with a digit in the evidence span.
+For development and test questions, a last filter estimates when the slide is actually on screen.
+It correlates edge maps of frames sampled at 1\,Hz with the saved slide image and accepts a frame when this correlation is at least 0.55 and not below its correlation with either neighbouring segment's slide (neighbours that are valid repeats are not compared); a question is kept only if at least 2\,s are accepted.
+The threshold was chosen on development data.
+The accepted spans are the intervals used by hit@4.
+The training cohort does not pass through this last filter.
+No answer model is used to filter questions.
+
+\paragraph{Known false repeats.}
+The repeat rule can accept a different slide that shares a title or the answer word.
+On the test set, 158 of 853 questions (18.5\%) have at least one repeat.
+In the 100 sampled review packets, 14 questions had a repeat, and one model reviewer judged 7 of them false; the other model reviewer judged more of them false.
+This exposure motivated the S-src variant, which counts only the source segment's own span and was sealed before the test run.
+Three test questions have no visible part in the source segment and count as misses for every system under S-src.
+
+\paragraph{Cohorts.}
+The derived cohorts follow M3AV's official split: 1,147 training questions on 297 lectures, 514 development questions on 96 lectures and 853 test questions on 112 lectures.
+We checked that no lecture appears in two cohorts; that speakers are kept apart is the dataset authors' design.
+These are our derived evaluation sets, not an official M3AV benchmark.
+
+\section{What each lecture system receives}
+\label{sec:s-systems}
+
+\paragraph{Shared inputs.}
+All systems use M3AV's 360p video stream and its shipped timed transcript; no local speech recognizer is used in the lecture study.
+Decoded frames are capped at 640 pixels on the long side, and the answer model's processor then applies its own resizing.
+The dense index holds one MobileCLIP-S2 image embedding every 2\,s of the whole lecture.
+Requested decodes per question are at most about 30 for S0, at most about 54 for S1--S3 (24 dense times, 24 window-scan times and 6 speech-path times, before overlaps merge) and up to 96 for R3--R5.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Condition & Frames & Words & Text tok. & Visual tok. \\
+ & (mean) & (median) & (median) & (median) \\
+\midrule
+S0 & 3.95 & 111 & 426 & 880 \\
+S1, S2c, S2m, S3 & 4.00 & 0 & 180 & 880 \\
+S1t & 4.00 & 591 & 1,507 & 880 \\
+R2 & 4.00 & 0 & 178 & 880 \\
+R3 & 3.87 & 0 & 179 & 880 \\
+R4 & 3.88 & 0 & 179 & 880 \\
+R5 & 3.94 & 0 & 180 & 880 \\
+Question only & 0 & 0 & 128 & 0 \\
+Transcript only & 0 & 590 & 1,453 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Realized inputs on the lecture test (853 questions). Words are transcript words shown; token counts are the answer model's prompt-text and visual tokens. S1, S2c, S2m and S3 have identical medians.}
+\label{tab:s-inputs}
+\end{table}
+
+\paragraph{Realized budgets.}
+\Cref{tab:s-inputs} reports what the answer model actually received.
+Every system may show four frames, but R3--R5 show fewer for 52, 48 and 27 questions respectively.
+
+\paragraph{Head A.}
+Each transcript line gets 24 label-free inputs: 21 features (the frozen MiniLM relevance score with its gap and rank within the talk; the maximum and mean relevance of neighbouring lines at three widths; BM25 scores for the question and for the question with options; word overlap with the options; the line's length, digits, position and local line density; three indicators of cue words in the question; and whether options are given) and 3 features derived from a frozen bge-reranker~\cite{xiao2023cpack}.
+A $24{\to}32{\to}32{\to}1$ MLP with GELU activations adds a residual to the frozen score; its last layer starts at zero.
+The 64 highest-scoring lines vote on a 1\,s grid with a Gaussian of $\sigma{=}4$\,s, peaks closer than 8\,s are suppressed, and the six strongest moments are proposed.
+A line counts as positive in training if its frame time, 0.3\,s before it ends, lies within 10\,s of the evidence.
+Three members trained with different seeds are averaged (1,889 parameters each).
+For S2m, an internal validation split of 15\% of the training lectures picks the epoch.
+
+\paragraph{Head B.}
+Each candidate frame has 18 features: its MobileCLIP similarity to the question and to the question with all options (raw and z-scored within the pool, plus its rank by the second); the maximum, mean, max-minus-mean and max-minus-second of its similarities to the individual options; which path proposed it (speech, picture or both); the z-scored speech score it carries; the similarity of nearby transcript text to the question; its relative position in the video; its highest similarity to another candidate; the number of candidates within 10\,s; and the log pool size.
+A small learned model turns these into a score.
+Frames are then added greedily: each step adds the frame with the largest score $+\,\lambda\,\Delta d - \mu\,r$, where $d$ is the margin between the two highest entries of the selected frames' mean option profile and $r$ is the highest MobileCLIP similarity to an already chosen frame ($\lambda{=}2$, $\mu{=}1$).
+
+\paragraph{R5 and how it differs from VSI.}
+R5's text branch scores every transcript line against the question and options with all-mpnet-base-v2~\cite{song2020mpnet} on the raw strings, boosts similarities $M$ above 0.5 to $\min(1, 2M)$, spreads each line's score over the whole video with a Gaussian ($W{=}2$\,s) and takes the maximum over lines.
+Its visual branch is R4's option-aware MobileCLIP score.
+The two are fused as $0.5\,z(\text{text}) + 0.5\,z(\text{visual})$, and the top 96 times are filled as for R3.
+VSI~\cite{he2025vsi} differs in its visual branch (objects proposed by a VLM and detected with YOLO-World), its boost function, its support window around each line and its text preprocessing (lowercasing and stopword removal).
+The fusion weight and the visual query were chosen as the best of ten settings on development data (74.7\% hit@4 with four raw times before the distinct fill).
+R5 is therefore a VSI-inspired baseline, and we claim nothing about the published system.
+
+\paragraph{Why the lecture baselines differ from the LongVideoBench ones.}
+On lecture development data, the four-time R3 and R5 merged repeated pictures and showed on average 1.4 and 2.0 frames, because a slide often stays on screen for minutes.
+To give them a fair four frames, the lecture versions rank 96 times and keep the first four perceptually distinct pictures; the perceptual-hash threshold (0 against 3) was chosen on development data.
+The LongVideoBench study had already been run with the four-time versions, which we left unchanged.
+
+\section{Human check}
+\label{sec:s-human}
+
+\paragraph{Procedure.}
+After the methods were frozen, 100 test questions, one from each of 100 lectures, were drawn by hash.
+Each packet showed the question, options, key, evidence words, the slide image, frames from the labelled interval and the transcript inside it, but no system output and no model review.
+Reviewers answered four checks: the key is right; exactly one option is right; the slide supports the question; the content is legible.
+The analysis plan, including a strict-majority rule (a question is accepted or rejected only by a majority of its votes) and a cutoff time, was fixed before any human verdict was seen.
+The reviewers had view-only access to the review page and returned their answers as copied text; eligibility uses the time each text reached the organizer.
+The organizer's own answers are not votes and are excluded.
+
+\paragraph{Votes.}
+Reviewer H1 judged all 100 questions and accepted every one, with every check marked yes and no notes.
+H2 judged questions 1--34 (31 accept, 3 reject, all about the answer key) and H3 judged questions 35--67 (33 accept, one note).
+Questions 68--100 therefore have a single vote, from H1.
+Under the fixed rule, a question with H1's accept can end only as accepted or as no majority, so a combined rejection was impossible for every question.
+The result is 97 accepted, 0 rejected and 3 without a majority (the three H2 rejections).
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Pair & Agreement & Cohen's $\kappa$ \\
+\midrule
+Combined human result vs model review 1 & 82\% & 0.019 \\
+Combined human result vs model review 2 & 77\% & 0.074 \\
+Model review 1 vs model review 2 & 84\% & 0.525 \\
+H1 vs H2 (34 shared) & 31/34 & 0 \\
+H1 vs H3 (33 shared) & 33/33 & undefined \\
+\bottomrule
+\end{tabular}
+\caption{Agreement on the 100 reviewed questions. Kappa is near zero or undefined because nearly every human verdict is ``accept''.}
+\label{tab:s-agreement}
+\end{table}
+
+\paragraph{Agreement and rates.}
+\Cref{tab:s-agreement} gives agreement and kappa.
+The rejected-or-uncertain rate is 3.0\% (0 to 7.0\%) with lectures weighted equally and 2.7\% (0 to 6.4\%) with questions weighted equally, from a one-sample bootstrap over lectures.
+The rejected rate is 0\%; its interval is degenerate because no resample contains a rejection, and it is not an upper bound on the label error rate.
+
+\paragraph{Effect on the declared results.}
+Removing rejected questions changes nothing, because there are none.
+Removing the three questions without a majority leaves 850 questions and gives L1 $-0.4$ ($-3.7$ to $+3.0$) and L2 $+5.4$ ($+2.8$ to $+8.0$); the estimates move slightly and their interpretation does not.
+On the same 850 questions, S-src gives L1 $-1.4$ ($-4.8$ to $+1.9$) and L2 $+5.2$ ($+2.5$ to $+7.8$), and accuracy is 82.6\%, 87.3\% and 86.5\% for S1, S2m and R5.
+
+\paragraph{Independence, consent and scope.}
+The three reviewers are members of the organizer's thesis group.
+By the organizer's account, none saw another reviewer's answers and each worked independently; the collection method did not enforce this, and whether each used a separate browser or device was not recorded.
+\TODO{Consent and oversight: state how reviewers agreed to take part and whether institutional review applied (owner to supply).}
+The check covers the questions and their labels on a sample; it does not check the frames any system chose, and it is not a validation of all 853 labels.
+
+\section{Deviations from our plans}
+\label{sec:s-deviations}
+
+\paragraph{1. Answer calls for the LongVideoBench confirmation.}
+The protocol declared 20,000 answer calls in total.
+The call ledgers were kept per answer model, each with its own 20,000-call cap, so the declared total across them was not enforced.
+The 2B and 4B ledgers each charged 7,587 calls, for the fresh set only.
+The API ledger charged 10,199 calls, which also include the follow-ups on the earlier locked test.
+The three ledgers charged 25,373 calls in total.
+The API ledger records 8,046 answers on the fresh set (9 systems $\times$ 894), so at most 8,046 of its calls belong to the fresh set.
+A request already in the cache is not charged; a reply without an option letter was asked once more (charged once), and network or rate-limit failures were retried, so physical requests exceed charged calls.
+No recorded answer changes because of this deviation.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Contrast (accuracy) & As run (323) & Failed scored (322) \\
+\midrule
+S2m $-$ R5 & $+5.9$ ($+1.6$, $+10.2$) & $+5.9$ ($+1.6$, $+10.3$) \\
+S2m $-$ S1 & $+9.3$ ($+5.0$, $+13.6$) & $+9.6$ ($+5.4$, $+13.8$) \\
+S2m $-$ S2c & $0.0$ ($-3.0$, $+2.8$) & $0.0$ ($-3.0$, $+2.8$) \\
+S2m $-$ R3 & $+12.7$ ($+7.6$, $+17.5$) & $+12.7$ ($+7.6$, $+17.6$) \\
+S2m $-$ R4 & $+4.6$ ($+0.3$, $+9.1$) & $+4.7$ ($+0.3$, $+9.1$) \\
+S3 $-$ S1 & $-0.9$ ($-5.6$, $+3.8$) & $-0.9$ ($-5.7$, $+3.8$) \\
+S1t $-$ S1 & $-1.2$ ($-4.1$, $+1.8$) & $-0.9$ ($-3.8$, $+2.0$) \\
+\bottomrule
+\end{tabular}
+\caption{Secondary accuracy contrasts on the questions the transcript-only control answers wrong, as run and with the retried control scored as failed. Uncorrected; the largest change in a point estimate is 0.34 points.}
+\label{tab:s-retry}
+\end{table}
+
+\paragraph{2. A retried answer in the lecture accuracy run.}
+The sealed rule said that a CUDA out-of-memory error produces a failed record, scored as wrong for a system and as unknown for a control, and is never retried.
+In the first session, a driver-level out-of-memory error occurred during generation; the error handler's own cache release raised the same error, so no record was written and the run stopped.
+One restart through the unchanged sealed driver attempted the same request again and answered it, and that answer was wrong.
+The retry is a deviation; the original records and seal are kept unchanged.
+Because a failed system answer counts as wrong, every accuracy and contrast on all 853 questions, and on the subset defined by the question-only control, is unchanged.
+A failed control answer is unknown and leaves its control-defined subset, so the subset of questions that the transcript-only control answers wrong has 322 questions instead of 323 as run (both on 104 lectures).
+\Cref{tab:s-retry} gives both versions; which intervals cross zero is unchanged.
+The run saved 10,236 rows, of which 9,893 came from completed new calls and 343 from reused identical requests.
+
+\paragraph{3. Memory in the lecture accuracy run.}
+In the second session of the frozen lecture accuracy run, PyTorch's peak reserved memory was 16.8\,GiB (peak allocated 11.49\,GiB) on a card with 15.93\,GiB; the first session's peak was not captured.
+We therefore do not claim that the frozen run stayed within the card's memory.
+In a later replay of the answer stage on 100 development questions and six conditions, an uncapped pass reserved up to 17.26\,GiB (15.23\,GiB dedicated and 1.56\,GiB shared memory), and a pass with the allocator capped at 14.28\,GiB gave identical replies for all 600 calls, with 14.19\,GiB peak reserved, 14.13\,GiB dedicated and 0.08\,GiB shared memory at about one-second sampling and no out-of-memory error.
+The capped pass took 1,517.6\,s against 1,619.5\,s uncapped; we do not read this as a causal speed-up.
+This is a bounded observation on development data, not a capped rerun of the test.
+
+\section{Resource measurements}
+\label{sec:s-cost}
+All figures are from the lecture test on one 16\,GB consumer GPU (RTX 5060 Ti).
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Condition & Pool (s, mean) & New calls & Answer (s, mean) \\
+\midrule
+S0 & 0.45 & 853 & 3.09 \\
+S1 & 0.67 & 853 & 2.47 \\
+S1t & 0.67 & 853 & 4.55 \\
+S2c & 1.00 & 851 & 2.41 \\
+S2m & 0.97 & 636 & 2.41 \\
+S3 & 0.67 & 838 & 2.55 \\
+R2 & 0.17 & 853 & 2.72 \\
+R3 & 1.39 & 853 & 2.52 \\
+R4 & 1.39 & 744 & 2.46 \\
+R5 & 1.42 & 853 & 2.44 \\
+Question only & -- & 853 & 1.48 \\
+Transcript only & -- & 853 & 3.97 \\
+\bottomrule
+\end{tabular}
+\caption{Lecture test timings. ``Pool'' sums the measured retrieval, speech scoring, frame decoding and MobileCLIP steps per question. Answer times are means over new calls only; replies reused from the cache are excluded, so the subsets differ and the times are not a matched latency comparison.}
+\label{tab:s-cost}
+\end{table}
+
+\Cref{tab:s-cost} gives the per-question timings.
+The pool times leave out OCR and text embeddings, the per-lecture feature index, R5's separate scoring pass, model loading, selection, transcript building and serialization, so they are not end-to-end latencies.
+The dense index for the 112 test lectures (579 frames and 19.3 minutes per lecture on average) took 955\,s in total, about 8.4\,s per lecture after the first.
+Loading the 4B answer model took 8.5\,s.

@@ -142,3 +142,42 @@ C38 as a blanket claim, C43, C54, C56; "first", "state of the art", "equivalent"
 "fully local", "97% of labels verified", "<0.0001"; any hardware ceiling on frames; "the VLM can answer only if the
 moment is shown"; "high floor"; "covering evidence for different options" for Head B; a universal "R3 decodes 96";
 an 11.0-point ceiling for a perfect candidate stage; any claim that VideoRouteAudit lacks freezes.
+
+## Supplement (`supp.tex`, `sec/7_supp.tex`)
+
+| Section / claim | Ledger ID or source |
+|---|---|
+| Labels: declared / secondary / post hoc; unadjusted intervals | P186, P188 |
+| A. Earlier test setup: 459 = 55/6 CG-Bench + 202 + 202 Video-MMMU on 202 lectures; CG subtitles; Video-MMMU Whisper large-v3-turbo; 2B, K ≤ 4; primary S1 − S0 per set and pooled; secondaries uncorrected; S5 confidence choice; 208 clusters | C01; `docs/v3/final_test_protocol.md` |
+| A. Table of 36 accuracies (R1-S5 × CG/P/C/pooled) | `docs/report/all_results.csv` rows 284-324, 533-555 (new; canonical seed 20261019) |
+| A. S1 − S0 per set +16.4 (7.0, 26.0), +1.0 (−5.0, 6.9), +2.0 (−3.5, 6.9); pooled +3.3 (−0.5, 6.9) | C02, C03; `all_results.csv` rows 289, 307, 317, 538 |
+| A. Pooled secondaries S2 −1.7, S3 0.0, S4 0.0, S5 +0.9, S1 − R3 +4.6, S1 − R2 +5.0 with intervals; CG heads −9.1, −16.4 | `all_results.csv` rows 547, 534, 543, 554, 533, 551, 294, 296 (new) |
+| A. 4B follow-ups 50.3/52.7/55.6; +5.2 (1.1, 9.4); S1t − S1 +2.8 (0.0, 5.5), p ≈ 0.050; policy chosen after test seen | C05, C06 |
+| A. Head A dev 36.6 vs 28.0 on 164/17; family chosen there | C08 (reworded as dev observation) |
+| B. Failed answers TMe7oXMJoSM_0 in S1t and S4t (4B); skip rule replaced | C12; `docs/v3/confirmation_deviations.md` |
+| B. Secondary table: S2 − S1, S3 − S1, S4t − S1t, S1 − R3, S1 − R2 | C16, C14, C17 |
+| B. Residual ablation fresh +0.3 (−2.1, 2.8), dev +3.7 (−3.7, 10.8) | C18 |
+| B. λ 0 − 2: 0.0 (−0.9, 0.9), +0.6 (−0.2, 1.4); identical sets 785/792; fewer than 4 frames for 81/82 | C19; research log step 85 (81/82 new) |
+| B. Text-policy table 57.3/57.0/56.7/57.7; words 425/425/425/214; differences | C20 |
+| B. Decomposition table +8.9, +8.2, +0.8, +1.3, +2.8, +6.2; no interaction claim | C12, C21, C22 (reworded) |
+| C. Eligibility ≥4 s annotated, ≥8 OCR words, not first segment; prompt verbatim; OCR cut to 3,000 characters; image + OCR only; hash order | C66; `scripts/m3av_questions.py` (prompt, 3,000-character cut: new) |
+| C. Filters: parse, 4 distinct options, valid index, 80% evidence words in OCR; repeats need 80% + answer-critical tokens (key words on source slide, digit tokens); F4 1 Hz edge correlation ≥ 0.55 and not below either non-repeat neighbour, ≥ 2 s, threshold chosen on dev; train not F4-filtered; no answer-model filter | C66; `scripts/m3av_questions.py`, `scripts/m3av_visibility.py` |
+| C. 158/853 (18.5%) test questions with a repeat; 14 sampled, one model reviewer judged 7 false, the other more | research log step 89 (new) |
+| C. S-src sealed before test; 3 source-empty test questions | C31 |
+| C. Cohorts and lecture separation | C25, C65 |
+| D. Shared inputs: 360p, shipped transcripts, 640 px cap, 2 s MobileCLIP index; decodes ≤30 / ≤54 / ≤96 | C64, C67; `docs/v3/m3av_systems.md` |
+| D. Realized inputs table: frame means; median words, prompt-text tokens, visual tokens | C30; `reports/m3av/qa_test.md` (medians per `scripts/m3av_qa.py`; new) |
+| D. R3/R4/R5 underfill 52/48/27 | C30 |
+| D. Head A features, MLP 24→32→32→1 with GELU, zero-init last layer, top 64, σ 4 s, 1 s grid, 8 s suppression, 6 moments, line end − 0.3 s within 10 s, 3 members × 1,889; S2m 15% inner validation picks epoch | C61, C62; `src/videoqa/v3/head_a.py`; research log step 86 area (15%: new) |
+| D. Head B 18 features and greedy gain, λ 2, μ 1 | C63; `scripts/v3_head_b.py` |
+| D. R5 text/visual branch, boost min(1, 2M) above 0.5, W = 2 s whole-video Gaussian, max over lines, 0.5/0.5 z fusion, 96-time fill; VSI differences; best of 10 dev settings, 74.7% at four raw times | C55; `docs/v3/m3av_systems.md`; research log (74.7: new) |
+| D. Four-time R3/R5 on lecture dev showed 1.4 and 2.0 frames; hash threshold 0 vs 3 chosen on dev; LVB versions unchanged | research log (new) |
+| E. Human procedure, votes H1 100 accepts / H2 items 1-34, 31 accept 3 reject (KEY) / H3 items 35-67, 33 accept 1 note; 68-100 single; impossible combined reject; 97/0/3 | C41, C44; `reports/m3av/human_review_limits.md` |
+| E. Agreement table 82/0.019, 77/0.074, 84/0.525, 31/34 κ 0, 33/33 undefined | C44 |
+| E. Rates 3.0 (0, 7.0), 2.7 (0, 6.4), one-sample bootstrap; 0% degenerate | C42, C43 (stated as not an upper bound) |
+| E. 850-question mask L1 −0.4, L2 +5.4; S-src −1.4, +5.2; QA 82.6/87.3/86.5 | C45, C46 |
+| E. Independence: organizer's account; not enforced; device use not recorded; consent TODO | P180, P205 |
+| F1. Ledgers 7,587 / 7,587 / 10,199 = 25,373; per-ledger caps; API includes old-test follow-ups; 8,046 fresh API answers; cache, re-ask and retries | C53; `docs/v3/confirmation_deviations.md` |
+| F2. Sealed rule; what happened; full-cohort unchanged; 322 vs 323 on 104 lectures; sensitivity table; 10,236 rows = 9,893 + 343 | C35, C36, C37; `docs/v3/m3av_qa_test_deviation.md` |
+| F3. Session-2 reserved 16.8 GiB, allocated 11.49 GiB, card 15.93 GiB, session-1 peak missing; uncapped 17.26/15.23/1.56; capped 14.28 cap, 600 identical, 14.19/14.13/0.08; 1,517.6 vs 1,619.5 s, no causal claim | C38 (qualified), C48, C49; `reports/m3av/profile_saved.md` |
+| G. Timing table: pool means, new calls, answer means; exclusions; index 955 s, 579 frames, 19.3 min, 8.4 s per lecture; model load 8.5 s | C50, C51, C52; `reports/m3av/profile_saved.md` (per-condition rows beyond S1/S2m/R5/S0/S1t: new) |

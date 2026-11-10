@@ -1,0 +1,33 @@
+% CVPR 2027 supplementary material, built with the same author kit as main.tex.
+% Compile separately from main.tex; the supplement is uploaded as its own anonymous PDF.
+
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\usepackage[review]{cvpr}
+
+\input{preamble}
+
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[pagebackref,breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
+
+\def\confName{CVPR}
+\def\confYear{2027}
+
+\title{Does the Speech Point to the Slide? A Controlled Study of\\Transcript-Guided Frame Selection for Lecture Video QA}
+
+% Anonymous for review. Do not add names, affiliations or links here.
+\author{Anonymous CVPR submission}
+
+\renewcommand{\thesection}{\Alph{section}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+
+\begin{document}
+\maketitlesupplementary
+\input{sec/7_supp}
+{
+    \small
+    \bibliographystyle{ieeenat_fullname}
+    \bibliography{main}
+}
+\end{document}

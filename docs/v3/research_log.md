@@ -2417,3 +2417,31 @@ Where the gain of the best framework with speech (S1t) over the starting design 
   - Claim map rows updated to match.
 - **Still open.** Consent and oversight, and the auditing tool's name and version (owner); the supplement; a compiled
   anonymous PDF and its page count.
+
+## Step 107 (2026-11-10): supplementary material written (auditor P207-P211)
+- **Audit result before this step.** P201 cleared at bace440; the brief stays shareable; what remains is the owner's
+  disclosures, the supplement and a compiled PDF (P210).
+- **Supplement.** `paper/cvpr2027/supp.tex` (a separate anonymous document with the same author kit, compiled on its
+  own) with the content in `paper/cvpr2027/sec/7_supp.tex`. Sections:
+  - A. The earlier locked test (459 questions, 2B): setup and declared primary; all accuracies per set and pooled;
+    primary and secondary contrasts with canonical intervals (208 clusters, `docs/report/all_results.csv`); the 4B
+    and speech-text follow-ups on the revealed set, labelled as such; the Head A development observation.
+  - B. Fresh LongVideoBench: the two failed 4B answers; secondary contrasts; post hoc residual and λ ablations
+    (with identical-set counts and Head B's underfilled questions); speech-text policies; the full H3
+    decomposition, with the frame-dependent text caveat and no interaction claim.
+  - C. Lecture question building: eligibility, the generation prompt verbatim, the filters with thresholds, the
+    known false repeats (158 of 853 test questions have a repeat) and the cohorts.
+  - D. What each lecture system receives: shared inputs, realized frames, words and tokens (medians from the
+    accuracy report), Head A and Head B details from the code, R5 and its differences from VSI, and why the
+    lecture baselines differ from the LongVideoBench ones.
+  - E. The human check: procedure, votes per reviewer, agreement, rates, the 850-question sensitivity, the
+    organizer's account of independence and the consent placeholder.
+  - F. The three deviations in full: per-ledger call caps (25,373 charged), the retried control answer with both
+    versions of the subset analysis, and memory (observed peak, missing first-session peak, bounded capped replay).
+  - G. Timings per condition with the listed exclusions.
+- **Claim map.** `CLAIMS.md` gained a supplement section; numbers not already in the ledger are marked "new" with
+  their source rows or files.
+- **Bibliography.** Whisper (ICML 2023) added for the earlier test's local transcripts.
+- **Not changed.** No result, mask, method or saved output. The main paper is unchanged in this step.
+- **Open.** Consent and oversight, and the auditing tool's name and version (owner); compiled PDFs of the paper and
+  the supplement (owner, Overleaf), then the auditor's check of the supplement and the rendered files.
